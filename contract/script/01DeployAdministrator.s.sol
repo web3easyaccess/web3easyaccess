@@ -3,6 +3,8 @@ pragma solidity ^0.8.20;
 
 import "../src/Administrator.sol";
 
+import "../src/W3EAPoint.sol";
+
 import {Script, console} from "forge-std/Script.sol";
 
 contract AdministratorScript is Script {
@@ -28,7 +30,7 @@ forge script script/DeployAdministrator.s.sol:AdministratorScript --private-key 
 */
 
 /*
-forge script script/DeployAdministrator.s.sol:AdministratorScript --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --broadcast --rpc-url http://127.0.0.1:8545 --slow --via-ir --legacy
+forge script script/01DeployAdministrator.s.sol:AdministratorScript --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --broadcast --rpc-url http://127.0.0.1:8545 --slow --via-ir --legacy
 // 0x5FbDB2315678afecb367f032d93F642f64180aa3
 
 */

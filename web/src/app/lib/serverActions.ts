@@ -64,6 +64,12 @@ export async function verifyEmail(_currentState: unknown, formData: FormData) {
 
     let md = myCookies.flushData(email);
 
+    // update accountId from chain, and loadData again.
+    const emailKey = myCookies.loadData().emailKey;
+    const accountId = await queryAccount(emailKey);
+    myCookies.setAccountId(accountId);
+    md = myCookies.loadData();
+
     if (
       md.accountId == popularAddr.ZERO_ADDR ||
       md.accountId == popularAddr.ZERO_ADDRError

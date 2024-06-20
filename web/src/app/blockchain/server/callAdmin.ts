@@ -117,6 +117,14 @@ async function _execute(
 
   console.log(`_execute callAdminData= ${callAdminData}`);
 
+  //   const request = await walletClient.prepareTransactionRequest({
+  //     account: account,
+  //     to: adminAddr,
+  //     value: BigInt(0), // parseEther("0.0"),
+  //     data: callAdminData,
+  //   });
+  //   console.log("xxxxxxx:request:", request);
+
   const hash = await walletClient.sendTransaction({
     account: account,
     to: adminAddr,

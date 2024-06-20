@@ -20,6 +20,11 @@ contract Account is EIP712, Nonces {
     address private ownerAddr;
     uint256 private lastNonce;
 
+    /**
+        gas fees that can be paid free of charge by the system.(ETH wei)
+     */
+    uint256 public gasFeeRights;
+
     event InitAccount(address ownerAddr, address admin);
     event ChgAdmin(address newAdmin);
     event ChgOwnerAddr(address newOwnerAddr);
@@ -28,6 +33,9 @@ contract Account is EIP712, Nonces {
 
     constructor() EIP712("Account", "1") {
         admins[0] = msg.sender;
+        admins[1] = msg.sender;
+        admins[2] = msg.sender;
+        admins[3] = msg.sender;
     }
 
     function onlyAdmin() private view {
@@ -37,12 +45,15 @@ contract Account is EIP712, Nonces {
                 break;
             }
         }
-        if (k == admins.length) {
-            require(msg.sender == ownerAddr, "only admins!");
-        }
+        require(k < admins.length, "only admins!");
     }
 
     receive() external payable {}
+
+    function increaseGasFeeRights(uint256 amount) external {
+        onlyAdmin();
+        gasFeeRights += amount;
+    }
 
     function initOwner(address _ownerAddr) external {
         onlyAdmin();
@@ -85,11 +96,11 @@ contract Account is EIP712, Nonces {
         _;
     }
 
-    function chgAdmin(uint256 idx, address _newAdmin) external {
-        onlyAdmin();
-        admins[idx] = _newAdmin;
-        emit ChgAdmin(_newAdmin);
-    }
+    // function chgAdminZ(address _newAdmin) external {
+    //     onlyAdmin();
+    //     admins[admins.length - 1] = _newAdmin;
+    //     emit ChgAdmin(_newAdmin);
+    // }
 
     /**
         It means changing password
