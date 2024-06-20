@@ -7,11 +7,6 @@ import redirectTo from "./redirectTo";
 import myCookies from "./myCookies";
 import { sendMail } from "./mailService";
 import {
-  getOwnerId,
-  getPrivateKey,
-  PrivateInfoType,
-} from "../blockchain/client/keyTools";
-import {
   queryAccount,
   newAccount,
   transferETH,
@@ -23,7 +18,6 @@ import popularAddr from "../blockchain/client/popularAddr";
 import { parseEther } from "viem";
 
 const verifyCode = {};
-const verifiedEmail = {};
 
 export async function checkEmail(_currentState: unknown, formData: FormData) {
   try {
@@ -31,8 +25,6 @@ export async function checkEmail(_currentState: unknown, formData: FormData) {
 
     const email = formData.get("email");
     console.log("email000:", email);
-    const ownerId = getOwnerId(email.toString());
-    console.log("ownerId:", ownerId.toString());
 
     //
     const sixNum = generateRandomSixDigitInteger().toString();
@@ -65,18 +57,27 @@ export async function verifyEmail(_currentState: unknown, formData: FormData) {
 
   if (verifyCode[email] == code) {
     console.log("verify success!", email, code);
-    verifiedEmail[email] = true;
+
     delete verifyCode[email];
-    const ownerId = getOwnerId(email?.toString());
 
-    const accountId = await queryAccount(ownerId);
-    console.log("accountId:", accountId.toString());
-
-    myCookies.setOwnerId(ownerId);
-    myCookies.setAccountId(accountId);
     myCookies.setEmail(email);
 
-    redirectTo.dashboard(ownerId);
+    let md = myCookies.flushData(email);
+
+    if (
+      md.accountId == popularAddr.ZERO_ADDR ||
+      md.accountId == popularAddr.ZERO_ADDRError
+    ) {
+      console.log(
+        `verifyEmail-current owner ${email} havn't account, redirect to urlPrivateinfo.`
+      );
+      redirectTo.urlPrivateinfo();
+    } else {
+      console.log(
+        `verifyEmail-current owner ${email} have account ${md.accountId}, redirect to urlDashboard.`
+      );
+      redirectTo.urlDashboard();
+    }
     // return "";
   } else {
     console.log("verify failure!", email, code);
@@ -89,40 +90,36 @@ export async function createAccount(
   formData: FormData
 ) {
   const signature = formData.get("signature"); // didn't used at here.
-  const passwdAddr = formData.get("passwdAddr");
-  const ownerId = formData.get("ownerId");
+  const ownerAddr = formData.get("ownerAddr");
   const nonce = formData.get("nonce");
+  const emailKey = myCookies.loadData().emailKey;
+  var accountId = await queryAccount(emailKey);
 
-  const accountId = await queryAccount(ownerId);
   console.log("createAccount. accountId before create:", accountId);
 
   if (accountId.toString() == popularAddr.ZERO_ADDR) {
     // create new account
-    await newAccount(ownerId, passwdAddr);
+    await newAccount(emailKey, ownerAddr);
 
     while (true) {
-      const acctId = await queryAccount(ownerId);
-      if (acctId.toString() == popularAddr.ZERO_ADDR) {
+      accountId = await queryAccount(emailKey);
+      if (accountId.toString() == popularAddr.ZERO_ADDR) {
         console.log("waiting for creating new account...");
         await sleep(1000);
       } else {
-        myCookies.setAccountId(acctId);
-        console.log("created new account:", acctId);
+        console.log("created new account:", accountId);
         break;
       }
     }
   } else {
-    myCookies.setAccountId(accountId);
   }
-  console.log(
-    "createAccount signature:",
-    signature,
-    "====",
-    passwdAddr,
-    "===",
-    nonce
-  );
-  redirectTo.dashboard(ownerId);
+  myCookies.setAccountId(accountId.toString());
+
+  console.log("createAccount, demo signature:", signature);
+  console.log("createAccount, emailKey:", emailKey);
+  console.log("createAccount, ownerAddr:", ownerAddr);
+
+  redirectTo.urlDashboard();
 }
 
 export async function getEthBalance(accountId: string) {
@@ -156,19 +153,21 @@ export async function newTransaction(
     console.log("receiverAddr:", receiverAddr);
     const amount = formData.get("amount");
     console.log("amount:", amount);
-    const ownerId = formData.get("ownerId");
-    console.log("newTransaction, ownerId:", ownerId);
-    const passwdAddr = formData.get("passwdAddr");
+
+    const ownerAddr = formData.get("ownerAddr");
+    console.log("newTransaction, ownerAddr:", ownerAddr);
     const nonce = formData.get("nonce");
     const signature = formData.get("signature");
     const inputData = formData.get("input_data");
     console.log("inputData:", inputData);
 
+    const emailKey = myCookies.loadData().emailKey;
+
     await transferETH(
+      emailKey,
       `0x${receiverAddr.substring(2)}`,
       parseEther(amount),
-      `0x${ownerId.substring(2)}`,
-      `0x${passwdAddr.substring(2)}`,
+      `0x${ownerAddr.substring(2)}`,
       BigInt(nonce),
       `0x${signature.substring(2)}`
     );

@@ -1,62 +1,95 @@
 import { cookies } from "next/headers";
+import { keccak256, toHex } from "viem";
+import popularAddr from "../blockchain/client/popularAddr";
 
-// set it after login success
-function setEmail(email: string) {
-  let idx = email.indexOf("@");
-  let sss = email;
-  //   let sss = "";
-  //   for (let k = 0; k < email.length; k++) {
-  //     if (k == 0 || k == idx - 1 || k == idx || k == idx + 1) {
-  //       sss += email.substring(k, k + 1);
-  //     } else {
-  //       sss += "*";
-  //     }
-  //   }
-  cookies().set("email", sss);
-}
+export type CookieData = {
+  emailKey: string;
+  emailDisplay: string;
+  accountId: string;
+};
 
-// set it after login success
-function setOwnerId(ownerId: string) {
-  cookies().set("ownerId", ownerId, { maxAge: 30 * 60 });
-}
+const COOKIE_KEY = "w3ea_data";
+const MAX_AGE = 30 * 60;
 
-// set it after login success
-function setAccountId(accountId) {
-  cookies().set("accountId", accountId.toString());
-}
+// email in cookie must be dead in short time.
+const COOKIE_EMAIL_KEY = "email_in_minute";
+const MAX_AGE_EMAIL = 180;
 
-// CurrentTmp: user who is logging...
-// set when it is logging...
-function setCurrentTmpOwnerId(ownerId: string) {
-  cookies().set("CurrentTmpOwnerId", ownerId);
-}
-
-// set when it is logging...
-function setCurrentTmpAccountId(accountId) {
-  cookies().set("CurrentTmpAccountId", accountId.toString());
+function cookieIsValid() {
+  let md = _parseData(cookies().get(COOKIE_KEY));
+  if (
+    md != null &&
+    md != undefined &&
+    md.emailKey != null &&
+    md.emailKey != undefined
+  ) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 function getEmail() {
-  return _getCookiesVal(cookies().get("email"));
+  let email = _parseEmail(cookies().get(COOKIE_EMAIL_KEY));
+  return email;
 }
 
-function getOwnerId() {
-  return _getCookiesVal(cookies().get("ownerId"));
+function setEmail(email: string) {
+  cookies().set(COOKIE_EMAIL_KEY, email, { maxAge: MAX_AGE_EMAIL });
 }
 
-function getAccountId() {
-  return _getCookiesVal(cookies().get("accountId"));
+function loadData() {
+  let md = _parseData(cookies().get(COOKIE_KEY));
+  return md;
 }
 
-function getCurrentTmpOwnerId() {
-  return _getCookiesVal(cookies().get("CurrentTmpOwnerId"));
+//
+function flushData(email: string) {
+  let idx = email.indexOf("@");
+  let emailDisplay = "";
+  for (let k = 0; k < email.length; k++) {
+    if (k == 0 || k == idx - 1 || k == idx || k == idx + 1) {
+      emailDisplay += email.substring(k, k + 1);
+    } else {
+      emailDisplay += "*";
+    }
+  }
+  let emailKey = keccak256(toHex(email)).toString();
+  emailKey = keccak256(toHex(email + emailKey)).toString();
+
+  let md = _parseData(cookies().get(COOKIE_KEY));
+
+  if (md.emailKey != emailKey) {
+    md.emailKey = emailKey;
+    md.emailDisplay = emailDisplay;
+    md.accountId = popularAddr.ZERO_ADDR;
+  }
+
+  cookies().set(COOKIE_KEY, JSON.stringify(md), { maxAge: MAX_AGE });
+  return md;
 }
 
-function getCurrentTmpAccountId() {
-  return _getCookiesVal(cookies().get("CurrentTmpAccountId"));
+// set it after login success
+function setAccountId(accountId: string) {
+  let md = loadData();
+  md.accountId = accountId;
+  cookies().set(COOKIE_KEY, JSON.stringify(md), { maxAge: MAX_AGE });
 }
 
-function _getCookiesVal(c) {
+function _parseData(c) {
+  if (
+    c != undefined &&
+    c?.value != undefined &&
+    c?.value != null &&
+    c?.value!.trim() != ""
+  ) {
+    return JSON.parse(c.value);
+  } else {
+    return {};
+  }
+}
+
+function _parseEmail(c) {
   if (
     c != undefined &&
     c?.value != undefined &&
@@ -65,24 +98,15 @@ function _getCookiesVal(c) {
   ) {
     return c.value;
   } else {
-    return "";
+    return null;
   }
 }
 
-function checkLoggedIn() {
-  return getOwnerId() != "";
-}
-
 export default {
-  setCurrentTmpOwnerId,
-  setCurrentTmpAccountId,
-  setOwnerId,
+  cookieIsValid,
+  flushData,
+  loadData,
   setAccountId,
-  getOwnerId,
-  getAccountId,
-  getCurrentTmpOwnerId,
-  getCurrentTmpAccountId,
-  checkLoggedIn,
-  setEmail,
   getEmail,
+  setEmail,
 };

@@ -6,8 +6,7 @@ import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import Passwd from "./passwd2";
 import {
-  getPrivateKey,
-  getOwnerId,
+  getOwnerAccount,
   PrivateInfoType,
 } from "../blockchain/client/keyTools";
 import { signAuth } from "../blockchain/client/signAuthTypedData";
@@ -18,7 +17,6 @@ contract permit for exists user;
 */
 
 export default function Page({
-  ownerId,
   chainId,
   verifyingContract,
   email,
@@ -48,7 +46,7 @@ export default function Page({
           isRequired
           type="email"
           label="Email"
-          value={email}
+          defaultValue={email}
           isReadOnly={true}
           className="max-w-xs"
         />
@@ -65,15 +63,9 @@ export default function Page({
 
         <form action={myDispatch}>
           <input
-            id="id_permit_ownerId"
+            id="id_permit_ownerAddr"
             style={{ display: "none" }}
-            name="ownerId"
-            defaultValue={ownerId}
-          />
-          <input
-            id="id_permit_passwdAddr"
-            style={{ display: "none" }}
-            name="passwdAddr"
+            name="ownerAddr"
           />
 
           <input
@@ -116,18 +108,16 @@ function PermitMessage({ email, chainId, verifyingContract, currentNet }) {
       return;
     }
 
-    let privateKey = getPrivateKey({ email: email, pin: pin1 });
-    const ownerId = getOwnerId(email);
+    let ownerAccount = getOwnerAccount({ email: email, pin: pin1 });
     const sign = await signAuth(
-      ownerId,
-      privateKey,
+      ownerAccount,
       chainId,
       verifyingContract,
       currentNet
     );
     // signature: signature, eoa: eoa, nonce: nonce.toString()
     document.getElementById("id_permit_signature").value = sign.signature;
-    document.getElementById("id_permit_passwdAddr").value = sign.eoa;
+    document.getElementById("id_permit_ownerAddr").value = sign.eoa;
     document.getElementById("id_permit_nonce").value = sign.nonce;
   };
 

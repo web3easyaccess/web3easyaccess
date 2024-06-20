@@ -1,13 +1,12 @@
 import { redirect } from "next/navigation";
 
 import myCookies from "./myCookies";
+import { CookieData } from "./myCookies";
 
-function dashboard(ownerId: string) {
-  console.log("dashboard,11", ownerId);
-  console.log("dashboard,22", myCookies.getOwnerId());
+function urlDashboard() {
   let redirectPath = "/";
   try {
-    if (ownerId == myCookies.getOwnerId()) {
+    if (myCookies.cookieIsValid()) {
       console.log("redirect to dashboard");
       redirectPath = "/dashboard";
     } else {
@@ -21,14 +20,16 @@ function dashboard(ownerId: string) {
   }
 }
 
-function loginCheck() {
-  if (!myCookies.checkLoggedIn()) {
-    console.log("not logged in, redirect to login");
-    redirect("/login");
-  }
+function urlPrivateinfo() {
+  redirect("/privateinfo");
+}
+
+function urlLogin() {
+  redirect("/login");
 }
 
 export default {
-  dashboard,
-  loginCheck,
+  urlDashboard,
+  urlPrivateinfo,
+  urlLogin,
 };

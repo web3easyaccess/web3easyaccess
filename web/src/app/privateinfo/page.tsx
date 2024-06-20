@@ -5,17 +5,19 @@ import myCookies from "../lib/myCookies";
 import Private from "./private";
 
 import { currentNet } from "../blockchain/server/myChain";
+import redirectTo from "../lib/redirectTo";
 
 export default async function Page() {
-  const acctAddr = myCookies.getAccountId().toString();
-  const ownerId = myCookies.getOwnerId();
+  const myData = myCookies.loadData();
   const email = myCookies.getEmail(); // || "abc@def.com";
+  if (email == undefined || email == null || email == "") {
+    redirectTo.urlLogin();
+  }
   const current_net = currentNet();
   return (
     <Private
-      ownerId={ownerId}
       chainId={current_net.id}
-      verifyingContract={acctAddr}
+      verifyingContract={myData.accountId}
       email={email}
       currentNet={current_net}
     ></Private>

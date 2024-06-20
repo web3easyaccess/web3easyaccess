@@ -7,11 +7,6 @@ import { Button } from "@nextui-org/button";
 import { useRouter } from "next/navigation";
 
 import Passwd from "./passwd";
-import {
-  getPrivateKey,
-  getOwnerId,
-  PrivateInfoType,
-} from "../blockchain/client/keyTools";
 
 import { useState } from "react";
 import Navbar from "../navbar/navbar";
@@ -103,7 +98,7 @@ function SubmitEmail({
     }
 
     let email = document.getElementById("id_login_email_ui").value;
-    document.getElementById("id_login_email").value = email; //getOwnerId(email);
+    document.getElementById("id_login_email").value = email; //
 
     setTimeout(async () => {
       var kk = 0;

@@ -17,18 +17,18 @@ import {
   adminAddr,
 } from "./chainClientOnServer";
 
-import abi from "./abi/administratorAbi";
+import abis from "./abi/abis";
 
 /**
  */
-export async function queryAccount(ownerId: `0x${string}`) {
+export async function queryAccount(ownerAddr: `0x${string}`) {
   try {
     const accountAddr = await publicClient.readContract({
       account: account,
       address: adminAddr,
-      abi: abi.queryAccount,
+      abi: abis.queryAccount,
       functionName: "queryAccount",
-      args: [ownerId],
+      args: [ownerAddr],
     });
 
     /*
@@ -48,26 +48,26 @@ export async function queryAccount(ownerId: `0x${string}`) {
 }
 
 export async function newAccount(
-  ownerId: `0x${string}`,
-  passwdAddr: `0x${string}`
+  emailKey: `0x${string}`,
+  ownerAddr: `0x${string}`
 ) {
-  console.log(`newAccount called ... ownerId= ${ownerId}`);
-  var encodedData;
+  console.log(`newAccount called ... ownerId= ${ownerAddr}`);
+  var newAccountData;
   try {
-    encodedData = encodeFunctionData({
-      abi: abi.newAccount,
+    newAccountData = encodeFunctionData({
+      abi: abis.newAccount,
       functionName: "newAccount",
-      args: [ownerId, passwdAddr],
+      args: [emailKey, ownerAddr],
     });
-    console.log(`newAccount called2 ... ownerId= ${ownerId}`);
+
     const hash = await walletClient.sendTransaction({
       account: account,
       to: adminAddr,
       value: BigInt(0), // parseEther("0.0"),
-      data: encodedData,
+      data: newAccountData,
     });
 
-    console.log(`newAccount finished, ownerId=${ownerId}, trans=${hash}`);
+    console.log(`newAccount, hash=${hash}`);
     return hash;
   } catch (e) {
     console.log("newAccount error:", e);
@@ -76,36 +76,53 @@ export async function newAccount(
 }
 
 export async function transferETH(
+  emailKey: `0x${string}`,
   to: `0x${string}`,
   amount: bigint,
-  ownerId: `0x${string}`,
-  passwdAddr: `0x${string}`,
+  ownerAddr: `0x${string}`,
   nonce: bigint,
   signature: `0x${string}`
 ) {
-  console.log(`transferETH called ... ownerId= ${ownerId}, amount=${amount}`);
-  var encodedData;
+  console.log(`transferETH called ... ownerId= ${ownerAddr}, amount=${amount}`);
+  var callAccountData;
+
   try {
-    encodedData = encodeFunctionData({
-      abi: abi.transferETH,
+    callAccountData = encodeFunctionData({
+      abi: abis.transferETH,
       functionName: "transferETH",
-      args: [to, amount, ownerId, passwdAddr, nonce, signature],
+      args: [to, amount, ownerAddr, nonce, signature],
     });
 
-    console.log(
-      `transferETH called2 ... ownerId= ${ownerId}, amount=${amount}`
-    );
-    const hash = await walletClient.sendTransaction({
-      account: account,
-      to: adminAddr,
-      value: BigInt(0), // parseEther("0.0"),
-      data: encodedData,
-    });
+    console.log("transferETH , _execute");
+    const hash = await _execute(emailKey, callAccountData);
 
-    console.log(`transferETH finished, ownerId=${ownerId}, transHash=${hash}`);
+    console.log(`transferETH finished, transHash=${hash}`);
     return hash;
   } catch (e) {
-    console.log("transferETH error:" + ownerId + ":", e);
+    console.log("transferETH error:ownerAddr=" + ownerAddr + ":", e);
     return popularAddr.ZERO_ADDRError;
   }
+}
+
+async function _execute(
+  emailKey: `0x${string}`,
+  callAccountData: `0x${string}`
+) {
+  console.log(`_execute callAccountData= ${callAccountData}`);
+  var callAdminData = encodeFunctionData({
+    abi: abis.execute,
+    functionName: "execute",
+    args: [emailKey, callAccountData],
+  });
+
+  console.log(`_execute callAdminData= ${callAdminData}`);
+
+  const hash = await walletClient.sendTransaction({
+    account: account,
+    to: adminAddr,
+    value: BigInt(0), // parseEther("0.0"),
+    data: callAdminData,
+  });
+  console.log(`_execute hash=${hash}`);
+  return hash;
 }

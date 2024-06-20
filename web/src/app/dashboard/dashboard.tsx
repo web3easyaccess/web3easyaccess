@@ -24,7 +24,7 @@ function decrypt(data: any) {
 
 export default function Home({
   acctAddr,
-  ownerId,
+  ownerAddr,
   balance,
   selectedMenu,
   txList,
@@ -49,7 +49,7 @@ export default function Home({
         <div style={{ width: "200px" }}>
           <UserProfile
             acctAddr={acctAddr}
-            ownerId={ownerId}
+            ownerAddr={ownerAddr}
             balance={balance}
           />
           <OpMenu selectedMenu={selectedMenu} />

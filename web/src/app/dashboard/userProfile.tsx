@@ -17,11 +17,12 @@ import {
   Link,
   Image,
 } from "@nextui-org/react";
+import popularAddr from "../blockchain/client/popularAddr";
 
 // import { useSession } from "next-auth/react";
 // import { useRouter } from "next/router";
 
-export default function UserProfile({ acctAddr, ownerId, balance }) {
+export default function UserProfile({ acctAddr, ownerAddr, balance }) {
   //   const { data: session } = useSession();
   //   const router = useRouter();
 
@@ -32,11 +33,14 @@ export default function UserProfile({ acctAddr, ownerId, balance }) {
   //   if (!session) {
   //     return null;
   //   }l
+  if (acctAddr == undefined) {
+    acctAddr = popularAddr.ZERO_ADDR;
+  }
 
   const acctAddrDisplay =
     acctAddr.substring(0, 6) + "...." + acctAddr.substring(acctAddr.length - 4);
   console.log("UserProfile,acctAddr:", acctAddr);
-  console.log("UserProfile,ownerId:", ownerId);
+  console.log("UserProfile,ownerAddr:", ownerAddr);
 
   const copyFullAddr = () => {
     // const address = document.getElementById("id_account_full_addr").value;

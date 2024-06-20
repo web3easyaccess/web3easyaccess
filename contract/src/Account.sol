@@ -14,108 +14,94 @@ import {IERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20
 
 contract Account is EIP712, Nonces {
     bytes32 internal constant PERMIT_TYPEHASH =
-        keccak256(
-            "_permit(uint256 _ownerId,address _passwdAddr,uint256 _nonce)"
-        );
+        keccak256("_permit(address _ownerAddr,uint256 _nonce)");
 
-    address public admin;
-    uint256 private ownerId;
-    address private passwdAddr;
+    address[4] public admins;
+    address private ownerAddr;
     uint256 private lastNonce;
 
-    event InitAccount(uint256 ownerId, address passwdAddr, address admin);
+    event InitAccount(address ownerAddr, address admin);
     event ChgAdmin(address newAdmin);
-    event ChgOwnerId(uint256 newOwnerId);
-    event ChgPasswdAddr(address newPasswdAddr);
+    event ChgOwnerAddr(address newOwnerAddr);
     event TransferETH(address to, uint256 amount);
     event TransferToken(address token, address to, uint256 amount);
 
     constructor() EIP712("Account", "1") {
-        admin = msg.sender;
+        admins[0] = msg.sender;
+    }
+
+    function onlyAdmin() private view {
+        uint256 k = 0;
+        for (; k < admins.length; k++) {
+            if (msg.sender == admins[k]) {
+                break;
+            }
+        }
+        if (k == admins.length) {
+            require(msg.sender == ownerAddr, "only admins!");
+        }
     }
 
     receive() external payable {}
 
-    function initOnwer(uint256 _ownerId, address _passwdAddr) external {
-        require(msg.sender == admin, "only admin!");
-        if (ownerId == 0) {
-            ownerId = _ownerId;
-            passwdAddr = _passwdAddr;
-            emit InitAccount(_ownerId, _passwdAddr, msg.sender);
+    function initOwner(address _ownerAddr) external {
+        onlyAdmin();
+        if (ownerAddr == address(0)) {
+            ownerAddr = _ownerAddr;
+            emit InitAccount(_ownerAddr, msg.sender);
         }
     }
 
-    function queryOwnerId() external view returns (uint256) {
-        require(msg.sender == admin, "only admin!");
-        return ownerId;
-    }
-
-    function queryPasswdAddr() external view returns (address) {
-        require(msg.sender == admin, "only admin!");
-        return passwdAddr;
-    }
+    // function queryOwnerAddr() external view returns (address) {
+    //     require(msg.sender == admin, "only admin!");
+    //     return ownerAddr;
+    // }
 
     function DOMAIN_SEPARATOR() external view returns (bytes32) {
         return _domainSeparatorV4();
     }
 
     modifier _permit(
-        uint256 _ownerId,
-        address _passwdAddr,
+        address _ownerAddr,
         uint256 _nonce, // same nonce can be used only once on the offchain application server
-        bytes calldata _signature
+        bytes memory _signature
     ) {
-        require(msg.sender == admin, "only admin!");
-        require(ownerId == _ownerId, "ownerId error!");
-        require(passwdAddr == _passwdAddr, "passwdAddr error!");
+        onlyAdmin();
+
         require(_nonce > lastNonce, "nonce invalid!");
 
         bytes32 structHash = keccak256(
-            abi.encode(PERMIT_TYPEHASH, _ownerId, _passwdAddr, _nonce) // _useNonce(eoa))
+            abi.encode(PERMIT_TYPEHASH, _ownerAddr, _nonce) // _useNonce(eoa))
         );
 
         bytes32 hash = _hashTypedDataV4(structHash);
 
         address signer = ECDSA.recover(hash, _signature);
 
-        require(signer == _passwdAddr, "permit error!");
+        require(signer == ownerAddr, "permit error!");
 
         lastNonce = _nonce;
 
         _;
     }
 
-    function chgAdmin(
-        address _newAdmin,
-        uint256 _ownerId,
-        address _passwdAddr,
-        uint256 _nonce,
-        bytes calldata _signature
-    ) external _permit(_ownerId, _passwdAddr, _nonce, _signature) {
-        admin = _newAdmin;
+    function chgAdmin(uint256 idx, address _newAdmin) external {
+        onlyAdmin();
+        admins[idx] = _newAdmin;
         emit ChgAdmin(_newAdmin);
     }
 
-    function chgOwnerId(
-        uint256 _newOwnerId,
-        uint256 _ownerId,
-        address _passwdAddr,
+    /**
+        It means changing password
+    */
+    function chgOwnerAddr(
+        address _newOwnerdAddr,
+        address _ownerdAddr,
         uint256 _nonce,
-        bytes calldata _signature
-    ) external _permit(_ownerId, _passwdAddr, _nonce, _signature) {
-        ownerId = _newOwnerId;
-        emit ChgOwnerId(_newOwnerId);
-    }
-
-    function chgPasswdAddr(
-        address _newPasswdAddr,
-        uint256 _ownerId,
-        address _passwdAddr,
-        uint256 _nonce,
-        bytes calldata _signature
-    ) external _permit(_ownerId, _passwdAddr, _nonce, _signature) {
-        passwdAddr = _newPasswdAddr;
-        emit ChgPasswdAddr(_newPasswdAddr);
+        bytes memory _signature
+    ) external _permit(_ownerdAddr, _nonce, _signature) {
+        ownerAddr = _newOwnerdAddr;
+        emit ChgOwnerAddr(_newOwnerdAddr);
     }
 
     modifier _checkTo(address to) {
@@ -128,17 +114,11 @@ contract Account is EIP712, Nonces {
     function transferETH(
         address to,
         uint256 amount,
-        uint256 _ownerId,
-        address _passwdAddr,
+        address _ownerAddr,
         uint256 _nonce,
-        bytes calldata _signature
-    )
-        external
-        payable
-        _permit(_ownerId, _passwdAddr, _nonce, _signature)
-        _checkTo(to)
-    {
-        require(amount <= address(this).balance, "balance is not enough!");
+        bytes memory _signature
+    ) external payable _permit(_ownerAddr, _nonce, _signature) _checkTo(to) {
+        require(amount <= address(this).balance, "ETH balance is not enough!");
         (bool success, ) = to.call{value: amount}("");
         require(success, "transferETH failed.");
         emit TransferETH(to, amount);
@@ -151,11 +131,10 @@ contract Account is EIP712, Nonces {
         address token,
         address to,
         uint256 amount,
-        uint256 _ownerId,
-        address _passwdAddr,
+        address _ownerAddr,
         uint256 _nonce,
-        bytes calldata _signature
-    ) external _permit(_ownerId, _passwdAddr, _nonce, _signature) _checkTo(to) {
+        bytes memory _signature
+    ) external _permit(_ownerAddr, _nonce, _signature) _checkTo(to) {
         require(
             amount <= IERC20(token).balanceOf(address(this)),
             "token balance is not enough!"
@@ -168,15 +147,10 @@ contract Account is EIP712, Nonces {
         address token,
         address spender,
         uint256 amount,
-        uint256 _ownerId,
-        address _passwdAddr,
+        address _ownerAddr,
         uint256 _nonce,
-        bytes calldata _signature
-    )
-        external
-        _permit(_ownerId, _passwdAddr, _nonce, _signature)
-        _checkTo(spender)
-    {
+        bytes memory _signature
+    ) external _permit(_ownerAddr, _nonce, _signature) _checkTo(spender) {
         IERC20(token).approve(spender, amount);
     }
 }

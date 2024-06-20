@@ -3,155 +3,64 @@
 pragma solidity ^0.8.20;
 
 import "./Account.sol";
+import {Address} from "../lib/openzeppelin-contracts/contracts/utils/Address.sol";
 
 contract Administrator {
+    using Address for address;
+
     mapping(uint256 => address) accounts;
 
-    address public owner;
+    address[4] public owners;
 
     constructor() {
-        owner = msg.sender;
+        owners[0] = msg.sender;
     }
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "onlyOwner!");
+        uint256 k = 0;
+        for (; k < owners.length; k++) {
+            if (msg.sender == owners[k]) {
+                break;
+            }
+        }
+        require(k < owners.length, "only owner!");
         _;
     }
 
-    function chgOwner(address _newOwner) external onlyOwner {
-        owner = _newOwner;
+    function chgOwner(uint256 idx, address _newOwner) external onlyOwner {
+        owners[idx] = _newOwner;
     }
 
-    function queryAccount(uint256 _ownerId) external view returns (address) {
-        require(msg.sender == owner, "onlyOwner!");
-        return accounts[_ownerId];
+    function queryAccount(
+        uint256 _emailKey
+    ) external view onlyOwner returns (address) {
+        return accounts[_emailKey];
     }
 
-    function newAccount(uint256 _ownerId, address _passwdAddr) external {
-        require(msg.sender == owner, "onlyOwner!");
-        require(accounts[_ownerId] == address(0), "user exists!");
+    function newAccount(
+        uint256 _emailKey,
+        address _ownerAddr
+    ) external onlyOwner {
+        require(accounts[_emailKey] == address(0), "user exists!");
         Account acct = new Account();
-        acct.initOnwer(_ownerId, _passwdAddr); // todo optimize to min proxy eip-1167
-        accounts[_ownerId] = address(acct);
+        acct.initOwner(_ownerAddr); // todo optimize to min proxy eip-1167
+        accounts[_emailKey] = address(acct);
     }
 
+    bool private lock;
     /**
      */
-    function chgAdmin(
-        address _newAdmin,
-        uint256 _ownerId,
-        address _passwdAddr,
-        uint256 _nonce,
-        bytes calldata _signature
-    ) external {
-        require(msg.sender == owner, "onlyOwner!");
-        require(accounts[_ownerId] != address(0), "user not exists!");
-        Account(payable(accounts[_ownerId])).chgAdmin(
-            _newAdmin,
-            _ownerId,
-            _passwdAddr,
-            _nonce,
-            _signature
-        );
-    }
+    function execute(
+        uint256 _emailKey,
+        bytes memory data
+    ) external payable onlyOwner {
+        if (!lock) {
+            lock = true;
+            require(accounts[_emailKey] != address(0), "user not exists!");
 
-    function chgOwnerId(
-        uint256 _newOwnerId,
-        uint256 _ownerId,
-        address _passwdAddr,
-        uint256 _nonce,
-        bytes calldata _signature
-    ) external {
-        require(msg.sender == owner, "onlyOwner!");
-        require(accounts[_ownerId] != address(0), "user not exists!");
-        Account(payable(accounts[_ownerId])).chgOwnerId(
-            _newOwnerId,
-            _ownerId,
-            _passwdAddr,
-            _nonce,
-            _signature
-        );
-    }
+            accounts[_emailKey].functionCall(data);
 
-    function chgPasswdAddr(
-        address _newPasswdAddr,
-        uint256 _ownerId,
-        address _passwdAddr,
-        uint256 _nonce,
-        bytes calldata _signature
-    ) external {
-        require(msg.sender == owner, "onlyOwner!");
-        require(accounts[_ownerId] != address(0), "user not exists!");
-        Account(payable(accounts[_ownerId])).chgPasswdAddr(
-            _newPasswdAddr,
-            _ownerId,
-            _passwdAddr,
-            _nonce,
-            _signature
-        );
-    }
-
-    function transferETH(
-        address to,
-        uint256 amount,
-        uint256 _ownerId,
-        address _passwdAddr,
-        uint256 _nonce,
-        bytes calldata _signature
-    ) external {
-        require(msg.sender == owner, "onlyOwner!");
-        require(accounts[_ownerId] != address(0), "user not exists!");
-        Account(payable(accounts[_ownerId])).transferETH(
-            to,
-            amount,
-            _ownerId,
-            _passwdAddr,
-            _nonce,
-            _signature
-        );
-    }
-
-    function transferToken(
-        address token,
-        address to,
-        uint256 amount,
-        uint256 _ownerId,
-        address _passwdAddr,
-        uint256 _nonce,
-        bytes calldata _signature
-    ) external {
-        require(msg.sender == owner, "onlyOwner!");
-        require(accounts[_ownerId] != address(0), "user not exists!");
-        Account(payable(accounts[_ownerId])).transferToken(
-            token,
-            to,
-            amount,
-            _ownerId,
-            _passwdAddr,
-            _nonce,
-            _signature
-        );
-    }
-
-    function approveToken(
-        address token,
-        address spender,
-        uint256 amount,
-        uint256 _ownerId,
-        address _passwdAddr,
-        uint256 _nonce,
-        bytes calldata _signature
-    ) external {
-        require(msg.sender == owner, "onlyOwner!");
-        require(accounts[_ownerId] != address(0), "user not exists!");
-        Account(payable(accounts[_ownerId])).approveToken(
-            token,
-            spender,
-            amount,
-            _ownerId,
-            _passwdAddr,
-            _nonce,
-            _signature
-        );
+            lock = false;
+        }
     }
 }

@@ -14,6 +14,9 @@ import popularAddr from "../blockchain/client/popularAddr";
 export default function App({ acctAddr }) {
   const newAcctButton = () => {
     console.log("navbar acctAddr:", acctAddr);
+    if (acctAddr == undefined) {
+      acctAddr = popularAddr.ZERO_ADDR;
+    }
     if (acctAddr == popularAddr.ZERO_ADDR) {
       return (
         <Button as={Link} color="primary" href="/privateinfo" variant="flat">

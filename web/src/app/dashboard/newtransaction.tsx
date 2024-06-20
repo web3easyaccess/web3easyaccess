@@ -1,9 +1,8 @@
 "use client";
 
 import {
-  getPrivateKey,
+  getOwnerAccount,
   PrivateInfoType,
-  getOwnerId,
 } from "../blockchain/client/keyTools";
 import { signAuth } from "../blockchain/client/signAuthTypedData";
 
@@ -74,9 +73,9 @@ export default function Page({
           required
         />
         <input
-          id="id_newtrans_ownerId"
+          id="id_newtrans_ownerAddr"
           style={{ display: "none" }}
-          name="ownerId"
+          name="ownerAddr"
           placeholder=""
           required
         />
@@ -136,20 +135,18 @@ function SendTransaction({ chainId, verifyingContract, email, currentNet }) {
     ).value;
     document.getElementById("id_newtrans_receiver_addr").value = receiver_addr;
 
-    let ownerId = getOwnerId(email);
-
-    document.getElementById("id_newtrans_ownerId").value = ownerId;
-
     let amount = document.getElementById("id_newtrans_amount_ui").value;
     document.getElementById("id_newtrans_amount").value = amount;
 
     let pin1 = document.getElementById("id_newtrans_pin_ui").value;
 
-    let privateKey = getPrivateKey({ email: email, pin: pin1 });
+    let ownerAccount = getOwnerAccount({ email: email, pin: pin1 });
+
+    document.getElementById("id_newtrans_ownerAddr").value =
+      ownerAccount.address;
 
     const sign = await signAuth(
-      ownerId,
-      privateKey,
+      ownerAccount,
       chainId,
       verifyingContract,
       currentNet

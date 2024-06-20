@@ -10,12 +10,12 @@ if (typeof currentRpcUrl === "undefined" || currentRpcUrl === undefined) {
   throw new Error("RpcUrl NOT DEFINED!");
 }
 
-const _adminAddr = process.env.ADMIN_ADDRESS;
+const _adminAddr = process.env.CHAIN_ADMIN_ADDRESS;
 if (typeof _adminAddr === "undefined" || _adminAddr === undefined) {
   //throw new Error("administratorAddress NOT DEFINEDx!");
 }
 
-const currentPrivateKey = process.env.PRIVATE_KEY;
+const currentPrivateKey = process.env.CHAIN_PRIVATE_KEY;
 if (
   typeof currentPrivateKey === "undefined" ||
   currentPrivateKey === undefined

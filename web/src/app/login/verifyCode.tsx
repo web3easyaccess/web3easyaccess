@@ -5,11 +5,6 @@ import { useFormState, useFormStatus } from "react-dom";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import Passwd from "./passwd";
-import {
-  getPrivateKey,
-  getOwnerId,
-  PrivateInfoType,
-} from "../blockchain/client/keyTools";
 
 /*
 email verify code for new user;

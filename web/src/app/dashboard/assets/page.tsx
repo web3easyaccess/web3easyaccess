@@ -6,7 +6,7 @@ import { queryAssets } from "@/app/blockchain/server/queryAccountInfo";
 
 export default async function Page() {
   const selectedMenu = "assets";
-  const acctId = myCookies.getAccountId();
+  const acctId = myCookies.loadData().accountId;
   const assets = await queryAssets(acctId);
   return <Main selectedMenu={selectedMenu} assets={assets}></Main>;
 }

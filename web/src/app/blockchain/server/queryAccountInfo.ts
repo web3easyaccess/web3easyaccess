@@ -21,7 +21,7 @@ import {
   adminAddr,
 } from "./chainClientOnServer";
 
-import abi from "./abi/administratorAbi";
+import abi from "./abi/abis";
 
 export async function queryLatestBlockNumber() {
   const blockNumber = await publicClient.getBlockNumber();
@@ -34,6 +34,9 @@ export async function queryBlock(blockNumber: bigint) {
 }
 
 export async function queryEthBalance(addr: string) {
+  if (addr == undefined || addr == popularAddr.ZERO_ADDR) {
+    return "0.0";
+  }
   // const blockNumber = await client.getBlockNumber();
   var addrWithout0x = addr;
   if (addr.substring(0, 2) == "0x" || addr.substring(0, 2) == "0X") {
@@ -55,6 +58,9 @@ export async function queryTransactions(addr: string) {
 }
 
 export async function queryAssets(addr: string) {
+  if (addr == undefined || addr == null) {
+    return [];
+  }
   const balance = await queryEthBalance(addr);
   const myETH = {
     token_address: "-",

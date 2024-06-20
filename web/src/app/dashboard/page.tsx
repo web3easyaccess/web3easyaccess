@@ -8,22 +8,22 @@ import { currentNet } from "../blockchain/server/myChain";
 import { getEthBalance } from "../lib/serverActions";
 
 export default async function Page({ selectedMenu, txList }) {
-  const acctAddr = myCookies.getAccountId().toString();
-  const ownerId = myCookies.getOwnerId();
-  const balance = getEthBalance(acctAddr);
+  const myData = myCookies.loadData();
   const email = myCookies.getEmail();
-  const assets = await queryAssets(acctAddr);
+  const balance = getEthBalance(myData.accountId);
+
+  const assets = await queryAssets(myData.accountId);
   const current_net = currentNet();
   return (
     <Dashboard
-      acctAddr={acctAddr}
-      ownerId={ownerId}
+      acctAddr={myData.accountId}
+      ownerAddr={myData.ownerAddr}
       balance={balance}
       selectedMenu={selectedMenu || "assets"}
       txList={txList}
       assets={assets}
       chainId={currentNet().id}
-      verifyingContract={acctAddr}
+      verifyingContract={myData.accountId}
       email={email}
       currentNet={current_net}
     ></Dashboard>

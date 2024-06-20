@@ -8,6 +8,8 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
+import { mnemonicToAccount } from "viem/accounts";
+
 import { walletClient } from "./chainClientInBrowser";
 
 import { type TypedData } from "viem";
@@ -24,8 +26,7 @@ const domain = {
 
 const types = {
   _permit: [
-    { name: "_ownerId", type: "uint256" },
-    { name: "_passwdAddr", type: "address" },
+    { name: "_ownerAddr", type: "address" },
     { name: "_nonce", type: "uint256" },
   ],
 };
@@ -37,13 +38,12 @@ function sleep() {
 // 需要修改   chainId 与 verifyingContract
 
 export const signAuth = async (
-  ownerId: string,
-  privateKey: `0x${string}`,
+  ownerAccount,
   chainId: string,
   verifyingContract: string,
   currentNet
 ) => {
-  const account = privateKeyToAccount(privateKey);
+  const account = ownerAccount; // privateKeyToAccount(privateKey);
   const nonce = BigInt(new Date().getTime());
 
   domain.chainId = Number(chainId);
@@ -57,15 +57,13 @@ export const signAuth = async (
     types,
     primaryType: "_permit",
     message: {
-      _ownerId: ownerId,
-      _passwdAddr: account.address,
+      _ownerAddr: account.address,
       _nonce: nonce,
     },
   });
 
   console.log("my-signature:", signature);
   return {
-    ownerId: ownerId,
     signature: signature,
     eoa: account.address,
     nonce: nonce.toString(),

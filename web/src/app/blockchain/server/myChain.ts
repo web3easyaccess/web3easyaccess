@@ -1,6 +1,6 @@
 import { defineChain } from "viem";
 
-const localChain = defineChain({
+const defaultAnvil = defineChain({
   id: 31337,
   name: "Local",
   nativeCurrency: {
@@ -51,9 +51,9 @@ const morphHoleskyTestnet = defineChain({
 });
 
 export const currentNet = () => {
-  if (process.env.MY_CHAIN == "LOCAL_CHAIN") {
-    return localChain;
-  } else if (process.env.MY_CHAIN == "MORPH_TEST_CHAIN") {
+  if (process.env.CHAIN_NAME == "DEFAULT_ANVIL_CHAIN") {
+    return defaultAnvil;
+  } else if (process.env.CHAIN_NAME == "MORPH_TEST_CHAIN") {
     return morphHoleskyTestnet;
   }
 }; // morphHoleskyTestnet;
