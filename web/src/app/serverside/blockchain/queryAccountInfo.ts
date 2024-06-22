@@ -1,6 +1,6 @@
 "use server";
 
-import popularAddr from "../client/popularAddr";
+import popularAddr from "../../dashboard/privateinfo/lib/popularAddr";
 
 import axios from "axios";
 import { Axios, AxiosResponse, AxiosError } from "axios";

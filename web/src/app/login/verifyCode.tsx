@@ -1,6 +1,6 @@
 "use client";
 
-import { verifyEmail } from "../lib/serverActions";
+import { verifyEmail } from "../serverside/serverActions";
 import { useFormState, useFormStatus } from "react-dom";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";

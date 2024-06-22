@@ -1,22 +1,30 @@
 "use client";
 
+import { getPasswdAccount, getOwnerId } from "./privateinfo/lib/keyTools";
+
+import { signAuth } from "./privateinfo/lib/signAuthTypedData";
+
 import {
-  getOwnerAccount,
-  PrivateInfoType,
-} from "../blockchain/client/keyTools";
-import { signAuth } from "../blockchain/client/signAuthTypedData";
+  keccak256,
+  encodePacked,
+  encodeAbiParameters,
+  parseAbiParameters,
+  parseEther,
+} from "viem";
 
 import React from "react";
 import { Input } from "@nextui-org/react";
 import { Button } from "@nextui-org/button";
 
-import Passwd from "../privateinfo/passwd2";
+import Passwd from "./privateinfo/passwd2";
 
 import { useFormState, useFormStatus } from "react-dom";
 
 import { useRouter } from "next/navigation";
 
-import { newTransaction } from "../lib/serverActions";
+import { newTransaction } from "../serverside/serverActions";
+
+import PrivateInfo from "./privateinfo";
 
 export default function Page({
   acctAddr,
@@ -26,7 +34,7 @@ export default function Page({
   currentNet,
 }) {
   const [resultMsg, dispatch] = useFormState(newTransaction, undefined);
-
+  console.log("email in newtransaction:", email);
   return (
     <div style={{ marginLeft: "100px" }}>
       <div className="w-full flex flex-col gap-4">
@@ -48,13 +56,7 @@ export default function Page({
             placeholder="Enter your Amount"
           />
         </div>
-        <div className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4">
-          <Passwd
-            id="id_newtrans_pin_ui"
-            label="pin code"
-            hint="input your pin code"
-          />
-        </div>
+        <PrivateInfo forSigning={true}></PrivateInfo>
       </div>
 
       <form action={dispatch}>
@@ -73,12 +75,20 @@ export default function Page({
           required
         />
         <input
-          id="id_newtrans_ownerAddr"
+          id="id_newtrans_owner_id"
           style={{ display: "none" }}
-          name="ownerAddr"
+          name="owner_id"
           placeholder=""
           required
         />
+        <input
+          id="id_newtrans_passwd_addr"
+          style={{ display: "none" }}
+          name="passwd_addr"
+          placeholder=""
+          required
+        />
+
         <input
           id="id_newtrans_signature"
           style={{ display: "none" }}
@@ -86,13 +96,7 @@ export default function Page({
           placeholder=""
           required
         />
-        <input
-          id="id_newtrans_passwdAddr"
-          style={{ display: "none" }}
-          name="passwdAddr"
-          placeholder=""
-          required
-        />
+
         <input
           id="id_newtrans_nonce"
           style={{ display: "none" }}
@@ -138,22 +142,50 @@ function SendTransaction({ chainId, verifyingContract, email, currentNet }) {
     let amount = document.getElementById("id_newtrans_amount_ui").value;
     document.getElementById("id_newtrans_amount").value = amount;
 
-    let pin1 = document.getElementById("id_newtrans_pin_ui").value;
+    let pin1 = document.getElementById("id_private_pin_1").value;
+    let question1_answer_1 = document.getElementById(
+      "id_private_question1_answer_1"
+    ).value;
+    let question2_answer_1 = document.getElementById(
+      "id_private_question2_answer_1"
+    ).value;
+    let question3_answer_1 = document.getElementById(
+      "id_private_question3_answer_1"
+    ).value;
 
-    let ownerAccount = getOwnerAccount({ email: email, pin: pin1 });
+    let passwdAccount = getPasswdAccount({
+      email: email,
+      pin: pin1,
+      question1answer: question1_answer_1,
+      question2answer: question2_answer_1,
+      question3answer: question3_answer_1,
+    });
+    let ownerId = getOwnerId(email);
 
-    document.getElementById("id_newtrans_ownerAddr").value =
-      ownerAccount.address;
+    // keccak256(abi.encode(...));
+    console.log("encodeAbiParameters1111:", receiver_addr, amount);
+    let argumentsHash = encodeAbiParameters(
+      [
+        { name: "to", type: "address" },
+        { name: "amount", type: "uint256" },
+      ],
+      [receiver_addr, parseEther(amount)]
+    );
+    console.log("encodeAbiParameters2222:", argumentsHash);
+    argumentsHash = keccak256(argumentsHash);
+    console.log("encodeAbiParameters3333:", argumentsHash);
 
     const sign = await signAuth(
-      ownerAccount,
+      passwdAccount,
       chainId,
       verifyingContract,
-      currentNet
+      currentNet,
+      argumentsHash // "0xE249dfD432B37872C40c0511cC5A3aE13906F77A0511cC5A3aE13906F77AAA11" // argumentsHash
     );
     // signature: signature, eoa: eoa, nonce: nonce.toString()
+    document.getElementById("id_newtrans_owner_id").value = ownerId;
     document.getElementById("id_newtrans_signature").value = sign.signature;
-    document.getElementById("id_newtrans_passwdAddr").value = sign.eoa;
+    document.getElementById("id_newtrans_passwd_addr").value = sign.eoa;
     document.getElementById("id_newtrans_nonce").value = sign.nonce;
   };
 

@@ -1,15 +1,15 @@
 "use server";
 
-import myCookies from "../lib/myCookies";
-import { queryAssets } from "@/app/blockchain/server/queryAccountInfo";
+import myCookies from "../serverside/myCookies";
+import { queryAssets } from "../serverside/blockchain/queryAccountInfo";
 import Dashboard from "./dashboard";
-import { currentNet } from "../blockchain/server/myChain";
+import { currentNet } from "../serverside/blockchain/myChain";
 
-import { getEthBalance } from "../lib/serverActions";
+import { getEthBalance } from "../serverside/serverActions";
 
 export default async function Page({ selectedMenu, txList }) {
   const myData = myCookies.loadData();
-  const email = myCookies.getEmail();
+  const email = myData.email;
   const balance = getEthBalance(myData.accountId);
 
   const assets = await queryAssets(myData.accountId);

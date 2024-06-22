@@ -9,4 +9,12 @@ const execute = admin.abi.filter((e) => e.name == "execute");
 
 const transferETH = account.abi.filter((e) => e.name == "transferETH");
 
-export default { queryAccount, newAccount, execute, transferETH };
+const chgPasswdAddr = account.abi.filter((e) => e.name == "chgPasswdAddr");
+
+export default {
+  queryAccount,
+  newAccount,
+  execute,
+  transferETH,
+  chgPasswdAddr,
+};

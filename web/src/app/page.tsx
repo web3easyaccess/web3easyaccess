@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 
 import { cookies } from "next/headers";
 
-import { getSession } from "./lib/session";
+import { getSession } from "./serverside/session";
 
 export default function Home() {
   // Logic to determine if a redirect is needed

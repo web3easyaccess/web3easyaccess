@@ -49,19 +49,19 @@ contract Administrator {
     // }
 
     function queryAccount(
-        uint256 _emailKey
+        uint256 _ownerId
     ) external view onlyOwner returns (address) {
-        return accounts[_emailKey];
+        return accounts[_ownerId];
     }
 
     function newAccount(
-        uint256 _emailKey,
-        address _ownerAddr
+        uint256 _ownerId,
+        address _passwdAddr
     ) external onlyOwner {
-        require(accounts[_emailKey] == address(0), "user exists!");
+        require(accounts[_ownerId] == address(0), "user exists!");
         Account acct = new Account();
-        acct.initOwner(_ownerAddr); // todo optimize to min proxy eip-1167
-        accounts[_emailKey] = address(acct);
+        acct.initPasswdAddr(_passwdAddr); // todo optimize to min proxy eip-1167
+        accounts[_ownerId] = address(acct);
 
         point.mint(address(acct), NEW_REWARDS);
     }
@@ -70,15 +70,15 @@ contract Administrator {
     /**
      */
     function execute(
-        uint256 _emailKey,
+        uint256 _ownerId,
         bytes memory data
     ) external payable onlyOwner {
         if (!lock) {
             lock = true;
-            require(accounts[_emailKey] != address(0), "user not exists!");
+            require(accounts[_ownerId] != address(0), "user not exists!");
 
-            accounts[_emailKey].functionCall(data);
-            point.mint(accounts[_emailKey], TRANS_REWARDS);
+            accounts[_ownerId].functionCall(data);
+            point.mint(accounts[_ownerId], TRANS_REWARDS);
             lock = false;
         }
     }

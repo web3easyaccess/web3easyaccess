@@ -10,11 +10,13 @@ import {
   queryAccount,
   newAccount,
   transferETH,
-} from "../blockchain/server/callAdmin";
+  chgPasswdAddr,
+} from "../serverside/blockchain/callAdmin";
 
-import { queryEthBalance } from "../blockchain/server/queryAccountInfo";
+import { queryEthBalance } from "../serverside/blockchain/queryAccountInfo";
 
-import popularAddr from "../blockchain/client/popularAddr";
+import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
+
 import { parseEther } from "viem";
 
 const verifyCode = {};
@@ -60,13 +62,11 @@ export async function verifyEmail(_currentState: unknown, formData: FormData) {
 
     delete verifyCode[email];
 
-    myCookies.setEmail(email);
-
     let md = myCookies.flushData(email);
 
     // update accountId from chain, and loadData again.
-    const emailKey = myCookies.loadData().emailKey;
-    const accountId = await queryAccount(emailKey);
+    const ownerId = myCookies.loadData().ownerId;
+    const accountId = await queryAccount(ownerId);
     myCookies.setAccountId(accountId);
     md = myCookies.loadData();
 
@@ -95,22 +95,21 @@ export async function createAccount(
   _currentState: unknown,
   formData: FormData
 ) {
-  const signature = formData.get("signature"); // didn't used at here.
-  const ownerAddr = formData.get("ownerAddr");
-  const nonce = formData.get("nonce");
-  const emailKey = myCookies.loadData().emailKey;
-  var accountId = await queryAccount(emailKey);
+  const ownerId = formData.get("ownerId");
+  const passwdAddr = formData.get("passwd_addr");
+
+  var accountId = await queryAccount(ownerId);
 
   console.log("createAccount. accountId before create:", accountId);
 
   if (accountId.toString() == popularAddr.ZERO_ADDR) {
     // create new account
-    await newAccount(emailKey, ownerAddr);
+    await newAccount(ownerId, passwdAddr);
 
-    while (true) {
-      accountId = await queryAccount(emailKey);
+    for (let kk = 0; kk < 600; kk++) {
+      accountId = await queryAccount(ownerId);
       if (accountId.toString() == popularAddr.ZERO_ADDR) {
-        console.log("waiting for creating new account...");
+        console.log("waiting for creating new account...", kk);
         await sleep(1000);
       } else {
         console.log("created new account:", accountId);
@@ -121,9 +120,8 @@ export async function createAccount(
   }
   myCookies.setAccountId(accountId.toString());
 
-  console.log("createAccount, demo signature:", signature);
-  console.log("createAccount, emailKey:", emailKey);
-  console.log("createAccount, ownerAddr:", ownerAddr);
+  console.log("createAccount, ownerId:", ownerId);
+  console.log("createAccount, ownerAddr:", passwdAddr);
 
   redirectTo.urlDashboard();
 }
@@ -156,24 +154,59 @@ export async function newTransaction(
 ) {
   try {
     const receiverAddr = formData.get("receiver_addr");
-    console.log("receiverAddr:", receiverAddr);
+    console.log("newTransaction-receiverAddr:", receiverAddr);
     const amount = formData.get("amount");
-    console.log("amount:", amount);
+    console.log("newTransaction-amount:", amount);
 
-    const ownerAddr = formData.get("ownerAddr");
-    console.log("newTransaction, ownerAddr:", ownerAddr);
+    const passwdAddr = formData.get("passwd_addr");
+    console.log("newTransaction-passwdAddr:", passwdAddr);
     const nonce = formData.get("nonce");
     const signature = formData.get("signature");
     const inputData = formData.get("input_data");
-    console.log("inputData:", inputData);
+    console.log("newTransaction-inputData:", inputData);
 
-    const emailKey = myCookies.loadData().emailKey;
+    const ownerId = formData.get("owner_id");
 
     await transferETH(
-      emailKey,
+      ownerId,
       `0x${receiverAddr.substring(2)}`,
       parseEther(amount),
-      `0x${ownerAddr.substring(2)}`,
+      `0x${passwdAddr.substring(2)}`,
+      BigInt(nonce),
+      `0x${signature.substring(2)}`
+    );
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function chgPrivateInfo(
+  _currentState: unknown,
+  formData: FormData
+) {
+  try {
+    const newPasswdAddr = formData.get("passwd_addr");
+    console.log("chgPrivateInfo-newPasswdAddr:", newPasswdAddr);
+
+    const oldPasswdAddr = formData.get("old_passwd_addr");
+    console.log("chgPrivateInfo-oldPasswdAddr:", oldPasswdAddr);
+    const nonce = formData.get("nonce");
+    console.log("chgPrivateInfo-nonce:", nonce);
+    const signature = formData.get("signature");
+    console.log("chgPrivateInfo-signature:", signature);
+    if (!signature || signature == undefined || signature == "") {
+      console.log("chgPrivateInfo-signature, invalid submit!");
+      return;
+    }
+    const inputData = formData.get("input_data");
+    console.log("chgPrivateInfo-inputData:", inputData);
+    const ownerId = formData.get("owner_id");
+    console.log("chgPrivateInfo-ownerId:", ownerId);
+
+    await chgPasswdAddr(
+      ownerId,
+      `0x${newPasswdAddr.substring(2)}`,
+      `0x${oldPasswdAddr.substring(2)}`,
       BigInt(nonce),
       `0x${signature.substring(2)}`
     );
@@ -185,21 +218,6 @@ export async function newTransaction(
 async function signIn(cd, formData) {
   console.log("signIn:", cd, formData);
   return true;
-}
-
-function encrypt(d) {
-  return d;
-}
-
-export async function handleLogin(sessionData) {
-  const encryptedSessionData = encrypt(sessionData); // Encrypt your session data
-  cookies().set("session", encryptedSessionData, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24 * 7, // One week
-    path: "/",
-  });
-  // Redirect or handle the response after setting the cookie
 }
 
 function generateRandomSixDigitInteger() {

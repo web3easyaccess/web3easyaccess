@@ -1,6 +1,6 @@
 "use server";
 
-import popularAddr from "../client/popularAddr";
+import popularAddr from "../../dashboard/privateinfo/lib/popularAddr";
 
 import {
   getContract,
@@ -48,16 +48,18 @@ export async function queryAccount(ownerAddr: `0x${string}`) {
 }
 
 export async function newAccount(
-  emailKey: `0x${string}`,
-  ownerAddr: `0x${string}`
+  ownerId: `0x${string}`,
+  passwdAddr: `0x${string}`
 ) {
-  console.log(`newAccount called ... ownerId= ${ownerAddr}`);
+  console.log(
+    `newAccount called ... ownerId= ${ownerId}, passwdAddr=${passwdAddr}`
+  );
   var newAccountData;
   try {
     newAccountData = encodeFunctionData({
       abi: abis.newAccount,
       functionName: "newAccount",
-      args: [emailKey, ownerAddr],
+      args: [ownerId, passwdAddr],
     });
 
     const hash = await walletClient.sendTransaction({
@@ -76,43 +78,75 @@ export async function newAccount(
 }
 
 export async function transferETH(
-  emailKey: `0x${string}`,
+  ownerId: `0x${string}`,
   to: `0x${string}`,
   amount: bigint,
-  ownerAddr: `0x${string}`,
+  passwdAddr: `0x${string}`,
   nonce: bigint,
   signature: `0x${string}`
 ) {
-  console.log(`transferETH called ... ownerId= ${ownerAddr}, amount=${amount}`);
+  console.log(`transferETH called ... ownerId= ${ownerId}, amount=${amount}`);
   var callAccountData;
 
   try {
     callAccountData = encodeFunctionData({
       abi: abis.transferETH,
       functionName: "transferETH",
-      args: [to, amount, ownerAddr, nonce, signature],
+      args: [to, amount, passwdAddr, nonce, signature],
     });
 
     console.log("transferETH , _execute");
-    const hash = await _execute(emailKey, callAccountData);
+    const hash = await _execute(ownerId, callAccountData);
 
     console.log(`transferETH finished, transHash=${hash}`);
     return hash;
   } catch (e) {
-    console.log("transferETH error:ownerAddr=" + ownerAddr + ":", e);
+    console.log("transferETH error:passwdAddr=" + passwdAddr + ":", e);
+    return popularAddr.ZERO_ADDRError;
+  }
+}
+
+export async function chgPasswdAddr(
+  ownerId: `0x${string}`,
+  newPasswdAddr: `0x${string}`,
+  passwdAddr: `0x${string}`,
+  nonce: bigint,
+  signature: `0x${string}`
+) {
+  console.log(
+    `chgPasswdAddr called ... ownerId= ${ownerId}, newPasswdAddr=${newPasswdAddr}`
+  );
+  var callAccountData;
+
+  try {
+    callAccountData = encodeFunctionData({
+      abi: abis.chgPasswdAddr,
+      functionName: "chgPasswdAddr",
+      args: [newPasswdAddr, passwdAddr, nonce, signature],
+    });
+
+    console.log("chgPasswdAddr , _execute");
+    const hash = await _execute(ownerId, callAccountData);
+
+    console.log(`chgPasswdAddr finished, transHash=${hash}`);
+    return hash;
+  } catch (e) {
+    console.log("chgPasswdAddr error:passwdAddr=" + passwdAddr + ":", e);
     return popularAddr.ZERO_ADDRError;
   }
 }
 
 async function _execute(
-  emailKey: `0x${string}`,
+  ownerId: `0x${string}`,
   callAccountData: `0x${string}`
 ) {
-  console.log(`_execute callAccountData= ${callAccountData}`);
+  console.log(
+    `_execute ownerId=${ownerId}, callAccountData= ${callAccountData}`
+  );
   var callAdminData = encodeFunctionData({
     abi: abis.execute,
     functionName: "execute",
-    args: [emailKey, callAccountData],
+    args: [ownerId, callAccountData],
   });
 
   console.log(`_execute callAdminData= ${callAdminData}`);

@@ -1,11 +1,21 @@
 import { cookies } from "next/headers";
 import { keccak256, toHex } from "viem";
-import popularAddr from "../blockchain/client/popularAddr";
+import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
+import redirectTo from "./redirectTo";
+import { getOwnerId } from "../dashboard/privateinfo/lib/keyTools";
 
 export type CookieData = {
-  emailKey: string;
+  ownerId: string;
+  email: string;
   emailDisplay: string;
   accountId: string;
+};
+
+const DEFAULT_DATA: CookieData = {
+  ownerId: "",
+  email: "",
+  emailDisplay: "",
+  accountId: popularAddr.ZERO_ADDR,
 };
 
 const COOKIE_KEY = "w3ea_data";
@@ -13,15 +23,15 @@ const MAX_AGE = 30 * 60;
 
 // email in cookie must be dead in short time.
 const COOKIE_EMAIL_KEY = "email_in_minute";
-const MAX_AGE_EMAIL = 180;
+const MAX_AGE_EMAIL = 600;
 
 function cookieIsValid() {
   let md = _parseData(cookies().get(COOKIE_KEY));
   if (
     md != null &&
     md != undefined &&
-    md.emailKey != null &&
-    md.emailKey != undefined
+    md.ownerId != null &&
+    md.ownerId != undefined
   ) {
     return true;
   } else {
@@ -29,17 +39,8 @@ function cookieIsValid() {
   }
 }
 
-function getEmail() {
-  let email = _parseEmail(cookies().get(COOKIE_EMAIL_KEY));
-  return email;
-}
-
-function setEmail(email: string) {
-  cookies().set(COOKIE_EMAIL_KEY, email, { maxAge: MAX_AGE_EMAIL });
-}
-
 function loadData() {
-  let md = _parseData(cookies().get(COOKIE_KEY));
+  let md: CookieData = _parseData(cookies().get(COOKIE_KEY));
   return md;
 }
 
@@ -54,13 +55,13 @@ function flushData(email: string) {
       emailDisplay += "*";
     }
   }
-  let emailKey = keccak256(toHex(email)).toString();
-  emailKey = keccak256(toHex(email + emailKey)).toString();
+  let ownerId = getOwnerId(email);
 
   let md = _parseData(cookies().get(COOKIE_KEY));
 
-  if (md.emailKey != emailKey) {
-    md.emailKey = emailKey;
+  if (md.ownerId != ownerId) {
+    md.ownerId = ownerId;
+    md.email = email;
     md.emailDisplay = emailDisplay;
     md.accountId = popularAddr.ZERO_ADDR;
   }
@@ -85,7 +86,7 @@ function _parseData(c) {
   ) {
     return JSON.parse(c.value);
   } else {
-    return {};
+    return DEFAULT_DATA;
   }
 }
 
@@ -107,6 +108,4 @@ export default {
   flushData,
   loadData,
   setAccountId,
-  getEmail,
-  setEmail,
 };

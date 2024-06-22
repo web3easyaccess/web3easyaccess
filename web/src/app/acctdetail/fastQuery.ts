@@ -1,10 +1,7 @@
 import { getTransactionHashs, getMaxBlockNumber } from "./db/acctIndex";
 import { Transaction, AcctIndex } from "./types";
 
-import {
-    queryAccount,
-    newAccount,
-  } from "../blockchain/server/callAdmin";
+
 
   import {
     queryEthBalance,

@@ -21,15 +21,24 @@ function urlDashboard() {
 }
 
 function urlPrivateinfo() {
-  redirect("/privateinfo");
+  redirect("/dashboard/privateinfo");
 }
 
 function urlLogin() {
   redirect("/login");
 }
 
+function urlLoggedInCheck() {
+  const dd = myCookies.loadData(); // || "abc@def.com";
+  if (!dd.ownerId || dd.ownerId == "") {
+    console.log("urlLoggedInCheck, redirect to login");
+    redirect("/login");
+  }
+}
+
 export default {
   urlDashboard,
   urlPrivateinfo,
   urlLogin,
+  urlLoggedInCheck,
 };

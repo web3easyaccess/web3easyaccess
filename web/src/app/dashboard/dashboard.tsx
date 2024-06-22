@@ -41,6 +41,7 @@ export default function Home({
 
   // const [selectedMenu, setSelectedMenu] = useState("assets");
   // const selectedMenuState = useState("transactions"); // transactions
+  console.log("dashborad,acctAddr:", acctAddr);
 
   return (
     <>

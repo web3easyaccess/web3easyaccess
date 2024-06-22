@@ -8,6 +8,7 @@ import { Accordion, AccordionItem, Avatar, Link } from "@nextui-org/react";
 import Assets from "./assets";
 import Transactions from "./transactions";
 import NewTransactions from "./newtransaction";
+import PrivateInfo from "./privateinfo";
 
 export default function OpMenu({ selectedMenu }) {
   console.log("selectedMenu ::::", selectedMenu);
@@ -39,7 +40,7 @@ export default function OpMenu({ selectedMenu }) {
           // aria-label="Chung Miller"
           startContent={<Link href="/dashboard/assets">assets</Link>}
           // subtitle="4 unread messages"
-          title="Assets"
+          title="^_^"
         >
           {defaultContent}
         </AccordionItem>
@@ -58,7 +59,7 @@ export default function OpMenu({ selectedMenu }) {
             <Link href="/dashboard/transactions">transactions</Link>
           }
           // subtitle="3 incompleted steps"
-          title="Transactions"
+          title="^_^"
         >
           {defaultContent}
         </AccordionItem>
@@ -70,7 +71,7 @@ export default function OpMenu({ selectedMenu }) {
           startContent={
             <Link href="/dashboard/newtransaction">new transaction</Link>
           }
-          title="NewTransactions"
+          title="^_^"
         >
           {defaultContent}
         </AccordionItem>
@@ -79,22 +80,8 @@ export default function OpMenu({ selectedMenu }) {
           key="4"
           indicator="-"
           onPress={(event) => handlePress(event)}
-          // aria-label="Zoey Lang"
-          startContent={
-            // <Avatar
-            //   isBordered
-            //   color="warning"
-            //   radius="lg"
-            //   src="/headshot/5.png"
-            // />
-            <Link href="/dashboard/chgpasswd">chg passwordd</Link>
-          }
-          //   subtitle={
-          //     <p className="flex">
-          //       2 issues to<span className="text-primary ml-1">fix now</span>
-          //     </p>
-          //   }
-          title="ChgPassword"
+          startContent={<Link href="/dashboard/privateinfo">private info</Link>}
+          title="^_^"
         >
           {defaultContent}
         </AccordionItem>
@@ -113,7 +100,7 @@ export function ShowMain({
   email,
   currentNet,
 }) {
-  console.log("selectedMenu11111111100:", selectedMenu);
+  console.log("selectedMenu11111111100:", selectedMenu, "acctAddr:", acctAddr);
   const mn = selectedMenu.toLowerCase();
   if (mn.indexOf("assets") >= 0) {
     console.log("selectedMenu11111111111:", selectedMenu);
@@ -122,7 +109,7 @@ export function ShowMain({
     console.log("selectedMenu11111111122:", selectedMenu);
     return <Transactions txList={txList} acctAddr={acctAddr} />;
   } else if (mn.indexOf("trans") >= 0 && mn.indexOf("new") >= 0) {
-    console.log("selectedMenu11111111123:", selectedMenu);
+    console.log("selectedMenu11111111133:", selectedMenu);
     return (
       <NewTransactions
         acctAddr={acctAddr}
@@ -130,6 +117,18 @@ export function ShowMain({
         verifyingContract={verifyingContract}
         email={email}
         currentNet={currentNet}
+      />
+    );
+  } else if (mn.indexOf("private") >= 0) {
+    console.log("selectedMenu11111111144:", selectedMenu);
+    return (
+      <PrivateInfo
+        chainId={chainId}
+        verifyingContract={verifyingContract}
+        email={email}
+        currentNet={currentNet}
+        forSigning={false}
+        acctAddr={acctAddr}
       />
     );
   }

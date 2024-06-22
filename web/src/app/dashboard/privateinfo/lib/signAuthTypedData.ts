@@ -26,8 +26,9 @@ const domain = {
 
 const types = {
   _permit: [
-    { name: "_ownerAddr", type: "address" },
+    { name: "_passwdAddr", type: "address" },
     { name: "_nonce", type: "uint256" },
+    { name: "_argumentsHash", type: "bytes32" },
   ],
 };
 
@@ -38,12 +39,13 @@ function sleep() {
 // 需要修改   chainId 与 verifyingContract
 
 export const signAuth = async (
-  ownerAccount,
+  passwdAccount,
   chainId: string,
   verifyingContract: string,
-  currentNet
+  currentNet,
+  argumentsHash: `0x${string}` // keccak256(abi.encode(...))
 ) => {
-  const account = ownerAccount; // privateKeyToAccount(privateKey);
+  const account = passwdAccount; // privateKeyToAccount(privateKey);
   const nonce = BigInt(new Date().getTime());
 
   domain.chainId = Number(chainId);
@@ -57,17 +59,19 @@ export const signAuth = async (
     types,
     primaryType: "_permit",
     message: {
-      _ownerAddr: account.address,
+      _passwdAddr: account.address,
       _nonce: nonce,
+      _argumentsHash: argumentsHash,
     },
   });
 
-  console.log("my-signature:", signature);
-  return {
+  const rtn = {
     signature: signature,
     eoa: account.address,
     nonce: nonce.toString(),
   };
+  console.log("my-signature:", rtn);
+  return rtn;
 };
 
 // signAuth("0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80");

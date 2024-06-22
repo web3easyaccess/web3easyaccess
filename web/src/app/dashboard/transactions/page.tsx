@@ -1,8 +1,8 @@
 "use server";
 import Main from "../page";
 
-import myCookies from "../../lib/myCookies";
-import { queryTransactions } from "@/app/blockchain/server/queryAccountInfo";
+import myCookies from "../../serverside/myCookies";
+import { queryTransactions } from "../../serverside/blockchain/queryAccountInfo";
 
 export default async function Page() {
   const selectedMenu = "transactions";

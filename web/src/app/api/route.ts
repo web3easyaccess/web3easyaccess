@@ -1,4 +1,4 @@
-import { getSession } from "../lib/session";
+import { getSession } from "../serverside/session";
 
 export async function GET() {
   // User authentication and role verification

@@ -9,7 +9,7 @@ import {
 } from "@nextui-org/react";
 import { MyLogo } from "./myLogo";
 
-import popularAddr from "../blockchain/client/popularAddr";
+import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
 
 export default function App({ acctAddr }) {
   const newAcctButton = () => {

@@ -6,7 +6,7 @@ import { Badge } from "@nextui-org/badge";
 import { Input } from "@nextui-org/input";
 import { User } from "@nextui-org/user";
 
-import myCookies from "../lib/myCookies";
+import myCookies from "../serverside/myCookies";
 
 import {
   Card,
@@ -17,22 +17,12 @@ import {
   Link,
   Image,
 } from "@nextui-org/react";
-import popularAddr from "../blockchain/client/popularAddr";
+import popularAddr from "./privateinfo/lib/popularAddr";
 
 // import { useSession } from "next-auth/react";
 // import { useRouter } from "next/router";
 
 export default function UserProfile({ acctAddr, ownerAddr, balance }) {
-  //   const { data: session } = useSession();
-  //   const router = useRouter();
-
-  //   const handleProfileClick = () => {
-  //     router.push("/profile");
-  //   };
-
-  //   if (!session) {
-  //     return null;
-  //   }l
   if (acctAddr == undefined) {
     acctAddr = popularAddr.ZERO_ADDR;
   }
