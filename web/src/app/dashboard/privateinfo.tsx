@@ -24,7 +24,7 @@ import {
   PrivateInfoType,
 } from "./privateinfo/lib/keyTools";
 import { signAuth } from "./privateinfo/lib/signAuthTypedData";
-import Navbar from "../navbar/navbar";
+
 import popularAddr from "./privateinfo/lib/popularAddr";
 
 /*

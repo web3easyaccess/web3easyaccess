@@ -22,7 +22,7 @@ import { chains } from "./chains";
 
 import CallServerByForm from "../callserver/callServerByForm";
 
-export default function App({ acctAddr, chainCode }) {
+export default function App({ chainCode }) {
   const [outputDataJson, setOutputDataJson] = useState("");
   const buttonRef = useRef(null);
   const triggerCallServer = () => {
@@ -39,19 +39,6 @@ export default function App({ acctAddr, chainCode }) {
     setTimeout(triggerCallServer, 500);
   };
 
-  const newAcctButton = () => {
-    console.log("navbar acctAddr:", acctAddr);
-    if (acctAddr == undefined) {
-      acctAddr = popularAddr.ZERO_ADDR;
-    }
-    if (acctAddr == popularAddr.ZERO_ADDR) {
-      return (
-        <Button as={Link} color="primary" href="/privateinfo" variant="flat">
-          Create new Account
-        </Button>
-      );
-    }
-  };
   // max-w-[30ch]
   return (
     <Navbar isBordered isBlurred={false} maxWidth="full">

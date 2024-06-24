@@ -47,7 +47,7 @@ export default function Home({
 
   return (
     <>
-      <Navbar acctAddr={acctAddr} chainCode={chainObj.chainCode}></Navbar>
+      <Navbar chainCode={chainObj.chainCode}></Navbar>
       <div style={{ display: "flex" }}>
         <div style={{ width: "200px" }}>
           <UserProfile
