@@ -42,7 +42,7 @@ export const signAuth = async (
   passwdAccount,
   chainId: string,
   verifyingContract: string,
-  currentNet,
+  chainObj,
   argumentsHash: `0x${string}` // keccak256(abi.encode(...))
 ) => {
   const account = passwdAccount; // privateKeyToAccount(privateKey);
@@ -53,7 +53,7 @@ export const signAuth = async (
 
   console.log("signAuth,domain:", domain);
 
-  const signature = await walletClient(currentNet).signTypedData({
+  const signature = await walletClient(chainObj).signTypedData({
     account,
     domain,
     types,

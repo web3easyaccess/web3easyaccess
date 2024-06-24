@@ -3,7 +3,7 @@
 import myCookies from "../serverside/myCookies";
 import { queryAssets } from "../serverside/blockchain/queryAccountInfo";
 import Dashboard from "./dashboard";
-import { currentNet } from "../serverside/blockchain/myChain";
+import { getChainObj } from "../serverside/blockchain/myChain";
 
 import { getEthBalance } from "../serverside/serverActions";
 
@@ -13,7 +13,8 @@ export default async function Page({ selectedMenu, txList }) {
   const balance = getEthBalance(myData.accountId);
 
   const assets = await queryAssets(myData.accountId);
-  const current_net = currentNet();
+  const current_obj = getChainObj();
+  console.log("dashboard:..net.:", current_obj);
   return (
     <Dashboard
       acctAddr={myData.accountId}
@@ -22,10 +23,10 @@ export default async function Page({ selectedMenu, txList }) {
       selectedMenu={selectedMenu || "assets"}
       txList={txList}
       assets={assets}
-      chainId={currentNet().id}
+      chainId={getChainObj().id}
       verifyingContract={myData.accountId}
       email={email}
-      currentNet={current_net}
+      chainObj={current_obj}
     ></Dashboard>
   );
 }

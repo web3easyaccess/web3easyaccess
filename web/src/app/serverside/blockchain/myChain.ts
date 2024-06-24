@@ -1,5 +1,7 @@
 import { defineChain } from "viem";
 
+import myCookies from "../myCookies";
+
 const defaultAnvil = defineChain({
   id: 31337,
   name: "Local",
@@ -50,15 +52,29 @@ const morphHoleskyTestnet = defineChain({
   },
 });
 
-export const currentNet = () => {
-  if (process.env.CHAIN_NAME == "DEFAULT_ANVIL_CHAIN") {
-    return defaultAnvil;
-  } else if (process.env.CHAIN_NAME == "MORPH_TEST_CHAIN") {
-    return morphHoleskyTestnet;
+export const setChainCode = (chainCode) => {
+  myCookies.setChainCode(chainCode);
+};
+
+export const getChainObj = () => {
+  var rtn = morphHoleskyTestnet;
+  if (myCookies.getChainCode() == "DEFAULT_ANVIL_CHAIN") {
+    rtn = defaultAnvil;
+  } else if (myCookies.getChainCode() == "MORPH_TEST_CHAIN") {
+    rtn = morphHoleskyTestnet;
   }
+  rtn.chainCode = myCookies.getChainCode();
+  console.log("current net:xxxx:,,:", rtn);
+  return rtn;
+
+  //   if (process.env.CHAIN_NAME == "DEFAULT_ANVIL_CHAIN") {
+  //     return defaultAnvil;
+  //   } else if (process.env.CHAIN_NAME == "MORPH_TEST_CHAIN") {
+  //     return morphHoleskyTestnet;
+  //   }
 }; // morphHoleskyTestnet;
 
 export function isMorphNet() {
-  return currentNet() === morphHoleskyTestnet;
+  return getChainObj() === morphHoleskyTestnet;
 }
-// export const currentNet = localChain;
+// export const getChainObj = localChain;

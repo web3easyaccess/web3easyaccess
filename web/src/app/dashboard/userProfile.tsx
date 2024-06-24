@@ -26,6 +26,7 @@ export default function UserProfile({ acctAddr, ownerAddr, balance }) {
   if (acctAddr == undefined) {
     acctAddr = popularAddr.ZERO_ADDR;
   }
+  //   acctAddr = "0x3d078713797d3a9B39a95681538A1A535C3Cd6f6";
 
   const acctAddrDisplay =
     acctAddr.substring(0, 6) + "...." + acctAddr.substring(acctAddr.length - 4);

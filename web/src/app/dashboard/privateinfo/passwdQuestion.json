@@ -3,17 +3,23 @@
     "1": [
       {
         "idx": "01",
-        "question": "我的出生地所属的城市的名称是什么?(不包含其上级名)"
+        "question": "What is the name of the city where I was born? (Does not include its parent name)"
       },
-      { "idx": "02", "question": "我出生时所在的医院的全称是什么?" },
+      {
+        "idx": "02",
+        "question": "What is the full name of the hospital where I was born?"
+      },
       {
         "idx": "03",
-        "question": "我出生的时间具体是几点几分?(比如,13点31分就写 13:31)"
+        "question": "What was the time of my birth? (for example, at 13:31)"
       },
-      { "idx": "04", "question": "我爸爸的全名是什么?" },
-      { "idx": "05", "question": "我妈妈的全名是什么?" },
-      { "idx": "06", "question": "我爸爸妈妈的全名分别是什么?(用逗号隔开)" },
-      { "idx": "07", "question": "我第一个孩子的全名是什么?" }
+      { "idx": "04", "question": "What's my dad's full name?" },
+      { "idx": "05", "question": "What's my mother's full name?" },
+      {
+        "idx": "06",
+        "question": "What are my parents' full names? (Separated by commas)"
+      },
+      { "idx": "07", "question": "What is the full name of my first child?" }
     ],
     "2": [
       { "idx": "01", "question": "小学阶段印象最深刻的老师的全名是什么?" },

@@ -36,7 +36,7 @@ export default function Page({
   chainId,
   verifyingContract,
   email,
-  currentNet,
+  chainObj,
   forSigning,
   acctAddr,
 }) {
@@ -61,7 +61,7 @@ export default function Page({
 
     if (isNewUser()) {
       return {
-        msg: "You Have Not Account! Please fill in your personal information to create an account.",
+        msg: "You Don't Have Any Account! Please fill in your personal information to create an account.",
         color: "danger",
       };
     } else {
@@ -77,19 +77,23 @@ export default function Page({
     undefined
   );
 
-  const haveAccount = () => {
-    // console.log("xxxxx:", acctAddr);
-    if (isNewUser()) {
-      return false;
-    } else {
-      return true;
-    }
-  };
-
   const myDispatch = (payload) => {
     setTimeout(() => {
       dispatch(payload);
     }, 2500); // wait 2 seconds. avoid signAuth hasn't finished.
+  };
+
+  const handlePinBlur = () => {
+    if (isNewUser()) {
+      // do for "pin 2"
+      let pin1 = document.getElementById("id_private_pin_1").value;
+      let pin2 = document.getElementById("id_private_pin_2").value;
+      console.log("Input lost focus,new user:", pin1, pin2);
+    } else {
+      let pin_old = document.getElementById("id_private_pin_old").value;
+      console.log("Input lost focus,old user:", pin_old);
+      // do for "old pin"
+    }
   };
 
   return (
@@ -145,13 +149,14 @@ export default function Page({
             marginBottom: "10px",
           }}
         ></Divider>
-        {haveAccount() ? (
+        {isNewUser() ? null : (
           <Passwd
             id="id_private_pin_old"
             label="old pin code"
             hint="input private old pin code"
+            onMyBlur={handlePinBlur}
           ></Passwd>
-        ) : null}
+        )}
         <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
           <Passwd
             id="id_private_pin_1"
@@ -163,6 +168,7 @@ export default function Page({
               id="id_private_pin_2"
               label="pin code"
               hint="input private pin code again"
+              onMyBlur={handlePinBlur}
             ></Passwd>
           ) : null}
         </div>
@@ -172,13 +178,13 @@ export default function Page({
             marginBottom: "10px",
           }}
         ></Divider>
-        {haveAccount() ? (
+        {isNewUser() ? null : (
           <Passwd
             id="id_private_question1_answer_old"
             label="first question's old answer"
             hint="input first question's old answer"
           ></Passwd>
-        ) : null}
+        )}
         <Autocomplete label="Choose the first question" className="max-w-2xl">
           {pq.questions[1].map((item) => (
             <AutocompleteItem key={item.idx} value={item.question}>
@@ -207,13 +213,13 @@ export default function Page({
             marginBottom: "10px",
           }}
         ></Divider>
-        {haveAccount() ? (
+        {isNewUser() ? null : (
           <Passwd
             id="id_private_question2_answer_old"
             label="second question's old answer"
             hint="input second question's old answer"
           ></Passwd>
-        ) : null}
+        )}
         <Autocomplete label="Choose the second question" className="max-w-2xl">
           {pq.questions[2].map((item) => (
             <AutocompleteItem key={item.idx} value={item.question}>
@@ -242,13 +248,13 @@ export default function Page({
             marginBottom: "10px",
           }}
         ></Divider>
-        {haveAccount() ? (
+        {isNewUser() ? null : (
           <Passwd
             id="id_private_question3_answer_old"
             label="third question's old answer"
             hint="input third question's old answer"
           ></Passwd>
-        ) : null}
+        )}
         <Autocomplete label="Choose the third question" className="max-w-2xl">
           {pq.questions[3].map((item) => (
             <AutocompleteItem key={item.idx} value={item.question}>
@@ -317,7 +323,7 @@ export default function Page({
               email={email}
               chainId={chainId}
               verifyingContract={verifyingContract}
-              currentNet={currentNet}
+              chainObj={chainObj}
               isNew={isNewUser()}
             />
           ) : null}
@@ -361,13 +367,7 @@ function checkInfo(
   }
 }
 
-function SubmitMessage({
-  email,
-  chainId,
-  verifyingContract,
-  currentNet,
-  isNew,
-}) {
+function SubmitMessage({ email, chainId, verifyingContract, chainObj, isNew }) {
   const { pending } = useFormStatus();
 
   const handleClick = async (event) => {
@@ -474,7 +474,7 @@ function SubmitMessage({
         oldPasswdAccount,
         chainId,
         verifyingContract,
-        currentNet,
+        chainObj,
         argumentsHash
       );
       document.getElementById("id_private_nonce").value = sign.nonce;

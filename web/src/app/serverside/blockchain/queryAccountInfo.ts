@@ -80,11 +80,16 @@ export async function queryAssets(addr: string) {
 
 async function _queryMorphTransactions(addr: string) {
   const url =
-    process.env.MORPH_EXPLORER_API_URL + "/addresses/" + addr + "/transactions";
+    process.env.MORPH_EXPLORER_API_URL +
+    "/addresses/" +
+    // "0x3d078713797d3a9B39a95681538A1A535C3Cd6f6" + //
+    addr +
+    "/transactions";
   console.log("query morph trans:", url);
   const url2 =
     process.env.MORPH_EXPLORER_API_URL +
     "/addresses/" +
+    // "0x3d078713797d3a9B39a95681538A1A535C3Cd6f6" +
     addr +
     "/internal-transactions";
   const resultData: {
@@ -143,8 +148,8 @@ async function _queryMorphTransactions(addr: string) {
       resultData.push(aRow);
     });
   } catch (error) {
-    console.error("222:", error);
-    throw error; // Or handle the error differently
+    console.error("_queryMorphTransactions url=" + url, error);
+    // throw error; // Or handle the error differently
   }
   return resultData;
 }
@@ -164,6 +169,7 @@ async function _queryMorphTokens(addr: string) {
   const url =
     process.env.MORPH_EXPLORER_API_URL +
     "/addresses/" +
+    // "0x3d078713797d3a9B39a95681538A1A535C3Cd6f6" + //
     addr +
     "/token-balances";
   console.log("_queryMorphTokens, query morph trans:", url);
@@ -189,8 +195,8 @@ async function _queryMorphTokens(addr: string) {
       resultData.push(aRow);
     });
   } catch (error) {
-    console.error("333:", error);
-    throw error; // Or handle the error differently
+    console.error("_queryMorphTokens error:url=" + url, error);
+    // throw error; // Or handle the error differently
   }
   return resultData;
 }

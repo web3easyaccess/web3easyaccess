@@ -21,9 +21,16 @@ const DEFAULT_DATA: CookieData = {
 const COOKIE_KEY = "w3ea_data";
 const MAX_AGE = 30 * 60;
 
-// email in cookie must be dead in short time.
-const COOKIE_EMAIL_KEY = "email_in_minute";
-const MAX_AGE_EMAIL = 600;
+const COOKIE_KEY_CHAIN = "w3ea_data_chain";
+
+function getChainCode() {
+  let cname = _parseString(cookies().get(COOKIE_KEY_CHAIN));
+  return cname;
+}
+
+function setChainCode(chainName: string) {
+  cookies().set(COOKIE_KEY_CHAIN, chainName, { maxAge: MAX_AGE });
+}
 
 function cookieIsValid() {
   let md = _parseData(cookies().get(COOKIE_KEY));
@@ -90,7 +97,7 @@ function _parseData(c) {
   }
 }
 
-function _parseEmail(c) {
+function _parseString(c) {
   if (
     c != undefined &&
     c?.value != undefined &&
@@ -99,7 +106,7 @@ function _parseEmail(c) {
   ) {
     return c.value;
   } else {
-    return null;
+    return "";
   }
 }
 
@@ -108,4 +115,6 @@ export default {
   flushData,
   loadData,
   setAccountId,
+  getChainCode,
+  setChainCode,
 };

@@ -1,7 +1,7 @@
 import React from "react";
 import { Input } from "@nextui-org/react";
 
-export default function App({ id, label, hint }) {
+export default function App({ id, label, hint, onMyBlur }) {
   const [isVisible, setIsVisible] = React.useState(false);
 
   const toggleVisibility = () => setIsVisible(!isVisible);
@@ -12,6 +12,7 @@ export default function App({ id, label, hint }) {
       id={id}
       variant="bordered"
       placeholder={hint}
+      onBlur={onMyBlur}
       endContent={
         <button
           className="focus:outline-none"

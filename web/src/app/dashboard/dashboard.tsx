@@ -32,7 +32,7 @@ export default function Home({
   chainId,
   verifyingContract,
   email,
-  currentNet,
+  chainObj,
 }) {
   // Logic to determine if a redirect is needed
   //   if (getSessionData(null)) {
@@ -42,10 +42,12 @@ export default function Home({
   // const [selectedMenu, setSelectedMenu] = useState("assets");
   // const selectedMenuState = useState("transactions"); // transactions
   console.log("dashborad,acctAddr:", acctAddr);
+  console.log("dashborad xxxx2,chainObj:", chainObj);
+  console.log("dashborad xxxx333,chainObj:", chainObj.chainCode);
 
   return (
     <>
-      <Navbar acctAddr={acctAddr}></Navbar>
+      <Navbar acctAddr={acctAddr} chainCode={chainObj.chainCode}></Navbar>
       <div style={{ display: "flex" }}>
         <div style={{ width: "200px" }}>
           <UserProfile
@@ -64,7 +66,7 @@ export default function Home({
             chainId={chainId}
             verifyingContract={verifyingContract}
             email={email}
-            currentNet={currentNet}
+            chainObj={chainObj}
           />
         </div>
       </div>

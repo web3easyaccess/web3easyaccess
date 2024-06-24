@@ -8,11 +8,10 @@ pragma solidity ^0.8.20;
 
 import {ECDSA} from "../lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
 import {EIP712} from "../lib/openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol";
-import {Nonces} from "../lib/openzeppelin-contracts/contracts/utils/Nonces.sol";
 
 import {IERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
-contract Account is EIP712, Nonces {
+contract Account is EIP712 {
     bytes32 internal constant PERMIT_TYPEHASH =
         keccak256(
             "_permit(address _passwdAddr,uint256 _nonce,bytes32 _argumentsHash)"
@@ -23,9 +22,14 @@ contract Account is EIP712, Nonces {
     uint256 private lastNonce;
 
     /**
-        gas fees that can be paid free of charge by the system.(ETH wei)
+        gas fees that can be paid free of charge by the system.(wei)
      */
     uint256 public gasFeeRights;
+
+    /**
+        password question's number, which was encrypted.
+     */
+    bytes32 public questionNos;
 
     event InitAccount(address passwdAddr, address admin);
     event ChgAdmin(address newAdmin);
@@ -57,10 +61,14 @@ contract Account is EIP712, Nonces {
         gasFeeRights += amount;
     }
 
-    function initPasswdAddr(address _passwdAddr) external {
+    function initPasswdAddr(
+        address _passwdAddr,
+        bytes32 _questionNos
+    ) external {
         onlyAdmin();
         if (passwdAddr == address(0)) {
             passwdAddr = _passwdAddr;
+            questionNos = _questionNos;
             emit InitAccount(_passwdAddr, msg.sender);
         }
     }
@@ -110,6 +118,7 @@ contract Account is EIP712, Nonces {
     */
     function chgPasswdAddr(
         address _newPasswdAddr,
+        bytes32 _newQuestionNos,
         address _passwdAddr,
         uint256 _nonce,
         bytes memory _signature
@@ -119,10 +128,11 @@ contract Account is EIP712, Nonces {
             _passwdAddr,
             _nonce,
             _signature,
-            keccak256(abi.encode(_newPasswdAddr))
+            keccak256(abi.encode(_newPasswdAddr, _newQuestionNos))
         )
     {
         passwdAddr = _newPasswdAddr;
+        questionNos = _newQuestionNos;
         emit ChgPasswdAddr(_newPasswdAddr);
     }
 

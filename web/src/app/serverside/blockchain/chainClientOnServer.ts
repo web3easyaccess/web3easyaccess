@@ -3,9 +3,9 @@ import { sepolia, mainnet, localhost } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { createWalletClient, custom } from "viem";
 
-import { currentNet } from "./myChain";
+import { getChainObj } from "./myChain";
 
-export const currentRpcUrl = currentNet().rpcUrls.default.http[0]; //process.env.RPC_URL;
+export const currentRpcUrl = getChainObj().rpcUrls.default.http[0]; //process.env.RPC_URL;
 if (typeof currentRpcUrl === "undefined" || currentRpcUrl === undefined) {
   throw new Error("RpcUrl NOT DEFINED!");
 }
@@ -31,12 +31,12 @@ export const publicClient = createPublicClient({
   batch: {
     multicall: true,
   },
-  chain: currentNet(),
+  chain: getChainObj(),
   transport: http(currentRpcUrl),
 });
 
 export const walletClient = createWalletClient({
-  chain: currentNet(),
+  chain: getChainObj(),
   transport: http(currentRpcUrl),
 });
 

@@ -11,5 +11,5 @@ export const AcmeLogo = () => (
 );
 
 export const MyLogo = () => (
-  <img src="/headshot/5.png" height="50" width="50"></img>
+  <img src="/chain/morphl2.png" height="48" width="48"></img>
 );

@@ -31,7 +31,7 @@ export default function Page({
   chainId,
   verifyingContract,
   email,
-  currentNet,
+  chainObj,
 }) {
   const [resultMsg, dispatch] = useFormState(newTransaction, undefined);
   console.log("email in newtransaction:", email);
@@ -113,7 +113,7 @@ export default function Page({
           chainId={chainId}
           verifyingContract={verifyingContract}
           email={email}
-          currentNet={currentNet}
+          chainObj={chainObj}
         />
       </form>
     </div>
@@ -124,7 +124,7 @@ function sleep(time) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
 
-function SendTransaction({ chainId, verifyingContract, email, currentNet }) {
+function SendTransaction({ chainId, verifyingContract, email, chainObj }) {
   const router = useRouter();
   const { pending } = useFormStatus();
 
@@ -179,7 +179,7 @@ function SendTransaction({ chainId, verifyingContract, email, currentNet }) {
       passwdAccount,
       chainId,
       verifyingContract,
-      currentNet,
+      chainObj,
       argumentsHash // "0xE249dfD432B37872C40c0511cC5A3aE13906F77A0511cC5A3aE13906F77AAA11" // argumentsHash
     );
     // signature: signature, eoa: eoa, nonce: nonce.toString()

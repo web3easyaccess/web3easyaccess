@@ -30,7 +30,7 @@ function urlLogin() {
 
 function urlLoggedInCheck() {
   const dd = myCookies.loadData(); // || "abc@def.com";
-  if (!dd.ownerId || dd.ownerId == "") {
+  if (!dd || !dd.ownerId || dd.ownerId == "") {
     console.log("urlLoggedInCheck, redirect to login");
     redirect("/login");
   }

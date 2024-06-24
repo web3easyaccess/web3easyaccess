@@ -17,9 +17,32 @@ import { queryEthBalance } from "../serverside/blockchain/queryAccountInfo";
 
 import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
 
+import { setChainCode } from "./blockchain/myChain";
+
 import { parseEther } from "viem";
 
+export async function saveChainName(
+  _currentState: unknown,
+  formData: FormData
+) {
+  const inputDataJson = formData.get("inputDataJson");
+  console.log("server saveChainName....inputDataJson:", inputDataJson);
+  const chainName = JSON.parse(inputDataJson).value;
+  setChainCode(chainName);
+  return JSON.stringify({ status: "success" });
+}
+
 const verifyCode = {};
+
+export async function test001(_currentState: unknown, formData: FormData) {
+  const inputDataJson = formData.get("inputDataJson");
+  console.log("inputDataJsonxxxx:", inputDataJson);
+  var obj = JSON.parse(inputDataJson);
+  obj.kk = "kk123";
+  await sleep(5000);
+  console.log("inputDataJsonxxxx2::", inputDataJson);
+  return JSON.stringify(obj);
+}
 
 export async function checkEmail(_currentState: unknown, formData: FormData) {
   try {
@@ -152,6 +175,7 @@ export async function newTransaction(
   _currentState: unknown,
   formData: FormData
 ) {
+  redirectTo.urlLoggedInCheck();
   try {
     const receiverAddr = formData.get("receiver_addr");
     console.log("newTransaction-receiverAddr:", receiverAddr);
@@ -184,6 +208,7 @@ export async function chgPrivateInfo(
   _currentState: unknown,
   formData: FormData
 ) {
+  redirectTo.urlLoggedInCheck();
   try {
     const newPasswdAddr = formData.get("passwd_addr");
     console.log("chgPrivateInfo-newPasswdAddr:", newPasswdAddr);

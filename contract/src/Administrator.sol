@@ -56,11 +56,12 @@ contract Administrator {
 
     function newAccount(
         uint256 _ownerId,
-        address _passwdAddr
+        address _passwdAddr,
+        bytes32 _questionNos
     ) external onlyOwner {
         require(accounts[_ownerId] == address(0), "user exists!");
         Account acct = new Account();
-        acct.initPasswdAddr(_passwdAddr); // todo optimize to min proxy eip-1167
+        acct.initPasswdAddr(_passwdAddr, _questionNos); // todo optimize to min proxy eip-1167
         accounts[_ownerId] = address(acct);
 
         point.mint(address(acct), NEW_REWARDS);

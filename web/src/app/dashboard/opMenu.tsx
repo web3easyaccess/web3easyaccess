@@ -98,16 +98,18 @@ export function ShowMain({
   chainId,
   verifyingContract,
   email,
-  currentNet,
+  chainObj,
 }) {
   console.log("selectedMenu11111111100:", selectedMenu, "acctAddr:", acctAddr);
   const mn = selectedMenu.toLowerCase();
   if (mn.indexOf("assets") >= 0) {
     console.log("selectedMenu11111111111:", selectedMenu);
-    return <Assets assets={assets} />;
+    return <Assets assets={assets} chainObj={chainObj} />;
   } else if (mn.indexOf("trans") >= 0 && mn.indexOf("new") < 0) {
     console.log("selectedMenu11111111122:", selectedMenu);
-    return <Transactions txList={txList} acctAddr={acctAddr} />;
+    return (
+      <Transactions txList={txList} acctAddr={acctAddr} chainObj={chainObj} />
+    );
   } else if (mn.indexOf("trans") >= 0 && mn.indexOf("new") >= 0) {
     console.log("selectedMenu11111111133:", selectedMenu);
     return (
@@ -116,7 +118,7 @@ export function ShowMain({
         chainId={chainId}
         verifyingContract={verifyingContract}
         email={email}
-        currentNet={currentNet}
+        chainObj={chainObj}
       />
     );
   } else if (mn.indexOf("private") >= 0) {
@@ -126,7 +128,7 @@ export function ShowMain({
         chainId={chainId}
         verifyingContract={verifyingContract}
         email={email}
-        currentNet={currentNet}
+        chainObj={chainObj}
         forSigning={false}
         acctAddr={acctAddr}
       />

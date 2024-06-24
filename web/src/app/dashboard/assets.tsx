@@ -12,15 +12,13 @@ import {
   TableCell,
 } from "@nextui-org/react";
 
-import { getBlockNumber } from "../blockchain/components/block";
-
 // import { queryAccount } from "./server/callAdmin";
 // import genPrivateInfo from "./client/genPrivateInfo";
 
 import { useFormState } from "react-dom";
 
-export default function Assets({ assets }) {
-  console.log("Assets....");
+export default function Assets({ assets, chainObj }) {
+  console.log("Assets..22..chainObj:", chainObj);
   let kk = 0;
   //   token_address: "-",
   //   token_name: "ETH",

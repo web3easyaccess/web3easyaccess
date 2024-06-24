@@ -3,9 +3,9 @@ import { sepolia, mainnet, localhost } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { createWalletClient, custom } from "viem";
 
-export const walletClient = (currentNet) => {
+export const walletClient = (getChainObj) => {
   return createWalletClient({
-    chain: currentNet,
-    transport: http(currentNet.rpcUrls.default.http[0]),
+    chain: getChainObj,
+    transport: http(getChainObj.rpcUrls.default.http[0]),
   });
 };
