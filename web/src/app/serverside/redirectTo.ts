@@ -28,10 +28,22 @@ function urlLogin() {
   redirect("/login");
 }
 
+function urlError() {
+  redirect("/error");
+}
+
 function urlLoggedInCheck() {
   const dd = myCookies.loadData(); // || "abc@def.com";
   if (!dd || !dd.ownerId || dd.ownerId == "") {
     console.log("urlLoggedInCheck, redirect to login");
+    redirect("/login");
+  }
+}
+
+function urlLoggedInCheckChain() {
+  const cc = myCookies.getChainCode();
+  if (!cc || cc === undefined || cc == "") {
+    console.log("urlLoggedInCheckChain, no chainCode, redirect to login");
     redirect("/login");
   }
 }
@@ -41,4 +53,6 @@ export default {
   urlPrivateinfo,
   urlLogin,
   urlLoggedInCheck,
+  urlError,
+  urlLoggedInCheckChain,
 };

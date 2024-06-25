@@ -18,7 +18,7 @@ import {
 import { useFormState } from "react-dom";
 
 export default function Assets({ assets, chainObj }) {
-  console.log("Assets..22..chainObj:", chainObj);
+  console.log("Assets..22..chainObj:", chainObj.chainCode);
   let kk = 0;
   //   token_address: "-",
   //   token_name: "ETH",

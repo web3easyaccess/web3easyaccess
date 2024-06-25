@@ -42,7 +42,6 @@ export default function Home({
   // const [selectedMenu, setSelectedMenu] = useState("assets");
   // const selectedMenuState = useState("transactions"); // transactions
   console.log("dashborad,acctAddr:", acctAddr);
-  console.log("dashborad xxxx2,chainObj:", chainObj);
   console.log("dashborad xxxx333,chainObj:", chainObj.chainCode);
 
   return (

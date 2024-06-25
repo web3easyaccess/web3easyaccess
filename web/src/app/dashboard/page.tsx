@@ -14,7 +14,7 @@ export default async function Page({ selectedMenu, txList }) {
 
   const assets = await queryAssets(myData.accountId);
   const current_obj = getChainObj();
-  console.log("dashboard:..net.:", current_obj);
+  console.log("dashboard:..net.:", current_obj.chainCode);
   return (
     <Dashboard
       acctAddr={myData.accountId}

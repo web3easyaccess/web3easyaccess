@@ -13,7 +13,9 @@ import Navbar from "../navbar/navbar";
 
 import VerifyCode from "./verifyCode";
 
-export default function Page({ chainCode }) {
+export default function Page<T extends { chainCode: string }>({
+  chainCode,
+}: T) {
   const [displayVerify, setDisplayVerify] = useState(false);
   // const [displayPermit, setDisplayPermit] = useState(false);
 
@@ -80,25 +82,28 @@ export default function Page({ chainCode }) {
   );
 }
 
-function sleep(time) {
+function sleep(time: number) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
 
-function SubmitEmail({
+function SubmitEmail<T extends { style: string; setDisplayVerify: any }>({
   style,
   setDisplayVerify, // , setDisplayPermit
-}) {
+}: T) {
   const router = useRouter();
   const { pending } = useFormStatus();
 
-  const handleClick = (event) => {
+  const handleClick = (event: any) => {
     if (pending) {
       event.preventDefault();
       return;
     }
 
-    let email = document.getElementById("id_login_email_ui").value;
-    document.getElementById("id_login_email").value = email; //
+    let email = (
+      document.getElementById("id_login_email_ui") as HTMLInputElement
+    ).value;
+    (document.getElementById("id_login_email") as HTMLInputElement).value =
+      email; //
 
     setTimeout(async () => {
       var kk = 0;

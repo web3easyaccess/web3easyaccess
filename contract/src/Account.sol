@@ -29,7 +29,7 @@ contract Account is EIP712 {
     /**
         password question's number, which was encrypted.
      */
-    bytes32 public questionNos;
+    string public questionNos;
 
     event InitAccount(address passwdAddr, address admin);
     event ChgAdmin(address newAdmin);
@@ -38,6 +38,13 @@ contract Account is EIP712 {
     event TransferToken(address token, address to, uint256 amount);
 
     constructor() EIP712("Account", "1") {
+        admins[0] = msg.sender;
+        admins[1] = msg.sender;
+        admins[2] = msg.sender;
+        admins[3] = msg.sender;
+    }
+
+    function initAdmin() external {
         admins[0] = msg.sender;
         admins[1] = msg.sender;
         admins[2] = msg.sender;
@@ -63,7 +70,7 @@ contract Account is EIP712 {
 
     function initPasswdAddr(
         address _passwdAddr,
-        bytes32 _questionNos
+        string calldata _questionNos
     ) external {
         onlyAdmin();
         if (passwdAddr == address(0)) {
@@ -118,7 +125,7 @@ contract Account is EIP712 {
     */
     function chgPasswdAddr(
         address _newPasswdAddr,
-        bytes32 _newQuestionNos,
+        string calldata _newQuestionNos,
         address _passwdAddr,
         uint256 _nonce,
         bytes memory _signature
@@ -128,7 +135,9 @@ contract Account is EIP712 {
             _passwdAddr,
             _nonce,
             _signature,
-            keccak256(abi.encode(_newPasswdAddr, _newQuestionNos))
+            keccak256(
+                abi.encode(_newPasswdAddr, keccak256(bytes(_newQuestionNos)))
+            )
         )
     {
         passwdAddr = _newPasswdAddr;

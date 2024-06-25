@@ -20,23 +20,29 @@ import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
 
 import { chains } from "./chains";
 
-import CallServerByForm from "../callserver/callServerByForm";
+import CallServerByForm from "../lib/callServerByForm";
 
 export default function App({ chainCode }) {
-  const [outputDataJson, setOutputDataJson] = useState("");
+  const inputDataJsonRef = useRef("[-]");
+  const outputDataJsonRef = useRef("[-]");
   const buttonRef = useRef(null);
-  const triggerCallServer = () => {
-    buttonRef.current.click();
-  };
-  console.log("navbar....net222:", chainCode);
+
+  console.log("navbar, input param[chainCode]:", chainCode);
   const [myChain, setMyChain] = useState({ value: chainCode });
+
+  const triggerCallServer = (newChain) => {
+    inputDataJsonRef.current = JSON.stringify({ value: newChain });
+    buttonRef.current.click();
+    setTimeout(() => {
+      setMyChain({ value: newChain });
+    }, 500);
+  };
 
   // const [chainCode, setChainCode] = useState("MORPH_TEST_CHAIN");
   const onSelectionChange = (cc) => {
-    console.log("chain onSelectionChange:", cc);
-    setMyChain({ value: cc });
-
-    setTimeout(triggerCallServer, 500);
+    console.log("onSelectionChange, selected chain:", cc);
+    triggerCallServer(cc);
+    // setTimeout(triggerCallServer, 500);
   };
 
   // max-w-[30ch]
@@ -44,9 +50,10 @@ export default function App({ chainCode }) {
     <Navbar isBordered isBlurred={false} maxWidth="full">
       <CallServerByForm
         method={saveChainName}
-        inputDataJson={JSON.stringify(myChain)}
-        setOutputDataJson={setOutputDataJson}
+        inputDataJsonRef={inputDataJsonRef}
+        outputDataJsonRef={outputDataJsonRef}
         buttonRef={buttonRef}
+        show={false}
       ></CallServerByForm>
       <NavbarBrand>
         <MyLogo />

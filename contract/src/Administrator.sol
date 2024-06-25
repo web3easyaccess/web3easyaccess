@@ -7,6 +7,7 @@ import "./Account.sol";
 import "./W3EAPoint.sol";
 
 import {Address} from "../lib/openzeppelin-contracts/contracts/utils/Address.sol";
+import "../lib/openzeppelin-contracts/contracts/proxy/Clones.sol";
 
 contract Administrator {
     using Address for address;
@@ -20,11 +21,15 @@ contract Administrator {
 
     W3EAPoint point;
 
+    address public accountImpl;
+
     constructor() {
         owners[0] = msg.sender;
         owners[1] = msg.sender;
         owners[2] = msg.sender;
         owners[3] = msg.sender;
+        accountImpl = address(new Account());
+        Account(payable(accountImpl)).initPasswdAddr(address(0xdead), "");
     }
 
     function initPoint(address pointAddress) external onlyOwner {
@@ -57,11 +62,18 @@ contract Administrator {
     function newAccount(
         uint256 _ownerId,
         address _passwdAddr,
-        bytes32 _questionNos
+        string calldata _questionNos
     ) external onlyOwner {
         require(accounts[_ownerId] == address(0), "user exists!");
-        Account acct = new Account();
-        acct.initPasswdAddr(_passwdAddr, _questionNos); // todo optimize to min proxy eip-1167
+
+        address acct = Clones.cloneDeterministic(
+            accountImpl,
+            bytes32(_ownerId)
+        );
+
+        Account(payable(acct)).initAdmin();
+        Account(payable(acct)).initPasswdAddr(_passwdAddr, _questionNos);
+
         accounts[_ownerId] = address(acct);
 
         point.mint(address(acct), NEW_REWARDS);

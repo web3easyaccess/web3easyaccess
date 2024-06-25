@@ -17,7 +17,7 @@ import { queryEthBalance } from "../serverside/blockchain/queryAccountInfo";
 
 import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
 
-import { setChainCode } from "./blockchain/myChain";
+import { setChainCode, getChainObj } from "./blockchain/myChain";
 
 import { parseEther } from "viem";
 
@@ -28,8 +28,14 @@ export async function saveChainName(
   const inputDataJson = formData.get("inputDataJson");
   console.log("server saveChainName....inputDataJson:", inputDataJson);
   const chainName = JSON.parse(inputDataJson).value;
+  const oldChainName = getChainObj().chainCode;
   setChainCode(chainName);
-  return JSON.stringify({ status: "success" });
+  if (oldChainName != chainName) {
+    redirectTo.urlLogin();
+  }
+  return JSON.stringify({
+    msg: "success, now chainName in cookie was:" + chainName,
+  });
 }
 
 const verifyCode = {};
@@ -46,11 +52,15 @@ export async function test001(_currentState: unknown, formData: FormData) {
 
 export async function checkEmail(_currentState: unknown, formData: FormData) {
   try {
-    await signIn("credentials", formData);
-
     const email = formData.get("email");
     console.log("email000:", email);
-
+    if (
+      myCookies.getChainCode() == undefined ||
+      myCookies.getChainCode() == null ||
+      myCookies.getChainCode() == ""
+    ) {
+      return "please select a chain!";
+    }
     //
     const sixNum = generateRandomSixDigitInteger().toString();
     verifyCode[email] = sixNum;
@@ -90,6 +100,9 @@ export async function verifyEmail(_currentState: unknown, formData: FormData) {
     // update accountId from chain, and loadData again.
     const ownerId = myCookies.loadData().ownerId;
     const accountId = await queryAccount(ownerId);
+    console.log(
+      `query accountId when verified,  ownerId=${ownerId}, accountId=${accountId}`
+    );
     myCookies.setAccountId(accountId);
     md = myCookies.loadData();
 
@@ -118,8 +131,11 @@ export async function createAccount(
   _currentState: unknown,
   formData: FormData
 ) {
-  const ownerId = formData.get("ownerId");
+  redirectTo.urlLoggedInCheckChain();
+
+  const ownerId = formData.get("owner_id");
   const passwdAddr = formData.get("passwd_addr");
+  const questionNos = formData.get("question_nos");
 
   var accountId = await queryAccount(ownerId);
 
@@ -127,20 +143,14 @@ export async function createAccount(
 
   if (accountId.toString() == popularAddr.ZERO_ADDR) {
     // create new account
-    await newAccount(ownerId, passwdAddr);
-
-    for (let kk = 0; kk < 600; kk++) {
-      accountId = await queryAccount(ownerId);
-      if (accountId.toString() == popularAddr.ZERO_ADDR) {
-        console.log("waiting for creating new account...", kk);
-        await sleep(1000);
-      } else {
-        console.log("created new account:", accountId);
-        break;
-      }
+    let rtn = await newAccount(ownerId, passwdAddr, questionNos);
+    if (rtn.success) {
+      accountId = rtn.accountId;
+    } else {
+      redirectTo.urlError();
     }
-  } else {
   }
+
   myCookies.setAccountId(accountId.toString());
 
   console.log("createAccount, ownerId:", ownerId);
@@ -150,6 +160,7 @@ export async function createAccount(
 }
 
 export async function getEthBalance(accountId: string) {
+  redirectTo.urlLoggedInCheckChain();
   if (
     accountId == popularAddr.ZERO_ADDR ||
     accountId == popularAddr.ZERO_ADDRError
@@ -162,6 +173,7 @@ export async function getEthBalance(accountId: string) {
 }
 
 export async function getTransactions(accountId: string) {
+  redirectTo.urlLoggedInCheckChain();
   const v = await queryTransactions(accountId);
   console.log("getTransactions,", accountId, ":", v);
   return v;
@@ -175,6 +187,7 @@ export async function newTransaction(
   _currentState: unknown,
   formData: FormData
 ) {
+  redirectTo.urlLoggedInCheckChain();
   redirectTo.urlLoggedInCheck();
   try {
     const receiverAddr = formData.get("receiver_addr");
@@ -208,6 +221,7 @@ export async function chgPrivateInfo(
   _currentState: unknown,
   formData: FormData
 ) {
+  redirectTo.urlLoggedInCheckChain();
   redirectTo.urlLoggedInCheck();
   try {
     const newPasswdAddr = formData.get("passwd_addr");
@@ -238,11 +252,6 @@ export async function chgPrivateInfo(
   } catch (error) {
     throw error;
   }
-}
-
-async function signIn(cd, formData) {
-  console.log("signIn:", cd, formData);
-  return true;
 }
 
 function generateRandomSixDigitInteger() {

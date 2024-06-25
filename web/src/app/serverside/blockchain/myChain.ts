@@ -1,6 +1,7 @@
 import { defineChain } from "viem";
 
 import myCookies from "../myCookies";
+import redirectTo from "../redirectTo";
 
 const defaultAnvil = defineChain({
   id: 31337,
@@ -57,14 +58,15 @@ export const setChainCode = (chainCode) => {
 };
 
 export const getChainObj = () => {
-  var rtn = morphHoleskyTestnet;
+  var rtn = {};
   if (myCookies.getChainCode() == "DEFAULT_ANVIL_CHAIN") {
     rtn = defaultAnvil;
   } else if (myCookies.getChainCode() == "MORPH_TEST_CHAIN") {
     rtn = morphHoleskyTestnet;
+  } else {
   }
   rtn.chainCode = myCookies.getChainCode();
-  console.log("current net:xxxx:,,:", rtn);
+  console.log(`getChainObj ok. name=${rtn.name}, chainCode=${rtn.chainCode}`);
   return rtn;
 
   //   if (process.env.CHAIN_NAME == "DEFAULT_ANVIL_CHAIN") {

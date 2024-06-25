@@ -10,22 +10,18 @@ import {
   encodeFunctionData,
 } from "viem";
 
-import {
-  publicClient,
-  account,
-  walletClient,
-  adminAddr,
-} from "./chainClientOnServer";
+import { chainClient } from "./chainClientOnServer";
 
 import abis from "./abi/abis";
+import redirectTo from "../redirectTo";
 
 /**
  */
 export async function queryAccount(ownerAddr: `0x${string}`) {
   try {
-    const accountAddr = await publicClient.readContract({
-      account: account,
-      address: adminAddr,
+    const accountAddr = await chainClient().publicClient.readContract({
+      account: chainClient().account,
+      address: chainClient().adminAddr,
       abi: abis.queryAccount,
       functionName: "queryAccount",
       args: [ownerAddr],
@@ -43,37 +39,57 @@ export async function queryAccount(ownerAddr: `0x${string}`) {
       "==================queryAccount error======================:",
       e
     );
-    return popularAddr.ZERO_ADDRError;
+    redirectTo.urlError();
+    // return popularAddr.ZERO_ADDRError;
   }
+}
+
+function sleep(time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
 }
 
 export async function newAccount(
   ownerId: `0x${string}`,
-  passwdAddr: `0x${string}`
+  passwdAddr: `0x${string}`,
+  questionNos: `0x${string}`
 ) {
   console.log(
     `newAccount called ... ownerId= ${ownerId}, passwdAddr=${passwdAddr}`
   );
+  let hash = null;
   var newAccountData;
   try {
     newAccountData = encodeFunctionData({
       abi: abis.newAccount,
       functionName: "newAccount",
-      args: [ownerId, passwdAddr],
+      args: [ownerId, passwdAddr, questionNos],
     });
 
-    const hash = await walletClient.sendTransaction({
-      account: account,
-      to: adminAddr,
+    hash = await chainClient().walletClient.sendTransaction({
+      account: chainClient().account,
+      to: chainClient().adminAddr,
       value: BigInt(0), // parseEther("0.0"),
       data: newAccountData,
     });
 
     console.log(`newAccount, hash=${hash}`);
-    return hash;
+
+    let accountId = "x";
+    for (let kk = 0; kk < 600; kk++) {
+      accountId = await queryAccount(ownerId);
+      if (accountId.toString() == popularAddr.ZERO_ADDR) {
+        console.log("waiting for creating new account...", kk);
+        await sleep(1000);
+      } else {
+        console.log("created new account:", accountId);
+        return { success: true, accountId: accountId, hash: hash };
+      }
+    }
+
+    return { success: false, accountId: "timeOut", hash: hash };
   } catch (e) {
     console.log("newAccount error:", e);
-    return popularAddr.ZERO_ADDRError;
+    return { success: false, accountId: "error", hash: hash };
   }
 }
 
@@ -159,9 +175,9 @@ async function _execute(
   //   });
   //   console.log("xxxxxxx:request:", request);
 
-  const hash = await walletClient.sendTransaction({
-    account: account,
-    to: adminAddr,
+  const hash = await chainClient().walletClient.sendTransaction({
+    account: chainClient().account,
+    to: chainClient().adminAddr,
     value: BigInt(0), // parseEther("0.0"),
     data: callAdminData,
   });

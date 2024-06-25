@@ -7,6 +7,9 @@ import { Button } from "@nextui-org/button";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
 import { Card, CardBody, CardHeader, Divider } from "@nextui-org/react";
 
+import { getInputValueById, setInputValueById } from "../lib/elementById";
+import { aesEncrypt, aesDecrypt } from "../lib/crypto.mjs";
+
 import {
   keccak256,
   encodePacked,
@@ -26,7 +29,7 @@ import {
 import { signAuth } from "./privateinfo/lib/signAuthTypedData";
 
 import popularAddr from "./privateinfo/lib/popularAddr";
-
+import { useRef } from "react";
 /*
 contract private for exists user;
 */
@@ -39,6 +42,7 @@ export default function Page({
   chainObj,
   forSigning,
   acctAddr,
+  selectedQuestionIds,
 }) {
   function isNewUser() {
     if (
@@ -83,17 +87,46 @@ export default function Page({
     }, 2500); // wait 2 seconds. avoid signAuth hasn't finished.
   };
 
+  const selectedQuestion1Ref = useRef("01");
+  const selectedQuestion2Ref = useRef("02");
+  const selectedQuestion3Ref = useRef("01");
+
   const handlePinBlur = () => {
+    let pin1 = getInputValueById("id_private_pin_1");
+    let pin2 = getInputValueById("id_private_pin_2");
+    let pin_old = getInputValueById("id_private_pin_old");
+
     if (isNewUser()) {
-      // do for "pin 2"
-      let pin1 = document.getElementById("id_private_pin_1").value;
-      let pin2 = document.getElementById("id_private_pin_2").value;
       console.log("Input lost focus,new user:", pin1, pin2);
     } else {
-      let pin_old = document.getElementById("id_private_pin_old").value;
-      console.log("Input lost focus,old user:", pin_old);
-      // do for "old pin"
+      let selectedQuestionIds_txt: string = "";
+      if (forSigning) {
+        // just see pin1 ,forSigning
+        selectedQuestionIds_txt = aesDecrypt(selectedQuestionIds, pin1);
+      } else {
+        // here is modify....
+        if (pin1 == pin2) {
+          selectedQuestionIds_txt = aesDecrypt(selectedQuestionIds, pin1);
+        }
+      }
+      if (selectedQuestionIds_txt != "") {
+        let aaa = selectedQuestionIds_txt.split("+");
+        selectedQuestion1Ref.current = aaa[0];
+        selectedQuestion2Ref.current = aaa[1];
+        selectedQuestion3Ref.current = aaa[2];
+      }
     }
+    //
+  };
+
+  const onSelectionChange1 = (key) => {
+    selectedQuestion1Ref.current = key;
+  };
+  const onSelectionChange2 = (key) => {
+    selectedQuestion2Ref.current = key;
+  };
+  const onSelectionChange3 = (key) => {
+    selectedQuestion3Ref.current = key;
   };
 
   return (
@@ -185,7 +218,12 @@ export default function Page({
             hint="input first question's old answer"
           ></Passwd>
         )}
-        <Autocomplete label="Choose the first question" className="max-w-2xl">
+        <Autocomplete
+          label="Choose the first question"
+          className="max-w-2xl"
+          onSelectionChange={onSelectionChange1}
+          defaultSelectedKey={selectedQuestion1Ref.current}
+        >
           {pq.questions[1].map((item) => (
             <AutocompleteItem key={item.idx} value={item.question}>
               {item.question}
@@ -220,7 +258,12 @@ export default function Page({
             hint="input second question's old answer"
           ></Passwd>
         )}
-        <Autocomplete label="Choose the second question" className="max-w-2xl">
+        <Autocomplete
+          label="Choose the second question"
+          className="max-w-2xl"
+          onSelectionChange={onSelectionChange2}
+          defaultSelectedKey={selectedQuestion2Ref.current}
+        >
           {pq.questions[2].map((item) => (
             <AutocompleteItem key={item.idx} value={item.question}>
               {item.question}
@@ -255,7 +298,12 @@ export default function Page({
             hint="input third question's old answer"
           ></Passwd>
         )}
-        <Autocomplete label="Choose the third question" className="max-w-2xl">
+        <Autocomplete
+          label="Choose the third question"
+          className="max-w-2xl"
+          onSelectionChange={onSelectionChange3}
+          defaultSelectedKey={selectedQuestion3Ref.current}
+        >
           {pq.questions[3].map((item) => (
             <AutocompleteItem key={item.idx} value={item.question}>
               {item.question}
@@ -288,7 +336,7 @@ export default function Page({
           <input
             id="id_private_ownerId"
             style={{ display: "none" }}
-            name="ownerId"
+            name="owner_id"
           />
           <input
             id="id_private_passwdAddr"
@@ -317,6 +365,12 @@ export default function Page({
             name="owner_id"
           />
 
+          <input
+            id="id_private_question_nos"
+            style={{ display: "none" }}
+            name="question_nos"
+          />
+
           <div>{resultMsg && <p>{resultMsg}</p>}</div>
           {!forSigning ? (
             <SubmitMessage
@@ -325,6 +379,9 @@ export default function Page({
               verifyingContract={verifyingContract}
               chainObj={chainObj}
               isNew={isNewUser()}
+              selectedQuestion1Ref={selectedQuestion1Ref}
+              selectedQuestion2Ref={selectedQuestion2Ref}
+              selectedQuestion3Ref={selectedQuestion3Ref}
             />
           ) : null}
         </form>
@@ -367,7 +424,16 @@ function checkInfo(
   }
 }
 
-function SubmitMessage({ email, chainId, verifyingContract, chainObj, isNew }) {
+function SubmitMessage({
+  email,
+  chainId,
+  verifyingContract,
+  chainObj,
+  isNew,
+  selectedQuestion1Ref,
+  selectedQuestion2Ref,
+  selectedQuestion3Ref,
+}) {
   const { pending } = useFormStatus();
 
   const handleClick = async (event) => {
@@ -375,30 +441,18 @@ function SubmitMessage({ email, chainId, verifyingContract, chainObj, isNew }) {
       event.preventDefault();
     }
 
-    let pin1 = document.getElementById("id_private_pin_1").value;
-    let question1_answer_1 = document.getElementById(
-      "id_private_question1_answer_1"
-    ).value;
-    let question2_answer_1 = document.getElementById(
-      "id_private_question2_answer_1"
-    ).value;
-    let question3_answer_1 = document.getElementById(
-      "id_private_question3_answer_1"
-    ).value;
+    let pin1 = getInputValueById("id_private_pin_1");
+    let question1_answer_1 = getInputValueById("id_private_question1_answer_1");
+    let question2_answer_1 = getInputValueById("id_private_question2_answer_1");
+    let question3_answer_1 = getInputValueById("id_private_question3_answer_1");
 
-    let pin2 = document.getElementById("id_private_pin_2").value;
+    let pin2 = getInputValueById("id_private_pin_2");
 
-    let question1_answer_2 = document.getElementById(
-      "id_private_question1_answer_2"
-    ).value;
+    let question1_answer_2 = getInputValueById("id_private_question1_answer_2");
 
-    let question2_answer_2 = document.getElementById(
-      "id_private_question2_answer_2"
-    ).value;
+    let question2_answer_2 = getInputValueById("id_private_question2_answer_2");
 
-    let question3_answer_2 = document.getElementById(
-      "id_private_question3_answer_2"
-    ).value;
+    let question3_answer_2 = getInputValueById("id_private_question3_answer_2");
 
     checkInfo(
       false,
@@ -422,23 +476,28 @@ function SubmitMessage({ email, chainId, verifyingContract, chainObj, isNew }) {
       question3answer: question3_answer_1,
     });
 
-    document.getElementById("id_private_ownerId").value = ownerId;
-    document.getElementById("id_private_passwdAddr").value =
-      passwdAccount.address;
+    setInputValueById("id_private_ownerId", ownerId);
+    setInputValueById("id_private_passwdAddr", passwdAccount.address);
 
+    const selectedQuestionIds = `${selectedQuestion1Ref.current}+${selectedQuestion2Ref.current}+${selectedQuestion3Ref.current}`;
+    console.log("selectedQuestionIds:", selectedQuestionIds);
+    setInputValueById(
+      "id_private_question_nos",
+      aesEncrypt(selectedQuestionIds, pin1)
+    );
     // // //
     if (!isNew) {
       // here for modifying .
-      let pin_old = document.getElementById("id_private_pin_old").value;
-      let question1_answer_old = document.getElementById(
+      let pin_old = getInputValueById("id_private_pin_old");
+      let question1_answer_old = getInputValueById(
         "id_private_question1_answer_old"
-      ).value;
-      let question2_answer_old = document.getElementById(
+      );
+      let question2_answer_old = getInputValueById(
         "id_private_question2_answer_old"
-      ).value;
-      let question3_answer_old = document.getElementById(
+      );
+      let question3_answer_old = getInputValueById(
         "id_private_question3_answer_old"
-      ).value;
+      );
 
       checkInfo(
         true,
@@ -460,8 +519,7 @@ function SubmitMessage({ email, chainId, verifyingContract, chainObj, isNew }) {
         question3answer: question3_answer_old,
       });
 
-      document.getElementById("id_private_oldPasswdAddr").value =
-        oldPasswdAccount.address;
+      oldPasswdAccount.address = getInputValueById("id_private_oldPasswdAddr");
 
       // chgPasswdAddr(address _newPasswdAddr,address _passwdAddr,uint256 _nonce,bytes memory _signature)
       let argumentsHash = encodeAbiParameters(
@@ -477,9 +535,10 @@ function SubmitMessage({ email, chainId, verifyingContract, chainObj, isNew }) {
         chainObj,
         argumentsHash
       );
-      document.getElementById("id_private_nonce").value = sign.nonce;
-      document.getElementById("id_private_signature").value = sign.signature;
-      document.getElementById("id_private_owner_id").value = getOwnerId(email);
+
+      setInputValueById("id_private_nonce", sign.nonce);
+      setInputValueById("id_private_signature", sign.signature);
+      setInputValueById("id_private_owner_id", getOwnerId(email));
     }
   };
 

@@ -14,22 +14,19 @@ import {
   encodeFunctionData,
 } from "viem";
 
-import {
-  publicClient,
-  account,
-  walletClient,
-  adminAddr,
-} from "./chainClientOnServer";
+import { chainClient } from "./chainClientOnServer";
 
 import abi from "./abi/abis";
 
 export async function queryLatestBlockNumber() {
-  const blockNumber = await publicClient.getBlockNumber();
+  const blockNumber = await chainClient().publicClient.getBlockNumber();
   return blockNumber;
 }
 
 export async function queryBlock(blockNumber: bigint) {
-  const block = await publicClient.getBlock({ blockNumber: blockNumber });
+  const block = await chainClient().publicClient.getBlock({
+    blockNumber: blockNumber,
+  });
   return block;
 }
 
@@ -42,7 +39,7 @@ export async function queryEthBalance(addr: string) {
   if (addr.substring(0, 2) == "0x" || addr.substring(0, 2) == "0X") {
     addrWithout0x = addr.substring(2);
   }
-  const balance = await publicClient.getBalance({
+  const balance = await chainClient().publicClient.getBalance({
     address: `0x${addrWithout0x}`,
   });
   const balanceAsEther = formatEther(balance);
@@ -124,8 +121,11 @@ async function _queryMorphTransactions(addr: string) {
       resultData.push(aRow);
     });
   } catch (error) {
-    console.error("111:", error);
-    throw error; // Or handle the error differently
+    console.error(
+      `_queryMorphTransactions error url=${url}:`,
+      error.toString().indexOf("status code 404") >= 0 ? "ERROR 404" : error
+    );
+    // throw error; // Or handle the error differently
   }
 
   try {
@@ -148,7 +148,10 @@ async function _queryMorphTransactions(addr: string) {
       resultData.push(aRow);
     });
   } catch (error) {
-    console.error("_queryMorphTransactions url=" + url, error);
+    console.error(
+      `_queryMorphTransactions error url2=${url2}:`,
+      error.toString().indexOf("status code 404") >= 0 ? "ERROR 404" : error
+    );
     // throw error; // Or handle the error differently
   }
   return resultData;
@@ -195,7 +198,10 @@ async function _queryMorphTokens(addr: string) {
       resultData.push(aRow);
     });
   } catch (error) {
-    console.error("_queryMorphTokens error:url=" + url, error);
+    console.error(
+      "_queryMorphTokens error:url=" + url,
+      error.toString().indexOf("status code 404") >= 0 ? "ERROR 404" : error
+    );
     // throw error; // Or handle the error differently
   }
   return resultData;
