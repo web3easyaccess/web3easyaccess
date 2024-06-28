@@ -27,7 +27,7 @@ export default function Assets({ assets, chainObj }) {
   //   balance: balance,
 
   return (
-    <Table isStriped aria-label="Example static collection table">
+    <Table aria-label="Example static collection table">
       <TableHeader>
         <TableColumn>Token Symbol</TableColumn>
         <TableColumn>Token Address</TableColumn>

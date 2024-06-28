@@ -3,12 +3,14 @@ import { keccak256, toHex } from "viem";
 import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
 import redirectTo from "./redirectTo";
 import { getOwnerId } from "../dashboard/privateinfo/lib/keyTools";
+import { queryAccount } from "./blockchain/callAdmin";
 
 export type CookieData = {
   ownerId: string;
   email: string;
   emailDisplay: string;
   accountId: string;
+  visitedChainsCode: string;
 };
 
 const DEFAULT_DATA: CookieData = {
@@ -29,7 +31,7 @@ function getChainCode() {
 }
 
 function setChainCode(chainName: string) {
-  cookies().set(COOKIE_KEY_CHAIN, chainName, { maxAge: MAX_AGE });
+  cookies().set(COOKIE_KEY_CHAIN, chainName);
 }
 
 function cookieIsValid() {
@@ -48,6 +50,12 @@ function cookieIsValid() {
 
 function loadData() {
   let md: CookieData = _parseData(cookies().get(COOKIE_KEY));
+  if (md.visitedChainsCode != getChainCode()) {
+    // current AccountId is invalid
+    // const ownerId = md.ownerId;
+    // const accountId = await queryAccount(ownerId);
+    // md.accountId = accountId;
+  }
   return md;
 }
 
@@ -81,6 +89,7 @@ function flushData(email: string) {
 function setAccountId(accountId: string) {
   let md = loadData();
   md.accountId = accountId;
+  md.visitedChainsCode = getChainCode();
   cookies().set(COOKIE_KEY, JSON.stringify(md), { maxAge: MAX_AGE });
 }
 

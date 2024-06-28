@@ -12,7 +12,7 @@ import { useRef } from "react";
 import { useState } from "react";
 import { useEffect } from "react";
 
-import { MyLogo } from "./myLogo";
+import { ChainLogo } from "./myLogo";
 
 import { saveChainName } from "../serverside/serverActions";
 
@@ -56,7 +56,7 @@ export default function App({ chainCode }) {
         show={false}
       ></CallServerByForm>
       <NavbarBrand>
-        <MyLogo />
+        <ChainLogo chainCode={chainCode} />
         <Autocomplete
           color={"success"}
           defaultItems={chains}

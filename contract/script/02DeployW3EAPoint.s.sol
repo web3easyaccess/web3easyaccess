@@ -2,7 +2,6 @@
 pragma solidity ^0.8.20;
 
 import "../src/W3EAPoint.sol";
-import "../src/Administrator.sol";
 
 import {Script, console} from "forge-std/Script.sol";
 

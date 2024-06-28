@@ -10,6 +10,12 @@ export const AcmeLogo = () => (
   </svg>
 );
 
-export const MyLogo = () => (
-  <img src="/chain/morphl2.png" height="48" width="48"></img>
-);
+export const ChainLogo = ({ chainCode }) => {
+  if (chainCode == "DEFAULT_ANVIL_CHAIN") {
+    return <img src="/chain/anvil.png" height="45" width="45"></img>;
+  } else if (chainCode == "MORPH_TEST_CHAIN") {
+    return <img src="/chain/morphl2test.png" height="45" width="45"></img>;
+  } else {
+    return <img src="/chain/anvil.png" height="45" width="45"></img>;
+  }
+};

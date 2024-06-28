@@ -13,8 +13,12 @@ export function aesDecrypt(ciphertext, passwd) {
   return originalText;
 }
 
-// console.log("kkkk", aesEncrypt("kkkk", "8u8u8u321%&G"));
-// console.log(
-//   "222:",
-//   aesDecrypt(aesEncrypt("kkkk", "8u8u8u321%&G"), "8u8u8u321%&G")
-// );
+function test1() {
+  const msg = "010203aa!bbccd#*def";
+  const passwd = "aabbccpass!";
+  const enc = aesEncrypt(msg, passwd);
+  console.log("encode:", enc);
+  console.log("decode:", aesDecrypt(enc, passwd));
+}
+
+// test1();

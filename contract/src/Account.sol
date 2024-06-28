@@ -10,69 +10,88 @@ import {ECDSA} from "../lib/openzeppelin-contracts/contracts/utils/cryptography/
 import {EIP712} from "../lib/openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol";
 
 import {IERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import {IERC721} from "../lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
 
-contract Account is EIP712 {
+import {Address} from "../lib/openzeppelin-contracts/contracts/utils/Address.sol";
+import {ReentrancyGuard} from "../lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
+
+contract Account is EIP712, ReentrancyGuard {
     bytes32 internal constant PERMIT_TYPEHASH =
         keccak256(
             "_permit(address _passwdAddr,uint256 _nonce,bytes32 _argumentsHash)"
         );
 
-    address[4] public admins;
+    address[4] public agents;
     address private passwdAddr;
     uint256 private lastNonce;
 
     /**
         gas fees that can be paid free of charge by the system.(wei)
      */
-    uint256 public gasFeeRights;
+    uint256 public gasFreeAmount;
 
     /**
         password question's number, which was encrypted.
      */
     string public questionNos;
 
-    event InitAccount(address passwdAddr, address admin);
-    event ChgAdmin(address newAdmin);
+    event InitAccount(address passwdAddr, address agent);
+    event ChgAgent(address newAgent);
     event ChgPasswdAddr(address newPasswdAddr);
     event TransferETH(address to, uint256 amount);
     event TransferToken(address token, address to, uint256 amount);
 
     constructor() EIP712("Account", "1") {
-        admins[0] = msg.sender;
-        admins[1] = msg.sender;
-        admins[2] = msg.sender;
-        admins[3] = msg.sender;
+        agents[0] = msg.sender;
+        agents[1] = msg.sender;
+        agents[2] = msg.sender;
+        agents[3] = msg.sender;
     }
 
-    function initAdmin() external {
-        admins[0] = msg.sender;
-        admins[1] = msg.sender;
-        admins[2] = msg.sender;
-        admins[3] = msg.sender;
+    function initAgent() external {
+        agents[0] = msg.sender;
+        agents[1] = msg.sender;
+        agents[2] = msg.sender;
+        agents[3] = msg.sender;
     }
 
-    function onlyAdmin() private view {
+    function onlyAgent() private view {
         uint256 k = 0;
-        for (; k < admins.length; k++) {
-            if (msg.sender == admins[k]) {
+        for (; k < agents.length; k++) {
+            if (msg.sender == agents[k]) {
                 break;
             }
         }
-        require(k < admins.length, "only admins!");
+        require(k < agents.length, "only agents!");
     }
 
     receive() external payable {}
 
-    function increaseGasFeeRights(uint256 amount) external {
-        onlyAdmin();
-        gasFeeRights += amount;
+    function increaseGasFreeAmount(uint256 amount) external {
+        onlyAgent();
+        gasFreeAmount += amount;
+    }
+
+    error TransferGas(address to, bytes message);
+    function transferGasToAgent(
+        address agentController,
+        uint256 feeAmount
+    ) external {
+        onlyAgent();
+        (bool success, bytes memory returndata) = agentController.call{
+            value: feeAmount
+        }("");
+        if (!success) {
+            revert TransferGas(msg.sender, returndata);
+        }
+        // require(success, "tranfer fee failed.");
     }
 
     function initPasswdAddr(
         address _passwdAddr,
         string calldata _questionNos
     ) external {
-        onlyAdmin();
+        onlyAgent();
         if (passwdAddr == address(0)) {
             passwdAddr = _passwdAddr;
             questionNos = _questionNos;
@@ -81,7 +100,7 @@ contract Account is EIP712 {
     }
 
     // function queryPasswdAddrAddr() external view returns (address) {
-    //     require(msg.sender == admin, "only admin!");
+    //     require(msg.sender == agent, "only agent!");
     //     return passwdAddr;
     // }
 
@@ -89,15 +108,19 @@ contract Account is EIP712 {
         return _domainSeparatorV4();
     }
 
+    // include: Reentrancy Guard
     modifier _permit(
         address _passwdAddr,
         uint256 _nonce, // same nonce can be used only once on the offchain application server
         bytes memory _signature,
         bytes32 _argumentsHash
     ) {
-        onlyAdmin();
+        onlyAgent();
 
-        require(_nonce > lastNonce, "nonce invalid!");
+        require(
+            _nonce > lastNonce && _nonce < block.timestamp * 1000 + 604800000, // must be in 7 days.
+            "nonce invalid!"
+        );
 
         bytes32 structHash = keccak256(
             abi.encode(PERMIT_TYPEHASH, _passwdAddr, _nonce, _argumentsHash) // _useNonce(eoa))
@@ -114,11 +137,7 @@ contract Account is EIP712 {
         _;
     }
 
-    // function chgAdminZ(address _newAdmin) external {
-    //     onlyAdmin();
-    //     admins[admins.length - 1] = _newAdmin;
-    //     emit ChgAdmin(_newAdmin);
-    // }
+    // todo 后面改为 deletegate call, 实现合约的升级需要用户签名. 同时后面审慎考虑使用multicall.
 
     /**
         It means changing password
@@ -145,8 +164,26 @@ contract Account is EIP712 {
         emit ChgPasswdAddr(_newPasswdAddr);
     }
 
-    modifier _checkTo(address to) {
-        _;
+    function sendTransaction(
+        address to,
+        uint256 amount,
+        bytes calldata data,
+        address _passwdAddr,
+        uint256 _nonce,
+        bytes memory _signature
+    )
+        external
+        payable
+        _permit(
+            //
+            _passwdAddr,
+            _nonce,
+            _signature,
+            keccak256(abi.encode(to, amount, data))
+        )
+        returns (bytes memory rtnData)
+    {
+        rtnData = Address.functionCallWithValue(to, data, amount);
     }
 
     /**
@@ -167,19 +204,15 @@ contract Account is EIP712 {
             _signature,
             keccak256(abi.encode(to, amount))
         )
-        _checkTo(to)
     {
-        require(amount <= address(this).balance, "ETH balance is not enough!");
-        (bool success, ) = to.call{value: amount}("");
-        require(success, "transferETH failed.");
-        emit TransferETH(to, amount);
+        Address.sendValue(payable(to), amount);
     }
 
     /**
         ERC20 token
      */
     function transferToken(
-        address token,
+        address tokenAddr,
         address to,
         uint256 amount,
         address _passwdAddr,
@@ -191,22 +224,20 @@ contract Account is EIP712 {
             _passwdAddr,
             _nonce,
             _signature,
-            keccak256(abi.encode(token, to, amount))
+            keccak256(abi.encode(tokenAddr, to, amount))
         )
-        _checkTo(to)
     {
         require(
-            amount <= IERC20(token).balanceOf(address(this)),
+            amount <= IERC20(tokenAddr).balanceOf(address(this)),
             "token balance is not enough!"
         );
-        IERC20(token).transfer(to, amount);
-        // TransferToken(address token, address to, uint256 amount);
+        IERC20(tokenAddr).transfer(to, amount);
     }
 
-    function approveToken(
-        address token,
-        address spender,
-        uint256 amount,
+    function transferNFT(
+        address tokenAddr,
+        address to,
+        uint256 tokenId,
         address _passwdAddr,
         uint256 _nonce,
         bytes memory _signature
@@ -216,10 +247,13 @@ contract Account is EIP712 {
             _passwdAddr,
             _nonce,
             _signature,
-            keccak256(abi.encode(token, spender, amount))
+            keccak256(abi.encode(tokenAddr, to, tokenId))
         )
-        _checkTo(spender)
     {
-        IERC20(token).approve(spender, amount);
+        // require(
+        //     IERC721(tokenAddr).ownerOf(tokenId) == address(this),
+        //     "nft's owner error"
+        // );
+        IERC721(tokenAddr).transferFrom(address(this), to, tokenId);
     }
 }

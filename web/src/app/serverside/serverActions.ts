@@ -13,6 +13,8 @@ import {
   chgPasswdAddr,
 } from "../serverside/blockchain/callAdmin";
 
+import { generateRandomDigitInteger } from "../lib/myRandom";
+
 import { queryEthBalance } from "../serverside/blockchain/queryAccountInfo";
 
 import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
@@ -59,28 +61,37 @@ export async function checkEmail(_currentState: unknown, formData: FormData) {
       myCookies.getChainCode() == null ||
       myCookies.getChainCode() == ""
     ) {
-      return "please select a chain!";
+      return JSON.stringify({ success: false, msg: "please select a chain!" });
+    }
+    if (myCookies.loadData()?.email == email) {
+      const ownerId = myCookies.loadData().ownerId;
+      const accountId = await queryAccount(ownerId);
+      console.log(
+        `query accountId when reuse email,  ownerId=${ownerId}, accountId=${accountId}`
+      );
+      myCookies.setAccountId(accountId);
+      return JSON.stringify({ success: true, msg: "[existing]" });
     }
     //
-    const sixNum = generateRandomSixDigitInteger().toString();
-    verifyCode[email] = sixNum;
+    const sixNum = generateRandomDigitInteger().toString();
+    verifyCode[email] = sixNum + ":" + new Date().valueOf();
     // await sendMail(email, sixNum); // ignore tmp.
     console.log("sent email", email, "::", sixNum);
-    var msg =
-      "has sent verify code to " + email + ", please check it!" + " " + sixNum;
-    console.log(msg);
-    return msg; // new user
+    // Please log in to your email address "123@a.com" and check for the verification code.
+    var rtn = {
+      success: true,
+      msg:
+        "log in to your email[" +
+        email +
+        "], and check for the verification code!" +
+        " " +
+        sixNum,
+    };
+    console.log(JSON.stringify(rtn));
+    return JSON.stringify(rtn); // new user
   } catch (error) {
     console.log("checkEmail error:", error);
-    if (error) {
-      switch (error.type) {
-        case "CredentialsSignin":
-          return "Invalid credentials.";
-        default:
-          return "Something went wrong.";
-      }
-    }
-    throw error;
+    return JSON.stringify({ success: false, msg: "checkEmail error!" });
   }
 }
 
@@ -90,10 +101,15 @@ export async function verifyEmail(_currentState: unknown, formData: FormData) {
 
   console.log("verifyEmail", email, code);
 
-  if (verifyCode[email] == code) {
-    console.log("verify success!", email, code);
-
+  const myCode = verifyCode[email];
+  if (myCode && myCode.split(":")[0] == code) {
     delete verifyCode[email];
+    const t1 = new Date().valueOf();
+    if (t1 - Number(myCode.split(":")[1]) > 10 * 60 * 1000) {
+      console.log("verify code time out!", email, code);
+      return "verify code expire";
+    }
+    console.log("verify success!", email, code);
 
     let md = myCookies.flushData(email);
 
@@ -242,9 +258,12 @@ export async function chgPrivateInfo(
     const ownerId = formData.get("owner_id");
     console.log("chgPrivateInfo-ownerId:", ownerId);
 
+    const newQuestionNos = formData.get("question_nos");
+
     await chgPasswdAddr(
       ownerId,
       `0x${newPasswdAddr.substring(2)}`,
+      newQuestionNos,
       `0x${oldPasswdAddr.substring(2)}`,
       BigInt(nonce),
       `0x${signature.substring(2)}`
@@ -252,23 +271,4 @@ export async function chgPrivateInfo(
   } catch (error) {
     throw error;
   }
-}
-
-function generateRandomSixDigitInteger() {
-  const min = 100000; // Minimum 6-digit integer
-  const max = 999999; // Maximum 6-digit integer
-
-  // Generate a random number between min and max
-  const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
-
-  // Convert the random number to a string
-  const randomString = randomNumber.toString();
-
-  // Pad the string with leading zeros if necessary
-  const paddedString = randomString.padStart(6, "0");
-
-  // Convert the padded string back to an integer
-  const randomSixDigitInteger = parseInt(paddedString);
-
-  return randomSixDigitInteger;
 }

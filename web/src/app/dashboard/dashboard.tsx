@@ -24,7 +24,7 @@ function decrypt(data: any) {
 
 export default function Home({
   acctAddr,
-  ownerAddr,
+  ownerId,
   balance,
   selectedMenu,
   txList,
@@ -33,6 +33,7 @@ export default function Home({
   verifyingContract,
   email,
   chainObj,
+  selectedQuestionIds,
 }) {
   // Logic to determine if a redirect is needed
   //   if (getSessionData(null)) {
@@ -47,16 +48,16 @@ export default function Home({
   return (
     <>
       <Navbar chainCode={chainObj.chainCode}></Navbar>
-      <div style={{ display: "flex" }}>
+      <div style={{ display: "flex", marginLeft: "10px", marginRight: "10px" }}>
         <div style={{ width: "200px" }}>
           <UserProfile
             acctAddr={acctAddr}
-            ownerAddr={ownerAddr}
+            ownerId={ownerId}
             balance={balance}
           />
           <OpMenu selectedMenu={selectedMenu} />
         </div>
-        <div style={{ width: "900px", marginLeft: "10px" }}>
+        <div style={{ width: "900px", marginLeft: "2px" }}>
           <ShowMain
             selectedMenu={selectedMenu}
             txList={txList}
@@ -66,6 +67,7 @@ export default function Home({
             verifyingContract={verifyingContract}
             email={email}
             chainObj={chainObj}
+            selectedQuestionIds={selectedQuestionIds}
           />
         </div>
       </div>

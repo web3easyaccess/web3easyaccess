@@ -9,6 +9,7 @@ import { Card, CardBody, CardHeader, Divider } from "@nextui-org/react";
 
 import { getInputValueById, setInputValueById } from "../lib/elementById";
 import { aesEncrypt, aesDecrypt } from "../lib/crypto.mjs";
+import { generateRandomDigitInteger } from "../lib/myRandom";
 
 import {
   keccak256,
@@ -29,7 +30,7 @@ import {
 import { signAuth } from "./privateinfo/lib/signAuthTypedData";
 
 import popularAddr from "./privateinfo/lib/popularAddr";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 /*
 contract private for exists user;
 */
@@ -84,36 +85,46 @@ export default function Page({
   const myDispatch = (payload) => {
     setTimeout(() => {
       dispatch(payload);
-    }, 2500); // wait 2 seconds. avoid signAuth hasn't finished.
+    }, 2000); // wait 2 seconds. avoid signAuth hasn't finished.
   };
 
+  const [selectedKey1, setSelectedKey1] = useState("01");
+  const [selectedKey2, setSelectedKey2] = useState("01");
+  const [selectedKey3, setSelectedKey3] = useState("01");
+
   const selectedQuestion1Ref = useRef("01");
-  const selectedQuestion2Ref = useRef("02");
+  const selectedQuestion2Ref = useRef("01");
   const selectedQuestion3Ref = useRef("01");
 
   const handlePinBlur = () => {
-    let pin1 = getInputValueById("id_private_pin_1");
-    let pin2 = getInputValueById("id_private_pin_2");
-    let pin_old = getInputValueById("id_private_pin_old");
-
     if (isNewUser()) {
+      let pin1 = getInputValueById("id_private_pin_1");
+      let pin2 = getInputValueById("id_private_pin_2");
       console.log("Input lost focus,new user:", pin1, pin2);
     } else {
       let selectedQuestionIds_txt: string = "";
       if (forSigning) {
         // just see pin1 ,forSigning
-        selectedQuestionIds_txt = aesDecrypt(selectedQuestionIds, pin1);
-      } else {
-        // here is modify....
-        if (pin1 == pin2) {
+        let pin1 = getInputValueById("id_private_pin_1");
+        if (pin1?.length > 0) {
           selectedQuestionIds_txt = aesDecrypt(selectedQuestionIds, pin1);
         }
+      } else {
+        let pin_old = getInputValueById("id_private_pin_old");
+        // here is modify....
+        if (pin_old?.length > 0) {
+          selectedQuestionIds_txt = aesDecrypt(selectedQuestionIds, pin_old);
+        }
       }
+      console.log("selectedQuestionIds_txt:", selectedQuestionIds_txt);
       if (selectedQuestionIds_txt != "") {
-        let aaa = selectedQuestionIds_txt.split("+");
-        selectedQuestion1Ref.current = aaa[0];
-        selectedQuestion2Ref.current = aaa[1];
-        selectedQuestion3Ref.current = aaa[2];
+        selectedQuestion1Ref.current = selectedQuestionIds_txt.substring(0, 2);
+        selectedQuestion2Ref.current = selectedQuestionIds_txt.substring(2, 4);
+        selectedQuestion3Ref.current = selectedQuestionIds_txt.substring(4, 6);
+        console.log("hit select...");
+        setSelectedKey1(selectedQuestion1Ref.current);
+        setSelectedKey2(selectedQuestion2Ref.current);
+        setSelectedKey3(selectedQuestion3Ref.current);
       }
     }
     //
@@ -121,12 +132,15 @@ export default function Page({
 
   const onSelectionChange1 = (key) => {
     selectedQuestion1Ref.current = key;
+    setSelectedKey1(key);
   };
   const onSelectionChange2 = (key) => {
     selectedQuestion2Ref.current = key;
+    setSelectedKey2(key);
   };
   const onSelectionChange3 = (key) => {
     selectedQuestion3Ref.current = key;
+    setSelectedKey3(key);
   };
 
   return (
@@ -222,7 +236,7 @@ export default function Page({
           label="Choose the first question"
           className="max-w-2xl"
           onSelectionChange={onSelectionChange1}
-          defaultSelectedKey={selectedQuestion1Ref.current}
+          selectedKey={selectedKey1}
         >
           {pq.questions[1].map((item) => (
             <AutocompleteItem key={item.idx} value={item.question}>
@@ -262,7 +276,7 @@ export default function Page({
           label="Choose the second question"
           className="max-w-2xl"
           onSelectionChange={onSelectionChange2}
-          defaultSelectedKey={selectedQuestion2Ref.current}
+          selectedKey={selectedKey2}
         >
           {pq.questions[2].map((item) => (
             <AutocompleteItem key={item.idx} value={item.question}>
@@ -302,7 +316,7 @@ export default function Page({
           label="Choose the third question"
           className="max-w-2xl"
           onSelectionChange={onSelectionChange3}
-          defaultSelectedKey={selectedQuestion3Ref.current}
+          selectedKey={selectedKey3}
         >
           {pq.questions[3].map((item) => (
             <AutocompleteItem key={item.idx} value={item.question}>
@@ -479,7 +493,11 @@ function SubmitMessage({
     setInputValueById("id_private_ownerId", ownerId);
     setInputValueById("id_private_passwdAddr", passwdAccount.address);
 
-    const selectedQuestionIds = `${selectedQuestion1Ref.current}+${selectedQuestion2Ref.current}+${selectedQuestion3Ref.current}`;
+    const selectedQuestionIds =
+      selectedQuestion1Ref.current +
+      selectedQuestion2Ref.current +
+      selectedQuestion3Ref.current +
+      generateRandomDigitInteger();
     console.log("selectedQuestionIds:", selectedQuestionIds);
     setInputValueById(
       "id_private_question_nos",
@@ -521,13 +539,24 @@ function SubmitMessage({
 
       oldPasswdAccount.address = getInputValueById("id_private_oldPasswdAddr");
 
-      // chgPasswdAddr(address _newPasswdAddr,address _passwdAddr,uint256 _nonce,bytes memory _signature)
+      // keccak256(bytes(_newQuestionNos))
+      const textEncoder = new TextEncoder();
       let argumentsHash = encodeAbiParameters(
-        [{ name: "newPasswdAddr", type: "address" }],
-        [passwdAccount.address]
+        [
+          { name: "newPasswdAddr", type: "address" },
+          { name: "newQuestionNos", type: "bytes32" },
+        ],
+        [
+          passwdAccount.address,
+          keccak256(
+            Uint8Array.from(
+              textEncoder.encode(getInputValueById("id_private_question_nos"))
+            )
+          ),
+        ]
       );
       argumentsHash = keccak256(argumentsHash);
-
+      console.log("xxxx,argumentsHash:", argumentsHash);
       const sign = await signAuth(
         oldPasswdAccount,
         chainId,

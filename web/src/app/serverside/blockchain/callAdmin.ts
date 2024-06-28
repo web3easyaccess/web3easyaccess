@@ -125,6 +125,7 @@ export async function transferETH(
 export async function chgPasswdAddr(
   ownerId: `0x${string}`,
   newPasswdAddr: `0x${string}`,
+  newQuestionNos: string,
   passwdAddr: `0x${string}`,
   nonce: bigint,
   signature: `0x${string}`
@@ -138,7 +139,7 @@ export async function chgPasswdAddr(
     callAccountData = encodeFunctionData({
       abi: abis.chgPasswdAddr,
       functionName: "chgPasswdAddr",
-      args: [newPasswdAddr, passwdAddr, nonce, signature],
+      args: [newPasswdAddr, newQuestionNos, passwdAddr, nonce, signature],
     });
 
     console.log("chgPasswdAddr , _execute");
@@ -162,18 +163,33 @@ async function _execute(
   var callAdminData = encodeFunctionData({
     abi: abis.execute,
     functionName: "execute",
-    args: [ownerId, callAccountData],
+    args: [ownerId, callAccountData, BigInt(10)],
   });
 
   console.log(`_execute callAdminData= ${callAdminData}`);
 
-  //   const request = await walletClient.prepareTransactionRequest({
-  //     account: account,
-  //     to: adminAddr,
-  //     value: BigInt(0), // parseEther("0.0"),
-  //     data: callAdminData,
-  //   });
-  //   console.log("xxxxxxx:request:", request);
+  const eGas = chainClient().publicClient.estimateGas({
+    account: chainClient().account,
+    to: chainClient().adminAddr,
+    value: BigInt(0), // parseEther("0.0"),
+    data: callAdminData,
+  });
+
+  // estimate transaction fee.
+  const request = await chainClient().walletClient.prepareTransactionRequest({
+    account: chainClient().account,
+    to: chainClient().adminAddr,
+    value: BigInt(0), // parseEther("0.0"),
+    data: callAdminData,
+  });
+  const preGasFee = request.gas * request.maxFeePerGas;
+  console.log("+++++preGasFee:", preGasFee, eGas, request.gas);
+
+  callAdminData = encodeFunctionData({
+    abi: abis.execute,
+    functionName: "execute",
+    args: [ownerId, callAccountData, preGasFee],
+  });
 
   const hash = await chainClient().walletClient.sendTransaction({
     account: chainClient().account,

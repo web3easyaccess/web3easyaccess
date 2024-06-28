@@ -5,8 +5,17 @@ import { useFormState, useFormStatus } from "react-dom";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import { useRouter } from "next/navigation";
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  Image,
+  Textarea,
+  ScrollShadow,
+} from "@nextui-org/react";
 
 import Passwd from "./passwd";
+import { setInputValueById, getInputValueById } from "../lib/elementById";
 
 import { useState } from "react";
 import Navbar from "../navbar/navbar";
@@ -24,23 +33,55 @@ export default function Page<T extends { chainCode: string }>({
   return (
     <div>
       <Navbar chainCode={chainCode}></Navbar>
-      <div
+      <Card
+        className="py-4"
         style={{
-          width: "300px",
-          height: "300px",
-          margin: "0 auto",
-          marginTop: "100px",
+          margin: "30 auto",
+          marginTop: "50px",
+          marginLeft: "50px",
+          marginRight: "50px",
         }}
       >
-        <form action={dispatch}>
-          <input
-            id="id_login_email"
-            style={{ display: "none" }}
-            name="email"
-            placeholder="Email"
-            required
-          />
-          {/* <input
+        <div
+          style={{
+            width: "900px",
+            height: "300px",
+            margin: "0 auto",
+            marginTop: "100px",
+            display: "flex",
+            flexDirection: "row",
+          }}
+        >
+          <ScrollShadow className="w-[400px] h-[300px]">
+            <div>
+              <p>Welcome to Web3EasyAccess!</p>
+              <p>
+                Please enter your email address and verify that it belongs to
+                you using a verification code.
+              </p>
+              <p style={{ color: "red" }}>Notice:</p>
+              <p>
+                Please be aware that once you are unable to log in to your email
+                to retrieve the verification code, you will permanently lose
+                your account and the assets in it.
+              </p>
+            </div>
+          </ScrollShadow>
+          <div
+            style={{
+              display: "block",
+              marginLeft: "60px",
+            }}
+          >
+            <form action={dispatch}>
+              <input
+                id="id_login_email"
+                style={{ display: "none" }}
+                name="email"
+                placeholder="Email"
+                required
+              />
+              {/* <input
           id="id_login_passwd"
           type="password"
           style={{ display: "none" }}
@@ -49,35 +90,39 @@ export default function Page<T extends { chainCode: string }>({
           required
         /> */}
 
-          <Input
-            id="id_login_email_ui"
-            isRequired
-            type="email"
-            label="Email"
-            defaultValue="zhtkeepup@gmail.com"
-            className="max-w-xs"
-          />
-          {/* <Passwd id="id_login_passwd_ui"></Passwd> */}
+              <Input
+                id="id_login_email_ui"
+                isRequired
+                type="email"
+                label="Email"
+                defaultValue="zhtkeepup@gmail.com"
+                className="max-w-xs"
+              />
+              {/* <Passwd id="id_login_passwd_ui"></Passwd> */}
+              <div id="id_rtn_message" style={{ display: "none" }}>
+                {resultMsg && <p>{resultMsg}</p>}
+              </div>
+              <div style={{ display: "block" }}>
+                <p id="id_rtn_message_show"></p>
+              </div>
+              <p>&nbsp;</p>
+              <SubmitEmail
+                style={
+                  displayVerify // || displayPermit
+                    ? { display: "none" }
+                    : { display: "block" }
+                }
+                setDisplayVerify={setDisplayVerify}
+                // setDisplayPermit={setDisplayPermit}
+              />
+            </form>
 
-          <div id="id_rtn_message" style={{ display: "block" }}>
-            {resultMsg && <p>{resultMsg}</p>}
+            <VerifyCode
+              style={displayVerify ? { display: "block" } : { display: "none" }}
+            ></VerifyCode>
           </div>
-
-          <SubmitEmail
-            style={
-              displayVerify // || displayPermit
-                ? { display: "none" }
-                : { display: "block" }
-            }
-            setDisplayVerify={setDisplayVerify}
-            // setDisplayPermit={setDisplayPermit}
-          />
-        </form>
-
-        <VerifyCode
-          style={displayVerify ? { display: "block" } : { display: "none" }}
-        ></VerifyCode>
-      </div>
+        </div>
+      </Card>
     </div>
   );
 }
@@ -108,17 +153,20 @@ function SubmitEmail<T extends { style: string; setDisplayVerify: any }>({
     setTimeout(async () => {
       var kk = 0;
       while (true) {
-        let msg = document.getElementById("id_rtn_message")?.innerText;
-        if (msg != null && msg.length > 0) {
-          console.log(msg);
-          if (msg.indexOf("welcome") >= 0) {
-            // exists user
-            router.push("/dashboard");
-            // setDisplayPermit(true);
-          } else if (msg.indexOf("verify code") >= 0) {
+        let rtn = document.getElementById("id_rtn_message")?.innerText;
+        if (rtn != null && rtn.length > 0) {
+          let rrr = JSON.parse(rtn);
+          if (rrr.success) {
+            if (rrr.msg == "[existing]") {
+              router.push("/dashboard");
+              return;
+            }
             // new user
             setDisplayVerify(true);
+            console.log("mmmmsssg:", rrr.msg);
+            // setInputValueById("id_rtn_message_show", rrr.msg);
           }
+          document.getElementById("id_rtn_message_show").innerHTML = rrr.msg;
           break;
         }
         kk++;

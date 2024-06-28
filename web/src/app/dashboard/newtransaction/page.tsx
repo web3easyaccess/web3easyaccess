@@ -2,11 +2,11 @@
 import Main from "../page";
 
 import myCookies from "../../serverside/myCookies";
-import redirectTo from "@/app/serverside/redirectTo";
+
+import { Menu } from "../../lib/menu";
 
 export default async function Page() {
-  const selectedMenu = "newtransactions";
-  redirectTo.urlLoggedInCheck();
+  const selectedMenu = Menu.SendETH;
 
-  return <Main selectedMenu={selectedMenu} txList={undefined}></Main>;
+  return <Main selectedMenu={selectedMenu}></Main>;
 }

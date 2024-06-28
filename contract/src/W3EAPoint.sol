@@ -6,8 +6,8 @@ import {ERC20} from "../lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.s
 
 contract W3EAPoint is ERC20 {
     address public owner;
-    constructor(address adminAddress) ERC20("W3EA POINT", "W3EAP") {
-        owner = adminAddress;
+    constructor(address agentAddress) ERC20("W3EA POINT", "W3EAP") {
+        owner = agentAddress;
         _mint(msg.sender, 1000000 * 1e18);
     }
 

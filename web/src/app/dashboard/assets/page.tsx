@@ -3,11 +3,10 @@ import Main from "../page";
 import myCookies from "../../serverside/myCookies";
 
 import { queryAssets } from "../../serverside/blockchain/queryAccountInfo";
+import { Menu } from "../../lib/menu";
 
 export default async function Page() {
-  const selectedMenu = "assets";
-  const acctId = myCookies.loadData().accountId;
-  const assets = await queryAssets(acctId);
+  const selectedMenu = Menu.Asset;
 
-  return <Main selectedMenu={selectedMenu} assets={assets}></Main>;
+  return <Main selectedMenu={selectedMenu}></Main>;
 }

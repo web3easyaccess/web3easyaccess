@@ -16,7 +16,7 @@ import {
 
 import { chainClient } from "./chainClientOnServer";
 
-import abi from "./abi/abis";
+import abis from "./abi/abis";
 
 export async function queryLatestBlockNumber() {
   const blockNumber = await chainClient().publicClient.getBlockNumber();
@@ -73,6 +73,26 @@ export async function queryAssets(addr: string) {
   } else {
     return [myETH];
   }
+}
+
+export async function queryQuestionIds(addr: string) {
+  if (
+    addr == undefined ||
+    addr == null ||
+    addr == popularAddr.ZERO_ADDR ||
+    addr == popularAddr.ZERO_ADDRError
+  ) {
+    return "00";
+  }
+  const qids = await chainClient().publicClient.readContract({
+    account: chainClient().account,
+    address: addr,
+    abi: abis.questionNos,
+    functionName: "questionNos",
+    args: [],
+  });
+
+  return qids;
 }
 
 async function _queryMorphTransactions(addr: string) {

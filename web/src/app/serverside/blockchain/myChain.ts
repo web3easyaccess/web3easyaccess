@@ -58,7 +58,7 @@ export const setChainCode = (chainCode) => {
 };
 
 export const getChainObj = () => {
-  var rtn = {};
+  var rtn = { id: 0 };
   if (myCookies.getChainCode() == "DEFAULT_ANVIL_CHAIN") {
     rtn = defaultAnvil;
   } else if (myCookies.getChainCode() == "MORPH_TEST_CHAIN") {
@@ -66,7 +66,7 @@ export const getChainObj = () => {
   } else {
   }
   rtn.chainCode = myCookies.getChainCode();
-  console.log(`getChainObj ok. name=${rtn.name}, chainCode=${rtn.chainCode}`);
+  // console.log(`getChainObj ok. name=${rtn.name}, chainCode=${rtn.chainCode}`);
   return rtn;
 
   //   if (process.env.CHAIN_NAME == "DEFAULT_ANVIL_CHAIN") {

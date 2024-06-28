@@ -35,6 +35,7 @@ export default function Page({ style }) {
         <Passwd id="id_login_passwd_ui_verify"></Passwd>
 
         <div>{resultMsg && <p>1:{resultMsg}</p>}</div>
+        <p>&nbsp;</p>
         <VerifyCode />
       </form>
     </div>

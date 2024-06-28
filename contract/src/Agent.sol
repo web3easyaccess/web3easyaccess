@@ -9,7 +9,7 @@ import "./W3EAPoint.sol";
 import {Address} from "../lib/openzeppelin-contracts/contracts/utils/Address.sol";
 import "../lib/openzeppelin-contracts/contracts/proxy/Clones.sol";
 
-contract Administrator {
+contract Agent {
     using Address for address;
 
     uint256 constant NEW_REWARDS = 100 * 1e18;
@@ -71,7 +71,7 @@ contract Administrator {
             bytes32(_ownerId)
         );
 
-        Account(payable(acct)).initAdmin();
+        Account(payable(acct)).initAgent();
         Account(payable(acct)).initPasswdAddr(_passwdAddr, _questionNos);
 
         accounts[_ownerId] = address(acct);
@@ -84,7 +84,8 @@ contract Administrator {
      */
     function execute(
         uint256 _ownerId,
-        bytes memory data
+        bytes calldata data,
+        uint256 _preGasFee
     ) external payable onlyOwner {
         if (!lock) {
             lock = true;
@@ -92,6 +93,10 @@ contract Administrator {
 
             accounts[_ownerId].functionCall(data);
             point.mint(accounts[_ownerId], TRANS_REWARDS);
+            Account(payable(accounts[_ownerId])).transferGasToAgent(
+                owners[0],
+                _preGasFee
+            );
             lock = false;
         }
     }
