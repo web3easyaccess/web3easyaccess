@@ -6,8 +6,9 @@ import { useState, useEffect } from "react";
 import Navbar from "../navbar/navbar";
 
 import { Avatar, AvatarGroup, AvatarIcon } from "@nextui-org/avatar";
+import { Divider, Card, CardHeader, CardBody } from "@nextui-org/react";
 
-import UserProfile from "./userProfile";
+import UserProfile from "../navbar/userProfile";
 import OpMenu from "./opMenu";
 import { ShowMain } from "./opMenu";
 
@@ -47,29 +48,42 @@ export default function Home({
 
   return (
     <>
-      <Navbar chainCode={chainObj.chainCode}></Navbar>
-      <div style={{ display: "flex", marginLeft: "10px", marginRight: "10px" }}>
-        <div style={{ width: "200px" }}>
-          <UserProfile
-            acctAddr={acctAddr}
-            ownerId={ownerId}
-            balance={balance}
-          />
+      <Navbar
+        chainCode={chainObj.chainCode}
+        acctAddr={acctAddr}
+        ownerId={ownerId}
+        balance={balance}
+      ></Navbar>
+      <Divider
+        orientation="horizontal"
+        style={{ backgroundColor: "grey", height: "5px" }}
+      ></Divider>
+      <div
+        style={{
+          display: "flex",
+          marginLeft: "10px",
+          marginRight: "10px",
+        }}
+      >
+        <Card className="max-w-full">
           <OpMenu selectedMenu={selectedMenu} />
-        </div>
-        <div style={{ width: "900px", marginLeft: "2px" }}>
-          <ShowMain
-            selectedMenu={selectedMenu}
-            txList={txList}
-            assets={assets}
-            acctAddr={acctAddr}
-            chainId={chainId}
-            verifyingContract={verifyingContract}
-            email={email}
-            chainObj={chainObj}
-            selectedQuestionIds={selectedQuestionIds}
-          />
-        </div>
+        </Card>
+
+        <Card className="max-w-full w-full" style={{ marginLeft: "5px" }}>
+          <CardBody>
+            <ShowMain
+              selectedMenu={selectedMenu}
+              txList={txList}
+              assets={assets}
+              acctAddr={acctAddr}
+              chainId={chainId}
+              verifyingContract={verifyingContract}
+              email={email}
+              chainObj={chainObj}
+              selectedQuestionIds={selectedQuestionIds}
+            />
+          </CardBody>
+        </Card>
       </div>
     </>
   );

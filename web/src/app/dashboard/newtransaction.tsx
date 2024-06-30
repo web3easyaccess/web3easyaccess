@@ -12,9 +12,21 @@ import {
   parseEther,
 } from "viem";
 
-import React from "react";
-import { Input } from "@nextui-org/react";
+import React, { useState } from "react";
+
 import { Button } from "@nextui-org/button";
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Divider,
+  Link,
+  Image,
+  Input,
+  Tabs,
+  Tab,
+} from "@nextui-org/react";
 
 import Passwd from "./privateinfo/passwd2";
 
@@ -33,90 +45,124 @@ export default function Page({
   email,
   chainObj,
 }) {
+  const [buttonText, setButtonText] = useState("Send ETH");
   const [resultMsg, dispatch] = useFormState(newTransaction, undefined);
   console.log("email in newtransaction:", email);
+
+  const handleSelectionChage = (e) => {
+    console.log("handleSelectionChage, xxx:", e);
+    setButtonText(e.toString());
+  };
+
+  // className="max-w-[400px]"
   return (
-    <div style={{ marginLeft: "100px" }}>
-      <div className="w-full flex flex-col gap-4">
-        <div className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4">
-          <Input
-            id="id_newtrans_receiver_addr_ui"
-            type="text"
-            variant={"bordered"}
-            label="Receiver Address"
-            placeholder="Enter your Receiver Address"
-          />
-        </div>
-        <div className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4">
-          <Input
-            id="id_newtrans_amount_ui"
-            type="text"
-            variant={"bordered"}
-            label="Amount"
-            placeholder="Enter your Amount"
-          />
-        </div>
-        <PrivateInfo forSigning={true}></PrivateInfo>
-      </div>
+    <>
+      <Tabs aria-label="Options" onSelectionChange={handleSelectionChage}>
+        <Tab key="sendETH" title="Send ETH">
+          <div>
+            <div className="w-x-full flex flex-col gap-4">
+              <div
+                className="flex w-x-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
+                style={{ width: "400px" }}
+              >
+                <Input
+                  id="id_newtrans_receiver_addr_ui"
+                  type="text"
+                  variant={"bordered"}
+                  label="Receiver Address"
+                  placeholder="Enter your Receiver Address"
+                />
+              </div>
+              <div
+                className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
+                style={{ width: "400px" }}
+              >
+                <Input
+                  id="id_newtrans_amount_ui"
+                  type="text"
+                  variant={"bordered"}
+                  label="Amount"
+                  placeholder="Enter your Amount"
+                />
+              </div>
+            </div>
 
-      <form action={dispatch}>
-        <input
-          id="id_newtrans_receiver_addr"
-          style={{ display: "none" }}
-          name="receiver_addr"
-          placeholder=""
-          required
-        />
-        <input
-          id="id_newtrans_amount"
-          style={{ display: "none" }}
-          name="amount"
-          placeholder=""
-          required
-        />
-        <input
-          id="id_newtrans_owner_id"
-          style={{ display: "none" }}
-          name="owner_id"
-          placeholder=""
-          required
-        />
-        <input
-          id="id_newtrans_passwd_addr"
-          style={{ display: "none" }}
-          name="passwd_addr"
-          placeholder=""
-          required
-        />
+            <form action={dispatch}>
+              <input
+                id="id_newtrans_receiver_addr"
+                style={{ display: "none" }}
+                name="receiver_addr"
+                placeholder=""
+                required
+              />
+              <input
+                id="id_newtrans_amount"
+                style={{ display: "none" }}
+                name="amount"
+                placeholder=""
+                required
+              />
+              <input
+                id="id_newtrans_owner_id"
+                style={{ display: "none" }}
+                name="owner_id"
+                placeholder=""
+                required
+              />
+              <input
+                id="id_newtrans_passwd_addr"
+                style={{ display: "none" }}
+                name="passwd_addr"
+                placeholder=""
+                required
+              />
 
-        <input
-          id="id_newtrans_signature"
-          style={{ display: "none" }}
-          name="signature"
-          placeholder=""
-          required
-        />
+              <input
+                id="id_newtrans_signature"
+                style={{ display: "none" }}
+                name="signature"
+                placeholder=""
+                required
+              />
 
-        <input
-          id="id_newtrans_nonce"
-          style={{ display: "none" }}
-          name="nonce"
-          placeholder=""
-          required
-        />
+              <input
+                id="id_newtrans_nonce"
+                style={{ display: "none" }}
+                name="nonce"
+                placeholder=""
+                required
+              />
 
-        <div id="id_rtn_message" style={{ display: "block" }}>
-          {resultMsg && <p>{resultMsg}</p>}
-        </div>
+              <div id="id_rtn_message" style={{ display: "none" }}>
+                {resultMsg && <p>{resultMsg}</p>}
+              </div>
+            </form>
+          </div>
+        </Tab>
+        <Tab key="sendToken" title="Send Token">
+          <p>Not Yet</p>
+        </Tab>
+        <Tab key="sendNFT" title="Send NFT">
+          <p>Not Yet</p>
+        </Tab>
+        <Tab key="swap" title="Swap Token">
+          <p>Not Yet</p>
+        </Tab>
+        <Tab key="createTransaction" title="Create Transaction">
+          <p>Not Yet</p>
+        </Tab>
+      </Tabs>
 
-        <SendTransaction
-          chainId={chainId}
-          verifyingContract={verifyingContract}
-          email={email}
-          chainObj={chainObj}
-        />
-      </form>
-    </div>
+      <PrivateInfo forSigning={true}></PrivateInfo>
+
+      <SendTransaction
+        chainId={chainId}
+        verifyingContract={verifyingContract}
+        email={email}
+        chainObj={chainObj}
+        buttonText={buttonText}
+      />
+    </>
   );
 }
 
@@ -124,7 +170,13 @@ function sleep(time) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
 
-function SendTransaction({ chainId, verifyingContract, email, chainObj }) {
+function SendTransaction({
+  chainId,
+  verifyingContract,
+  email,
+  chainObj,
+  buttonText,
+}) {
   const router = useRouter();
   const { pending } = useFormStatus();
 
@@ -199,8 +251,9 @@ function SendTransaction({ chainId, verifyingContract, email, chainObj }) {
         type="submit"
         onPress={handleClick}
         color="primary"
+        style={{ marginTop: "20px", width: "300px" }}
       >
-        Send Transaction
+        {buttonText}
       </Button>
     </>
   );

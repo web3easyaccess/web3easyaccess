@@ -8,7 +8,12 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  Tabs,
+  Tab,
+  CardBody,
+  Card,
 } from "@nextui-org/react";
+
 import { Transaction } from "../acctdetail/types";
 
 export default function Transactions({ txList, acctAddr, chainObj }) {
@@ -30,49 +35,85 @@ export default function Transactions({ txList, acctAddr, chainObj }) {
   };
 
   return (
-    <Table removeWrapper aria-label="Example static collection table">
-      <TableHeader>
-        <TableColumn>from</TableColumn>
-        <TableColumn>to</TableColumn>
-        <TableColumn>value</TableColumn>
-        <TableColumn>timestamp</TableColumn>
-        <TableColumn>transactoin hash</TableColumn>
-        <TableColumn>block number</TableColumn>
-        <TableColumn>total fee</TableColumn>
-        <TableColumn>L1 fee</TableColumn>
-        <TableColumn>gas fee(price X used)</TableColumn>
-        <TableColumn>gas price</TableColumn>
-        <TableColumn>gas used</TableColumn>
-        <TableColumn>gas limit</TableColumn>
-      </TableHeader>
-      <TableBody>
-        {myTrans.map((tx) => (
-          <TableRow key={(++kk).toString()}>
-            <TableCell>
-              <div style={{ color: tx.from == acctAddr ? "red" : "black" }}>
-                {shortAddr(tx.from)}
-              </div>
-            </TableCell>
-            <TableCell>
-              <div style={{ color: tx.to == acctAddr ? "red" : "black" }}>
-                {shortAddr(tx.to)}
-              </div>
-            </TableCell>
-            <TableCell>
-              {tx.to == acctAddr ? tx.value : -1 * tx.value}
-            </TableCell>
-            <TableCell>{adjustTimestamp(tx.timestamp)}</TableCell>
-            <TableCell>{shortTrans(tx.hash)}</TableCell>
-            <TableCell>{tx.block_number}</TableCell>
-            <TableCell>{tx.l1_fee + tx.gas_price * tx.gas_used}</TableCell>
-            <TableCell>{tx.l1_fee}</TableCell>
-            <TableCell>{tx.gas_price * tx.gas_used}</TableCell>
-            <TableCell>{tx.gas_price}</TableCell>
-            <TableCell>{tx.gas_used}</TableCell>
-            <TableCell>{tx.gas_limit}</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <Tabs aria-label="Options">
+      <Tab key="assetTransactions" title="Asset Transactions">
+        <Table removeWrapper aria-label="Example static collection table">
+          <TableHeader>
+            <TableColumn>From</TableColumn>
+            <TableColumn>To</TableColumn>
+            <TableColumn>Amount</TableColumn>
+            <TableColumn>Timestamp</TableColumn>
+            <TableColumn>Gas Fee</TableColumn>
+          </TableHeader>
+          <TableBody>
+            {myTrans.map((tx) => (
+              <TableRow key={(++kk).toString()}>
+                <TableCell>
+                  <div style={{ color: tx.from == acctAddr ? "red" : "black" }}>
+                    {shortAddr(tx.from)}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div style={{ color: tx.to == acctAddr ? "red" : "black" }}>
+                    {shortAddr(tx.to)}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  {tx.to == acctAddr ? tx.value : -1 * tx.value}
+                </TableCell>
+                <TableCell>{adjustTimestamp(tx.timestamp)}</TableCell>
+                <TableCell>{tx.l1_fee + tx.gas_price * tx.gas_used}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Tab>
+      <Tab key="allTransactions" title="All Transactions">
+        <Table removeWrapper aria-label="Example static collection table">
+          <TableHeader>
+            <TableColumn>from</TableColumn>
+            <TableColumn>to</TableColumn>
+            <TableColumn>value</TableColumn>
+            <TableColumn>timestamp</TableColumn>
+            <TableColumn>transactoin hash</TableColumn>
+            <TableColumn>block number</TableColumn>
+            <TableColumn>total fee</TableColumn>
+            <TableColumn>L1 fee</TableColumn>
+            <TableColumn>gas fee(price X used)</TableColumn>
+            <TableColumn>gas price</TableColumn>
+            <TableColumn>gas used</TableColumn>
+            <TableColumn>gas limit</TableColumn>
+          </TableHeader>
+          <TableBody>
+            {myTrans.map((tx) => (
+              <TableRow key={(++kk).toString()}>
+                <TableCell>
+                  <div style={{ color: tx.from == acctAddr ? "red" : "black" }}>
+                    {shortAddr(tx.from)}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div style={{ color: tx.to == acctAddr ? "red" : "black" }}>
+                    {shortAddr(tx.to)}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  {tx.to == acctAddr ? tx.value : -1 * tx.value}
+                </TableCell>
+                <TableCell>{adjustTimestamp(tx.timestamp)}</TableCell>
+                <TableCell>{shortTrans(tx.hash)}</TableCell>
+                <TableCell>{tx.block_number}</TableCell>
+                <TableCell>{tx.l1_fee + tx.gas_price * tx.gas_used}</TableCell>
+                <TableCell>{tx.l1_fee}</TableCell>
+                <TableCell>{tx.gas_price * tx.gas_used}</TableCell>
+                <TableCell>{tx.gas_price}</TableCell>
+                <TableCell>{tx.gas_used}</TableCell>
+                <TableCell>{tx.gas_limit}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Tab>
+    </Tabs>
   );
 }

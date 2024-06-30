@@ -33,7 +33,7 @@ export async function saveChainName(
   const oldChainName = getChainObj().chainCode;
   setChainCode(chainName);
   if (oldChainName != chainName) {
-    redirectTo.urlLogin();
+    // redirectTo.urlLogin();
   }
   return JSON.stringify({
     msg: "success, now chainName in cookie was:" + chainName,

@@ -3,7 +3,18 @@ import React from "react";
 
 import { Key } from "react";
 
-import { Accordion, AccordionItem, Avatar, Link } from "@nextui-org/react";
+import {
+  Accordion,
+  AccordionItem,
+  Avatar,
+  Link,
+  CardHeader,
+  Card,
+  CardBody,
+  CardFooter,
+  Image,
+  Divider,
+} from "@nextui-org/react";
 
 import Assets from "./assets";
 import Transactions from "./transactions";
@@ -31,7 +42,7 @@ export default function OpMenu({ selectedMenu }: { selectedMenu: Menu }) {
       route.push("/dashboard/assets");
     } else if (elementTextContent.indexOf("Transactions") >= 0) {
       route.push("/dashboard/transactions");
-    } else if (elementTextContent.indexOf("Send ETH") >= 0) {
+    } else if (elementTextContent.indexOf("Send Transaction") >= 0) {
       route.push("/dashboard/newtransaction");
     } else if (elementTextContent.indexOf("Private Info") >= 0) {
       route.push("/dashboard/privateinfo");
@@ -40,7 +51,7 @@ export default function OpMenu({ selectedMenu }: { selectedMenu: Menu }) {
 
   const myColor = (menu: Menu) => {
     if (selectedMenu == menu) {
-      return "danger";
+      return "warning"; // '"default" | "primary" | "secondary" | "success" | "warning" | "danger" | undefined'
     } else {
       return undefined;
     }
@@ -51,112 +62,58 @@ export default function OpMenu({ selectedMenu }: { selectedMenu: Menu }) {
       menuText = "Assets";
     } else if (menu == Menu.Transactions) {
       menuText = "Transactions";
-    } else if (menu == Menu.SendETH) {
-      menuText = "Send ETH";
+    } else if (menu == Menu.SendTransaction) {
+      menuText = "Send Transaction";
     } else if (menu == Menu.PrivateSetting) {
       menuText = "Private Info";
     }
     return menuText;
   };
 
+  const MenuItem = ({ menu }: { menu: Menu }) => {
+    return (
+      <div className="flex ">
+        <Avatar
+          radius="sm"
+          name={myMenuText(menu).substring(0, 1)}
+          style={{ fontSize: "22px" }}
+          size="sm"
+          color={myColor(menu)}
+        />
+        <p
+          style={{
+            marginLeft: "10px",
+            fontSize: "16px",
+            cursor: "pointer",
+          }}
+          onClick={(event) => handlePress(event)}
+        >
+          {myMenuText(menu)}
+        </p>
+      </div>
+    );
+  };
+
   return (
-    <div className="max-w-[200px]">
-      <Accordion selectionMode="single">
-        <AccordionItem
-          key="1"
-          indicator={() => (selectedMenu == Menu.Asset ? "=>" : "|")}
-          onPress={(event) => handlePress(event)}
-          startContent={
-            <div className="flex ">
-              <Avatar
-                radius="sm"
-                name={myMenuText(Menu.Asset).substring(0, 1)}
-                style={{ fontSize: "22px" }}
-                size="sm"
-                color={myColor(Menu.Asset)}
-              />
-              <p style={{ marginLeft: "10px", fontSize: "18px" }}>
-                {myMenuText(Menu.Asset)}
-              </p>
-            </div>
-          }
-          // subtitle="4 unread messages"
-          title=""
-        >
-          {defaultContent}
-        </AccordionItem>
-        <AccordionItem
-          key="2"
-          indicator={() => (selectedMenu == Menu.Transactions ? "=>" : "|")}
-          onPress={(event) => handlePress(event)}
-          startContent={
-            <div className="flex ">
-              <Avatar
-                radius="sm"
-                name={myMenuText(Menu.Transactions).substring(0, 1)}
-                style={{ fontSize: "22px" }}
-                size="sm"
-                color={myColor(Menu.Transactions)}
-              />
-              <p style={{ marginLeft: "10px", fontSize: "18px" }}>
-                {myMenuText(Menu.Transactions)}
-              </p>
-            </div>
-          }
-          // subtitle="4 unread messages"
-          title=""
-        >
-          {defaultContent}
-        </AccordionItem>
-
-        <AccordionItem
-          key="3"
-          indicator={() => (selectedMenu == Menu.SendETH ? "=>" : "|")}
-          onPress={(event) => handlePress(event)}
-          startContent={
-            <div className="flex ">
-              <Avatar
-                radius="sm"
-                name={myMenuText(Menu.SendETH).substring(0, 1)}
-                style={{ fontSize: "22px" }}
-                size="sm"
-                color={myColor(Menu.SendETH)}
-              />
-              <p style={{ marginLeft: "10px", fontSize: "18px" }}>
-                {myMenuText(Menu.SendETH)}
-              </p>
-            </div>
-          }
-          // subtitle="4 unread messages"
-          title=""
-        >
-          {defaultContent}
-        </AccordionItem>
-
-        <AccordionItem
-          key="4"
-          indicator={() => (selectedMenu == Menu.PrivateSetting ? "=>" : "|")}
-          onPress={(event) => handlePress(event)}
-          startContent={
-            <div className="flex ">
-              <Avatar
-                radius="sm"
-                name={myMenuText(Menu.PrivateSetting).substring(0, 1)}
-                style={{ fontSize: "22px" }}
-                size="sm"
-                color={myColor(Menu.PrivateSetting)}
-              />
-              <p style={{ marginLeft: "10px", fontSize: "18px" }}>
-                {myMenuText(Menu.PrivateSetting)}
-              </p>
-            </div>
-          }
-          // subtitle="4 unread messages"
-          title=""
-        >
-          {defaultContent}
-        </AccordionItem>
-      </Accordion>
+    <div style={{ width: "240px" }}>
+      <Card>
+        <CardBody>
+          <MenuItem menu={Menu.Asset}></MenuItem>
+        </CardBody>
+        <Divider />
+        <CardBody>
+          <MenuItem menu={Menu.Transactions}></MenuItem>
+        </CardBody>
+        <Divider />
+        <CardBody>
+          <MenuItem menu={Menu.SendTransaction}></MenuItem>
+        </CardBody>
+        <Divider />
+        <CardBody>
+          <MenuItem menu={Menu.PrivateSetting}></MenuItem>
+        </CardBody>
+        <Divider />
+      </Card>
     </div>
   );
 }
@@ -184,7 +141,7 @@ export function ShowMain({
     return (
       <Transactions txList={txList} acctAddr={acctAddr} chainObj={chainObj} />
     );
-  } else if (selectedMenu == Menu.SendETH) {
+  } else if (selectedMenu == Menu.SendTransaction) {
     console.log("selectedMenu11111111133:", selectedMenu);
     return (
       <NewTransactions

@@ -1,6 +1,6 @@
 export enum Menu {
   Asset,
   Transactions,
-  SendETH,
+  SendTransaction,
   PrivateSetting,
 }

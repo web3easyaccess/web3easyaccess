@@ -144,263 +144,293 @@ export default function Page({
   };
 
   return (
-    <>
-      <div style={{ marginLeft: "100px" }}>
-        <Input
-          isReadOnly
-          type="text"
-          defaultValue={warnMessage().msg}
-          className="max-w-2xl"
-          color={warnMessage().color}
-        />
-        {!forSigning ? (
-          <Card>
-            <CardHeader className="flex gap-3">
-              <p>Personal information</p>
-            </CardHeader>
-            <Divider />
+    <Card className="max-w-[800px]" style={{ marginTop: "0px" }}>
+      <CardBody>
+        <div>
+          {!forSigning ? (
+            <>
+              <Card>
+                <CardHeader className="flex gap-3">
+                  <p style={{ fontWeight: "bold", fontSize: "20px" }}>
+                    {email}
+                  </p>
+                  's
+                  <p>Private information</p>
+                </CardHeader>
+                <Divider />
+                <CardBody>
+                  <p>
+                    Warning: The server does not store your personal
+                    information.
+                  </p>
+                  <p>
+                    1. Once the personal information is forgotten, you will
+                    never be able to recover your accounts and assets
+                  </p>
+                  <p>
+                    2. Once personal information is leaked, your account or
+                    assets may be stolen
+                  </p>
+                </CardBody>
+              </Card>
+            </>
+          ) : null}
+
+          <div style={forSigning ? { display: "none" } : { display: "block" }}>
+            <Input
+              isReadOnly
+              type="text"
+              defaultValue={warnMessage().msg}
+              className="max-w-2xl"
+              color={warnMessage().color}
+            />
+            <Input
+              isReadOnly
+              type="text"
+              defaultValue={"It will pay gas fee when you modify private info"}
+              className="max-w-2xl"
+              color={"warning"}
+            />
+          </div>
+
+          <Divider
+            style={{
+              marginTop: "10px",
+              color: "black",
+              height: "10px",
+            }}
+          ></Divider>
+
+          <Card
+            style={{
+              width: "300px",
+              marginTop: "5px",
+              marginBottom: "5px",
+              fontWeight: "bold",
+              backgroundColor: "LightBlue",
+            }}
+          >
             <CardBody>
-              <p>
-                Warning: The server does not store your personal information.
-              </p>
-              <p>
-                1. Once the personal information is forgotten, you will never be
-                able to recover your accounts and assets
-              </p>
-              <p>
-                2. Once personal information is leaked, your account or assets
-                may be stolen
-              </p>
+              <p>PIN Code:</p>
             </CardBody>
           </Card>
-        ) : null}
-        <Divider
-          style={{
-            marginTop: "10px",
-            marginBottom: "10px",
-          }}
-        ></Divider>
-        {!forSigning ? (
-          <Input
-            isRequired
-            type="email"
-            label="Email"
-            defaultValue={email}
-            isReadOnly={true}
-            className="max-w-xs"
-          />
-        ) : null}
-        <Divider
-          style={{
-            marginTop: "10px",
-            marginBottom: "10px",
-          }}
-        ></Divider>
-        {isNewUser() ? null : (
-          <Passwd
-            id="id_private_pin_old"
-            label="old pin code"
-            hint="input private old pin code"
-            onMyBlur={handlePinBlur}
-          ></Passwd>
-        )}
-        <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
-          <Passwd
-            id="id_private_pin_1"
-            label="pin code"
-            hint="input private pin code"
-          ></Passwd>
-          {!forSigning ? (
+
+          {isNewUser() ? null : (
             <Passwd
-              id="id_private_pin_2"
-              label="pin code"
-              hint="input private pin code again"
+              id="id_private_pin_old"
+              label="old PIN code"
+              hint="input private old PIN code"
               onMyBlur={handlePinBlur}
             ></Passwd>
-          ) : null}
-        </div>
-        <Divider
-          style={{
-            marginTop: "10px",
-            marginBottom: "10px",
-          }}
-        ></Divider>
-        {isNewUser() ? null : (
-          <Passwd
-            id="id_private_question1_answer_old"
-            label="first question's old answer"
-            hint="input first question's old answer"
-          ></Passwd>
-        )}
-        <Autocomplete
-          label="Choose the first question"
-          className="max-w-2xl"
-          onSelectionChange={onSelectionChange1}
-          selectedKey={selectedKey1}
-        >
-          {pq.questions[1].map((item) => (
-            <AutocompleteItem key={item.idx} value={item.question}>
-              {item.question}
-            </AutocompleteItem>
-          ))}
-        </Autocomplete>
-        <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
-          <Passwd
-            id="id_private_question1_answer_1"
-            label="first question's answer"
-            hint="input first question's answer"
-          ></Passwd>
-          {!forSigning ? (
+          )}
+          <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
             <Passwd
-              id="id_private_question1_answer_2"
+              id="id_private_pin_1"
+              label="pin code"
+              hint="input private pin code"
+            ></Passwd>
+            {!forSigning ? (
+              <Passwd
+                id="id_private_pin_2"
+                label="pin code"
+                hint="input private pin code again"
+                onMyBlur={handlePinBlur}
+              ></Passwd>
+            ) : null}
+          </div>
+          <Divider
+            style={{
+              marginTop: "10px",
+              color: "black",
+              height: "5px",
+            }}
+          ></Divider>
+
+          <Card
+            style={{
+              width: "300px",
+              marginTop: "5px",
+              marginBottom: "5px",
+              fontWeight: "bold",
+              backgroundColor: "LightBlue",
+            }}
+          >
+            <CardBody>
+              <p>First Private Question:</p>
+            </CardBody>
+          </Card>
+          {isNewUser() ? null : (
+            <div style={{ marginBottom: "10px" }}>
+              <Autocomplete label="old first question" className="max-w-2xl">
+                {pq.questions[1].map((item) => (
+                  <AutocompleteItem key={item.idx} value={item.question}>
+                    {item.question}
+                  </AutocompleteItem>
+                ))}
+              </Autocomplete>
+
+              <Passwd
+                id="id_private_question1_answer_old"
+                label="old first question's answer"
+                hint="input old first question's answer"
+              ></Passwd>
+            </div>
+          )}
+          <Autocomplete
+            label="Choose the first question"
+            className="max-w-2xl"
+            onSelectionChange={onSelectionChange1}
+            selectedKey={selectedKey1}
+          >
+            {pq.questions[1].map((item) => (
+              <AutocompleteItem key={item.idx} value={item.question}>
+                {item.question}
+              </AutocompleteItem>
+            ))}
+          </Autocomplete>
+          <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
+            <Passwd
+              id="id_private_question1_answer_1"
               label="first question's answer"
-              hint="input first question's answer again"
+              hint="input first question's answer"
             ></Passwd>
-          ) : null}
-        </div>
+            {!forSigning ? (
+              <Passwd
+                id="id_private_question1_answer_2"
+                label="first question's answer"
+                hint="input first question's answer again"
+              ></Passwd>
+            ) : null}
+          </div>
 
-        <Divider
-          style={{
-            marginTop: "10px",
-            marginBottom: "10px",
-          }}
-        ></Divider>
-        {isNewUser() ? null : (
-          <Passwd
-            id="id_private_question2_answer_old"
-            label="second question's old answer"
-            hint="input second question's old answer"
-          ></Passwd>
-        )}
-        <Autocomplete
-          label="Choose the second question"
-          className="max-w-2xl"
-          onSelectionChange={onSelectionChange2}
-          selectedKey={selectedKey2}
-        >
-          {pq.questions[2].map((item) => (
-            <AutocompleteItem key={item.idx} value={item.question}>
-              {item.question}
-            </AutocompleteItem>
-          ))}
-        </Autocomplete>
-        <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
-          <Passwd
-            id="id_private_question2_answer_1"
-            label="second question's answer"
-            hint="input second question's answer"
-          ></Passwd>
-          {!forSigning ? (
+          <Divider
+            style={{
+              marginTop: "10px",
+              color: "black",
+              height: "5px",
+            }}
+          ></Divider>
+
+          <Card
+            style={{
+              width: "300px",
+              marginTop: "5px",
+              marginBottom: "5px",
+              fontWeight: "bold",
+              backgroundColor: "LightBlue",
+            }}
+          >
+            <CardBody>
+              <p>Second Private Question:</p>
+            </CardBody>
+          </Card>
+          {isNewUser() ? null : (
+            <div style={{ marginBottom: "10px" }}>
+              <Autocomplete label="old second question" className="max-w-2xl">
+                {pq.questions[1].map((item) => (
+                  <AutocompleteItem key={item.idx} value={item.question}>
+                    {item.question}
+                  </AutocompleteItem>
+                ))}
+              </Autocomplete>
+              <Passwd
+                id="id_private_question2_answer_old"
+                label="old second question's answer"
+                hint="input old second question's answer"
+              ></Passwd>
+            </div>
+          )}
+          <Autocomplete
+            label="Choose the second question"
+            className="max-w-2xl"
+            onSelectionChange={onSelectionChange2}
+            selectedKey={selectedKey2}
+          >
+            {pq.questions[2].map((item) => (
+              <AutocompleteItem key={item.idx} value={item.question}>
+                {item.question}
+              </AutocompleteItem>
+            ))}
+          </Autocomplete>
+          <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
             <Passwd
-              id="id_private_question2_answer_2"
+              id="id_private_question2_answer_1"
               label="second question's answer"
-              hint="input second question's answer again"
+              hint="input second question's answer"
             ></Passwd>
-          ) : null}
-        </div>
+            {!forSigning ? (
+              <Passwd
+                id="id_private_question2_answer_2"
+                label="second question's answer"
+                hint="input second question's answer again"
+              ></Passwd>
+            ) : null}
+          </div>
 
-        <Divider
-          style={{
-            marginTop: "10px",
-            marginBottom: "10px",
-          }}
-        ></Divider>
-        {isNewUser() ? null : (
-          <Passwd
-            id="id_private_question3_answer_old"
-            label="third question's old answer"
-            hint="input third question's old answer"
-          ></Passwd>
-        )}
-        <Autocomplete
-          label="Choose the third question"
-          className="max-w-2xl"
-          onSelectionChange={onSelectionChange3}
-          selectedKey={selectedKey3}
-        >
-          {pq.questions[3].map((item) => (
-            <AutocompleteItem key={item.idx} value={item.question}>
-              {item.question}
-            </AutocompleteItem>
-          ))}
-        </Autocomplete>
-        <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
-          <Passwd
-            id="id_private_question3_answer_1"
-            label="third question's answer"
-            hint="input third question's answer"
-          ></Passwd>
-          {!forSigning ? (
-            <Passwd
-              id="id_private_question3_answer_2"
-              label="third question's answer"
-              hint="input third question's answer again"
-            ></Passwd>
-          ) : null}
-        </div>
+          <Divider
+            style={{
+              marginTop: "10px",
+              color: "black",
+              height: "10px",
+            }}
+          ></Divider>
 
-        <Divider
-          style={{
-            marginTop: "10px",
-            marginBottom: "10px",
-          }}
-        ></Divider>
-
-        <form action={myDispatch}>
-          <input
-            id="id_private_ownerId"
-            style={{ display: "none" }}
-            name="owner_id"
-          />
-          <input
-            id="id_private_passwdAddr"
-            style={{ display: "none" }}
-            name="passwd_addr"
-          />
-          <input
-            id="id_private_oldPasswdAddr"
-            style={{ display: "none" }}
-            name="old_passwd_addr"
-          />
-          <input
-            id="id_private_nonce"
-            style={{ display: "none" }}
-            name="nonce"
-          />
-          <input
-            id="id_private_signature"
-            style={{ display: "none" }}
-            name="signature"
-          />
-
-          <input
-            id="id_private_owner_id"
-            style={{ display: "none" }}
-            name="owner_id"
-          />
-
-          <input
-            id="id_private_question_nos"
-            style={{ display: "none" }}
-            name="question_nos"
-          />
-
-          <div>{resultMsg && <p>{resultMsg}</p>}</div>
-          {!forSigning ? (
-            <SubmitMessage
-              email={email}
-              chainId={chainId}
-              verifyingContract={verifyingContract}
-              chainObj={chainObj}
-              isNew={isNewUser()}
-              selectedQuestion1Ref={selectedQuestion1Ref}
-              selectedQuestion2Ref={selectedQuestion2Ref}
-              selectedQuestion3Ref={selectedQuestion3Ref}
+          <form action={myDispatch}>
+            <input
+              id="id_private_ownerId"
+              style={{ display: "none" }}
+              name="owner_id"
             />
-          ) : null}
-        </form>
-      </div>
-    </>
+            <input
+              id="id_private_passwdAddr"
+              style={{ display: "none" }}
+              name="passwd_addr"
+            />
+            <input
+              id="id_private_oldPasswdAddr"
+              style={{ display: "none" }}
+              name="old_passwd_addr"
+            />
+            <input
+              id="id_private_nonce"
+              style={{ display: "none" }}
+              name="nonce"
+            />
+            <input
+              id="id_private_signature"
+              style={{ display: "none" }}
+              name="signature"
+            />
+
+            <input
+              id="id_private_owner_id"
+              style={{ display: "none" }}
+              name="owner_id"
+            />
+
+            <input
+              id="id_private_question_nos"
+              style={{ display: "none" }}
+              name="question_nos"
+            />
+
+            <div>{resultMsg && <p>{resultMsg}</p>}</div>
+            {!forSigning ? (
+              <SubmitMessage
+                email={email}
+                chainId={chainId}
+                verifyingContract={verifyingContract}
+                chainObj={chainObj}
+                isNew={isNewUser()}
+                selectedQuestion1Ref={selectedQuestion1Ref}
+                selectedQuestion2Ref={selectedQuestion2Ref}
+                selectedQuestion3Ref={selectedQuestion3Ref}
+              />
+            ) : null}
+          </form>
+        </div>
+      </CardBody>
+    </Card>
   );
 }
 
@@ -577,8 +607,9 @@ function SubmitMessage({
       type="submit"
       onPress={handleClick}
       color="primary"
+      style={{ marginTop: "20px", width: "300px" }}
     >
-      OK
+      Save To Chain
     </Button>
   );
 }
