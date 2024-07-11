@@ -1,7 +1,7 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { useRef, useState } from "react";
-
+import { useRouter } from "next/navigation";
 import { Avatar, AvatarGroup, AvatarIcon } from "@nextui-org/avatar";
 import { Badge } from "@nextui-org/badge";
 import { Input } from "@nextui-org/input";
@@ -10,171 +10,425 @@ import { User } from "@nextui-org/user";
 import myCookies from "../serverside/myCookies";
 import { Tooltip } from "@nextui-org/tooltip";
 import {
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  Divider,
-  Link,
-  Image,
+    Card,
+    CardHeader,
+    CardBody,
+    CardFooter,
+    Divider,
+    Link,
+    Image,
+    ListboxItem,
+    Listbox,
+    Snippet,
+    Button,
 } from "@nextui-org/react";
 import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
 
-// import { useSession } from "next-auth/react";
-// import { useRouter } from "next/router";
+import { saveSelectedOrderNo } from "../serverside/serverActions";
+import { useFormState, useFormStatus } from "react-dom";
 
-export default function UserProfile({ acctAddr, ownerId, balance }) {
-  if (acctAddr == undefined) {
-    acctAddr = popularAddr.ZERO_ADDR;
-  }
-  //   acctAddr = "0x3d078713797d3a9B39a95681538A1A535C3Cd6f6";
-  if (balance == "0") {
-    balance = "0.0";
-  }
+import { getOwnerIdSelfByBigBrother } from "../dashboard/privateinfo/lib/keyTools";
 
-  const [copiedTipShow, setCopiedTipShow] = useState(false);
+import {
+    queryAccountList,
+    queryEthBalance,
+    queryW3eapBalance,
+    queryfreeGasFeeAmount,
+} from "../lib/chainQuery";
 
-  const acctAddrDisplay =
-    acctAddr.substring(0, 6) + "...." + acctAddr.substring(acctAddr.length - 4);
-  console.log("UserProfile,acctAddr:", acctAddr);
-  console.log("UserProfile,ownerId:", ownerId);
+import {
+    Menu,
+    UserInfo,
+    uiToString,
+    ChainCode,
+    formatNumber,
+} from "../lib/myTypes";
 
-  const copyFullAddr = () => {
-    // const address = document.getElementById("id_account_full_addr").value;
-    var copyText = document.getElementById("id_account_full_addr");
+export default function App({
+    currentChainCode,
+    currentUserInfo,
+    updateCurrentUserInfo,
+}: {
+    currentChainCode: ChainCode;
+    currentUserInfo: UserInfo;
+    updateCurrentUserInfo: any;
+}) {
+    const router = useRouter();
 
-    // Select the text field
-    copyText.select();
-    copyText.setSelectionRange(0, 99999); // For mobile devices
+    const [resultMsg, dispatch] = useFormState(saveSelectedOrderNo, undefined);
 
-    // Copy the text inside the text field
-    navigator.clipboard.writeText(copyText.value);
+    const [ethBalance, setEthBalance] = useState("-");
+    const [w3eapBalance, setW3eapBalance] = useState("-");
+    const [freeGasFeeAmount, setFreeGasFeeAmount] = useState("-");
 
-    // Alert the copied text
-    // alert("Copied the text: " + copyText.value);
-    setCopiedTipShow(true);
-    console.log("copiedTipShow-1:", copiedTipShow);
-    setTimeout(() => {
-      setCopiedTipShow(false);
-      console.log("copiedTipShow-0:", copiedTipShow);
-    }, 1000);
-  };
-  console.log("copiedTipShow-2:", copiedTipShow);
+    useEffect(() => {
+        const fetchAcctList = async () => {
+            //   const acctData = await fetch("/api/queryAccountList", {
+            //     method: "POST",
+            //     body: JSON.stringify({ ownerId: ownerId }),
+            //   });
+            //   const acctList = await acctData.json();
+            //   console.log("server api:", acctList);
+            //   setAccountList(acctList);
 
-  const AcctIcon = ({ addr }) => {
-    let color:
-      | "success"
-      | "primary"
-      | "secondary"
-      | "danger"
-      | "default"
-      | "warning"
-      | undefined = "success";
-    let bd = true;
-    switch (addr.substring(addr.length - 1)) {
-      case "0":
-        bd = false;
-      case "1":
-        color = "success";
-        break;
-      case "2":
-        bd = false;
-      case "3":
-        color = "primary";
-        break;
-      case "4":
-        bd = false;
-      case "5":
-        color = "secondary";
-        break;
-      case "6":
-        bd = false;
-      case "7":
-        color = "danger";
-        break;
-      case "8":
-        bd = false;
-      case "9":
-        color = "success";
-        break;
-      case "a":
-      case "A":
-        bd = false;
-      case "b":
-      case "B":
-        color = "primary";
-        break;
-      case "c":
-      case "C":
-        bd = false;
-      case "d":
-      case "D":
-        color = "secondary";
-        break;
-      case "e":
-      case "E":
-        bd = false;
-      case "f":
-      case "F":
-        color = "danger";
-        break;
+            //   console.log(
+            //     "client query, queryAccountList before:",
+            //     chainCode,
+            //     factoryAddr,
+            //     ownerId
+            //   );
+            // console.log("fffxxx:currentUserInfo:", currentUserInfo);
+            const acctList = await queryAccountList(
+                currentUserInfo.chainCode,
+                currentUserInfo.factoryAddr,
+                currentUserInfo.bigBrotherOwnerId
+            );
+            console.log(
+                currentUserInfo.chainCode,
+                "client query, queryAccountList:",
+                acctList
+            );
+
+            const accountAddrList: string[] = [];
+            const accountToOwnerIdMap = new Map<string, string>();
+            const accountToOrderNoMap = new Map<string, number>();
+            acctList.forEach((a) => {
+                accountAddrList.push(a.addr);
+                accountToOwnerIdMap.set(
+                    a.addr,
+                    getOwnerIdSelfByBigBrother(
+                        currentUserInfo.bigBrotherOwnerId,
+                        a.orderNo
+                    )
+                );
+                accountToOrderNoMap.set(a.addr, a.orderNo);
+            });
+
+            const cUserInfo = {
+                ...currentUserInfo,
+                selectedOwnerId: getOwnerIdSelfByBigBrother(
+                    currentUserInfo.bigBrotherOwnerId,
+                    currentUserInfo.selectedOrderNo
+                ),
+                selectedOrderNo: currentUserInfo.selectedOrderNo,
+                selectedAccountAddr:
+                    accountAddrList[currentUserInfo.selectedOrderNo],
+                accountAddrList: accountAddrList,
+                accountToOwnerIdMap: accountToOwnerIdMap,
+                accountToOrderNoMap: accountToOrderNoMap,
+            };
+            updateCurrentUserInfo(cUserInfo);
+        };
+        //
+        fetchAcctList();
+    }, [currentChainCode]);
+
+    useEffect(() => {
+        // This represents the currently selected account in the global scope
+        console.log(
+            "do something ,for currentUserInfo changed...",
+            currentUserInfo.selectedAccountAddr
+        );
+        const fetchBalance = async () => {
+            let eb = await queryEthBalance(
+                currentUserInfo.chainCode,
+                currentUserInfo.factoryAddr,
+                currentUserInfo.selectedAccountAddr
+            );
+            console.log(
+                currentUserInfo.chainCode,
+                "client query, queryEthBalance:",
+                currentUserInfo.selectedAccountAddr + ":" + eb
+            );
+            setEthBalance(eb == "0" ? "0.0" : eb);
+        };
+
+        const fetchW3eapBalance = async () => {
+            let wb = await queryW3eapBalance(
+                currentUserInfo.chainCode,
+                currentUserInfo.factoryAddr,
+                currentUserInfo.selectedAccountAddr
+            );
+            console.log(
+                currentUserInfo.chainCode,
+                "client query, queryW3eapBalance:",
+                currentUserInfo.selectedAccountAddr + ":" + wb
+            );
+            setW3eapBalance(wb == "0" ? "0.0" : wb);
+        };
+
+        const fetchfreeGasFeeAmount = async () => {
+            let fa = await queryfreeGasFeeAmount(
+                currentUserInfo.chainCode,
+                currentUserInfo.factoryAddr,
+                currentUserInfo.selectedAccountAddr
+            );
+            console.log(
+                currentUserInfo.chainCode,
+                "client query, freeGasFeeAmount:",
+                currentUserInfo.selectedAccountAddr + ":" + fa
+            );
+            setFreeGasFeeAmount(fa == "0" ? "0.0" : fa);
+        };
+
+        //
+        if (currentUserInfo.selectedAccountAddr != "") {
+            fetchBalance();
+            fetchW3eapBalance();
+            if (
+                currentUserInfo.selectedOrderNo ==
+                currentUserInfo.accountAddrList.length - 1
+            ) {
+                // the last one, has not created!
+                setFreeGasFeeAmount("0.00");
+            } else {
+                fetchfreeGasFeeAmount();
+            }
+            document.getElementById("id_user_selectedOrderNo_btn")?.click();
+        }
+    }, [currentUserInfo]);
+
+    const acctAddrDisplay = (fullAddr: string) => {
+        if (fullAddr == undefined) {
+            console.log("fullAddr is undefined in acctAddrDisplay");
+            return "";
+        }
+        return fullAddr.substring(0, 8) + "..." + fullAddr.substring(38);
+    };
+
+    const AcctIcon = ({ addr }: { addr: string }) => {
+        let color:
+            | "success"
+            | "primary"
+            | "secondary"
+            | "danger"
+            | "default"
+            | "warning"
+            | undefined = "success";
+        let bd = true;
+        switch (addr.substring(addr.length - 1)) {
+            case "0":
+                bd = false;
+            case "1":
+                color = "success";
+                break;
+            case "2":
+                bd = false;
+            case "3":
+                color = "primary";
+                break;
+            case "4":
+                bd = false;
+            case "5":
+                color = "secondary";
+                break;
+            case "6":
+                bd = false;
+            case "7":
+                color = "danger";
+                break;
+            case "8":
+                bd = false;
+            case "9":
+                color = "success";
+                break;
+            case "a":
+            case "A":
+                bd = false;
+            case "b":
+            case "B":
+                color = "primary";
+                break;
+            case "c":
+            case "C":
+                bd = false;
+            case "d":
+            case "D":
+                color = "secondary";
+                break;
+            case "e":
+            case "E":
+                bd = false;
+            case "f":
+            case "F":
+                color = "danger";
+                break;
+        }
+        // "success" | "default" | "primary" | "secondary" | "warning" | "danger" | undefined
+        return (
+            <Avatar
+                isBordered={bd}
+                name={addr.substring(2, 5)}
+                color={color}
+                style={{ fontSize: "18px" }}
+            />
+        );
+    };
+
+    /////////////////////////
+    /////////////////////////
+
+    function BtnselectedOrderNo() {
+        const { pending } = useFormStatus();
+        const handleClick = (event) => {
+            if (pending) {
+                event.preventDefault();
+            }
+            console.log("save selected Order....");
+        };
+        return (
+            // <button aria-disabled={pending} type="submit" onClick={handleClick}>
+            //   Login
+            // </button>
+
+            <Button
+                disabled={pending}
+                id="id_user_selectedOrderNo_btn"
+                type="submit"
+                onPress={handleClick}
+                color="primary"
+            >
+                save OrderNo
+            </Button>
+        );
     }
-    // "success" | "default" | "primary" | "secondary" | "warning" | "danger" | undefined
     return (
-      <Avatar
-        isBordered={bd}
-        name={addr.substring(2)}
-        color={color}
-        style={{ fontSize: "18px" }}
-      />
-    );
-  };
+        <div style={{ display: "flex" }}>
+            <form action={dispatch} style={{ display: "none" }}>
+                <input
+                    id="id_user_selectedOrderNo"
+                    style={{ display: "none" }}
+                    name="selectedOrderNo"
+                    value={currentUserInfo.selectedOrderNo}
+                />
+                <div>{resultMsg && <p>1:{resultMsg}</p>}</div>
+                <BtnselectedOrderNo />
+            </form>
 
-  return (
-    <Card className="max-w-[400px]">
-      <CardHeader className="flex gap-3">
-        <AcctIcon addr={acctAddrDisplay}></AcctIcon>
-        <div
-          className="flex flex-col"
-          onClick={copyFullAddr}
-          style={{
-            cursor: "pointer",
-          }}
-        >
-          <p
-            className="text-md"
-            style={copiedTipShow ? { color: "red" } : { color: "black" }}
-          >
-            {acctAddrDisplay}
-          </p>
-          <input
-            id="id_account_full_addr"
-            style={{ display: "none" }}
-            defaultValue={acctAddr}
-          />
+            <Card className="max-w-[400px]">
+                <CardHeader className="flex gap-3">
+                    <AcctIcon
+                        addr={acctAddrDisplay(
+                            currentUserInfo.selectedAccountAddr
+                        )}
+                    ></AcctIcon>
+                    <Snippet
+                        hideSymbol={true}
+                        codeString={
+                            currentUserInfo.chainCode +
+                            ": " +
+                            currentUserInfo.selectedAccountAddr
+                        }
+                        variant="bordered"
+                        style={{
+                            fontSize: "16px",
+                            height: "40px",
+                            padding: "0px",
+                        }}
+                    >
+                        <select
+                            name="accountList"
+                            id="id_select_accountList"
+                            value={currentUserInfo.selectedAccountAddr}
+                            defaultValue={"-"}
+                            style={{ width: "170px", height: "32px" }}
+                            onChange={(e) => {
+                                const cUserInfo = {
+                                    ...currentUserInfo,
+                                    selectedAccountAddr: e.target.value,
+
+                                    selectedOwnerId:
+                                        currentUserInfo.accountToOwnerIdMap.get(
+                                            e.target.value
+                                        ),
+                                    selectedOrderNo:
+                                        currentUserInfo.accountToOrderNoMap.get(
+                                            e.target.value
+                                        ),
+                                };
+                                updateCurrentUserInfo(cUserInfo);
+                            }}
+                        >
+                            {currentUserInfo.accountAddrList.map(
+                                (acctAddr, index) => (
+                                    <option
+                                        key={index}
+                                        value={acctAddr}
+                                        style={
+                                            index ==
+                                            currentUserInfo.accountAddrList
+                                                .length -
+                                                1
+                                                ? {
+                                                      color: "grey",
+                                                      fontStyle: "italic",
+                                                  }
+                                                : {
+                                                      fontWeight: "bold",
+                                                      color: "Highlight",
+                                                  }
+                                        }
+                                    >
+                                        {acctAddrDisplay(acctAddr)}
+                                    </option>
+                                )
+                            )}
+                        </select>
+                    </Snippet>
+
+                    <div>
+                        <p
+                            className="text-md"
+                            style={{
+                                fontWeight: "bold",
+                                fontSize: "18px",
+                                color: "green",
+                            }}
+                        >
+                            <label title={ethBalance}>
+                                {formatNumber(ethBalance)}
+                            </label>
+                            &nbsp; ETH
+                        </p>
+                    </div>
+                </CardHeader>
+            </Card>
+
+            <Card>
+                <CardBody>
+                    <h4 className="text-middle font-semibold leading-none text-default-600">
+                        <label title={w3eapBalance}>
+                            {formatNumber(w3eapBalance)}
+                        </label>
+                    </h4>
+                    <Tooltip content="Balance of W3EAP which is a token about Web3EasyAccess's rewards">
+                        <h5
+                            className="text-small tracking-tight text-default-400"
+                            style={{ marginTop: "5px" }}
+                        >
+                            W3EAP
+                        </h5>
+                    </Tooltip>
+                </CardBody>
+            </Card>
+            <Card>
+                <CardBody>
+                    <h4 className="text-middle font-semibold leading-none text-default-600">
+                        <label title={freeGasFeeAmount}>
+                            {formatNumber(freeGasFeeAmount)}
+                        </label>
+                        &nbsp;ETH
+                    </h4>
+                    <Tooltip content="Free Amount of Gas Fee">
+                        <h5
+                            className="text-small tracking-tight text-default-400"
+                            style={{ marginTop: "5px" }}
+                        >
+                            Free Gas Fee
+                        </h5>
+                    </Tooltip>
+                </CardBody>
+            </Card>
         </div>
-        <Divider orientation="vertical" />
-        <div>
-          <p
-            className="text-md"
-            style={{
-              fontWeight: "bold",
-              fontSize: "18px",
-              color: "green",
-            }}
-          >
-            {balance}000000 ETH
-          </p>
-        </div>
-      </CardHeader>
-      {/* <Divider />
-      <CardBody>
-        <p>Make beautiful websites regardless of your design experience.</p>
-      </CardBody>
-      <Divider /> */}
-      {/* <CardFooter>
-        <p className="text-md">{balance}</p>
-      </CardFooter> */}
-    </Card>
-  );
+    );
 }

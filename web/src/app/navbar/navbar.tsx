@@ -1,22 +1,22 @@
 import React from "react";
 import {
-  Autocomplete,
-  AutocompleteItem,
-  Avatar,
-  Tooltip,
+    Autocomplete,
+    AutocompleteItem,
+    Avatar,
+    Tooltip,
 } from "@nextui-org/react";
 import {
-  Navbar,
-  NavbarBrand,
-  NavbarContent,
-  NavbarItem,
-  Link,
-  Button,
-  Input,
-  CardHeader,
-  Card,
-  CardBody,
-  Divider,
+    Navbar,
+    NavbarBrand,
+    NavbarContent,
+    NavbarItem,
+    Link,
+    Button,
+    Input,
+    CardHeader,
+    Card,
+    CardBody,
+    Divider,
 } from "@nextui-org/react";
 import { useRef } from "react";
 import { useState } from "react";
@@ -24,86 +24,128 @@ import { useEffect } from "react";
 
 import { ChainLogo } from "./myLogo";
 
+import { Logout } from "./logout";
+
 import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
 
 import { chains } from "./chains";
 
-import { ChainIcons, SelectedChainIcon } from "./chainIcons";
+import { SelectedChainIcon, ChainIcons } from "./chainIcons";
 import UserProfile from "./userProfile";
 
-export default function App({ chainCode, acctAddr, ownerId, balance }) {
-  const aa = false;
+import { Menu, UserInfo, uiToString, ChainCode } from "../lib/myTypes";
 
-  // max-w-[30ch]
-  return (
-    <Navbar isBordered isBlurred={false} maxWidth="full">
-      <NavbarBrand>
-        <p className="text-md" style={{ color: "black" }}>
-          {"z***p@g***m"}
-        </p>
-        <Divider orientation="vertical" style={{ marginLeft: "20px" }} />
-        <NavbarItem>
-          <SelectedChainIcon></SelectedChainIcon>
-        </NavbarItem>
-        <Divider orientation="vertical" style={{ marginLeft: "10px" }} />
-        <NavbarItem>
-          <UserProfile
-            acctAddr={acctAddr}
-            ownerId={ownerId}
-            balance={balance}
-          />
-        </NavbarItem>
-        {/* <NavbarItem className="hidden lg:flex">
+export default function App({
+    currentUserInfo,
+    updateCurrentUserInfo,
+}: {
+    currentUserInfo: UserInfo;
+    updateCurrentUserInfo: any;
+}) {
+    console.log("ui in navbar:", uiToString(currentUserInfo));
+
+    const [selectedChainCode, setSelectedChainCode] = useState(
+        currentUserInfo.chainCode
+    );
+
+    const handleNewChainCodeState = (newChainCode: ChainCode) => {
+        console.log("chainCode now set to be0:" + newChainCode);
+        setSelectedChainCode(newChainCode);
+    };
+    // max-w-[30ch]
+    return (
+        <Navbar isBordered isBlurred={false} maxWidth="full">
+            <NavbarBrand>
+                <p
+                    className="text-md"
+                    style={{ color: "black" }}
+                    title={currentUserInfo.email}
+                >
+                    {currentUserInfo.emailDisplay}
+                </p>
+                <Divider
+                    orientation="vertical"
+                    style={{ marginLeft: "20px" }}
+                />
+                <NavbarItem>
+                    <SelectedChainIcon
+                        chainCodeState={currentUserInfo.chainCode}
+                    ></SelectedChainIcon>
+                </NavbarItem>
+                <Divider
+                    orientation="vertical"
+                    style={{ marginLeft: "10px" }}
+                />
+                <NavbarItem>
+                    <UserProfile
+                        currentChainCode={selectedChainCode}
+                        currentUserInfo={currentUserInfo}
+                        updateCurrentUserInfo={updateCurrentUserInfo}
+                    />
+                </NavbarItem>
+                {/* <NavbarItem className="hidden lg:flex">
   <Link href="/login">Swithch User</Link>
 </NavbarItem> */}
-        <Divider orientation="vertical" />
-        <NavbarItem>
-          <Card>
-            <CardBody>
-              <Tooltip content="Balance of W3EAP which is a token about Web3EasyAccess's rewards">
-                <h4 className="text-middle font-semibold leading-none text-default-600">
-                  1234500001
-                </h4>
-              </Tooltip>
-              <h5
-                className="text-small tracking-tight text-default-400"
-                style={{ marginTop: "5px" }}
-              >
-                W3EAP
-              </h5>
-            </CardBody>
-          </Card>
-        </NavbarItem>
-      </NavbarBrand>
+                <Divider orientation="vertical" />
+                <NavbarItem></NavbarItem>
+            </NavbarBrand>
 
-      <NavbarContent className="hidden sm:flex gap-4" justify="center">
-        <NavbarItem isActive></NavbarItem>
-        <NavbarItem>
-          <Link color="foreground" href="#"></Link>
-        </NavbarItem>
-      </NavbarContent>
-      <NavbarContent justify="end">
-        <ChainIcons chainCode={chainCode} />
-        <NavbarItem className="hidden lg:flex">
-          <Button
-            href="/logout"
-            as={Link}
-            // showAnchorIcon
-            // variant="solid"
-            style={{
-              fontWeight: "bold",
-              color: "FireBrick",
-              backgroundColor: "white",
-              borderStyle: "solid",
-              borderWidth: "2px",
-              marginLeft: "30px",
-            }}
-          >
-            Logout
-          </Button>
-        </NavbarItem>
-      </NavbarContent>
-    </Navbar>
-  );
+            <NavbarContent className="hidden sm:flex gap-4" justify="center">
+                <NavbarItem isActive></NavbarItem>
+                <NavbarItem>
+                    <Link color="foreground" href="#"></Link>
+                </NavbarItem>
+            </NavbarContent>
+            <NavbarContent justify="end">
+                <ChainIcons
+                    chainCodeState={currentUserInfo.chainCode}
+                    handleNewChainCodeState={handleNewChainCodeState}
+                />
+                <NavbarItem className="hidden lg:flex">
+                    <Logout></Logout>
+                </NavbarItem>
+            </NavbarContent>
+        </Navbar>
+    );
 }
-9 * 3;
+
+export function Navbar4Login({ chainCode }: { chainCode: string }) {
+    const [chainCodeState, setCurrentChainCode] = useState(chainCode);
+    const handleNewChainCodeState = (newChainCode: string) => {
+        console.log("chainCode now set to be1:" + newChainCode);
+        setCurrentChainCode(newChainCode);
+    };
+    // max-w-[30ch]
+    return (
+        <Navbar isBordered isBlurred={false} maxWidth="full">
+            <NavbarBrand>
+                <Divider
+                    orientation="vertical"
+                    style={{ marginLeft: "20px" }}
+                />
+                <NavbarItem>
+                    <SelectedChainIcon
+                        chainCodeState={chainCodeState}
+                    ></SelectedChainIcon>
+                </NavbarItem>
+                <Divider
+                    orientation="vertical"
+                    style={{ marginLeft: "10px" }}
+                />
+                <NavbarItem></NavbarItem>
+                {/* <NavbarItem className="hidden lg:flex">
+    <Link href="/login">Swithch User</Link>
+  </NavbarItem> */}
+                <Divider orientation="vertical" />
+            </NavbarBrand>
+
+            <NavbarContent justify="end">
+                <ChainIcons
+                    chainCodeState={chainCodeState}
+                    handleNewChainCodeState={handleNewChainCodeState}
+                />
+                <NavbarItem className="hidden lg:flex"></NavbarItem>
+            </NavbarContent>
+        </Navbar>
+    );
+}
