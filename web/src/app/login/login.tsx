@@ -18,7 +18,7 @@ import Passwd from "./passwd";
 import { setInputValueById, getInputValueById } from "../lib/elementById";
 
 import { useState } from "react";
-import Navbar from "../navbar/navbar";
+import { Navbar4Login } from "../navbar/navbar";
 
 import VerifyCode from "./verifyCode";
 
@@ -32,7 +32,7 @@ export default function Page<T extends { chainCode: string }>({
 
   return (
     <div>
-      <Navbar chainCode={chainCode}></Navbar>
+      <Navbar4Login chainCode={chainCode}></Navbar4Login>
       <Card
         className="py-4"
         style={{
@@ -95,7 +95,7 @@ export default function Page<T extends { chainCode: string }>({
                 isRequired
                 type="email"
                 label="Email"
-                defaultValue="zhtkeepup@gmail.com"
+                defaultValue=""
                 className="max-w-xs"
               />
               {/* <Passwd id="id_login_passwd_ui"></Passwd> */}

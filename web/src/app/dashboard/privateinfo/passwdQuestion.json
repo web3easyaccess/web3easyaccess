@@ -22,7 +22,10 @@
       { "idx": "07", "question": "What is the full name of my first child?" }
     ],
     "2": [
-      { "idx": "01", "question": "小学阶段印象最深刻的老师的全名是什么?" },
+      {
+        "idx": "01",
+        "question": "What is the full name of the teacher who left the deepest impression on you during your elementary school days?"
+      },
       { "idx": "02", "question": "初中阶段印象最深刻的老师的全名是什么?" },
       { "idx": "03", "question": "高中阶段印象最深刻的老师的全名是什么?" },
       { "idx": "04", "question": "大学阶段印象最深刻的老师的全名是什么?" },

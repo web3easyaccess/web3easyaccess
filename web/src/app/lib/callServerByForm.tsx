@@ -19,6 +19,7 @@ export default function Page({
   method,
   inputDataJsonRef,
   outputDataJsonRef,
+  methodAfterServrReturn,
   buttonRef,
   show,
 }) {
@@ -39,6 +40,7 @@ export default function Page({
           <SubmitButton
             inputDataJsonRef={inputDataJsonRef}
             outputDataJsonRef={outputDataJsonRef}
+            methodAfterServrReturn={methodAfterServrReturn}
             buttonRef={buttonRef}
             method={method}
           />
@@ -55,6 +57,7 @@ function sleep(time) {
 function SubmitButton({
   inputDataJsonRef,
   outputDataJsonRef,
+  methodAfterServrReturn,
   buttonRef,
   method,
 }) {
@@ -78,25 +81,27 @@ function SubmitButton({
     );
 
     setTimeout(async () => {
-      var kk = 0;
+      let kk = 0;
       while (true) {
         let msg = getInputValueById("id_output_data_json");
 
         if (msg != "[init]") {
+          setInputValueById("id_output_data_json", "[init]");
           outputDataJsonRef.current = msg;
           console.log(
             "callServerByForm return data:",
             outputDataJsonRef.current
           );
+          methodAfterServrReturn();
           break;
         }
         kk++;
-        if (kk > 120) {
+        if (kk > 300) {
           // break if more than 10 minutes
           console.log("wait for server side timeout!");
           break;
         }
-        await sleep(500);
+        await sleep(100);
       }
     }, 500);
   };

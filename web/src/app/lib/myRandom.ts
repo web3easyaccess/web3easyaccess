@@ -17,3 +17,15 @@ export function generateRandomDigitInteger() {
 
   return randomSixDigitInteger;
 }
+
+export function generateRandomString() {
+  let ll = 6;
+  let t =
+    "ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678!@#$%^&*(){}[],./<>?";
+  let a = t.length;
+  let n = "";
+  for (let i = 0; i < ll; i++) {
+    n += t.charAt(Math.floor(Math.random() * a));
+  }
+  return n;
+}

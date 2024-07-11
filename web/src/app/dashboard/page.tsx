@@ -2,52 +2,50 @@
 
 import myCookies from "../serverside/myCookies";
 import {
-  queryAssets,
-  queryQuestionIds,
+    queryAssets,
+    queryQuestionIds,
 } from "../serverside/blockchain/queryAccountInfo";
 import Dashboard from "./dashboard";
-import { getChainObj } from "../serverside/blockchain/myChain";
 
-import { getEthBalance } from "../serverside/serverActions";
-
+import { getFactoryAddr } from "../serverside/blockchain/chainWriteClient";
+import { getW3eapAddr } from "../serverside/blockchain/chainWrite";
 import { queryTransactions } from "../serverside/blockchain/queryAccountInfo";
 import redirectTo from "../serverside/redirectTo";
 
-import { Menu } from "../lib/menu";
+import { useState } from "react";
+
+import { getOwnerIdBigBrother } from "./privateinfo/lib/keyTools";
+
+import { Menu, UserInfo, uiToString } from "../lib/myTypes";
 
 export default async function Page({ selectedMenu }: { selectedMenu: Menu }) {
-  redirectTo.urlLoggedInCheck();
-  console.log("selectedMenu in dashbord:", selectedMenu);
-  selectedMenu = selectedMenu ? selectedMenu : Menu.Asset;
-  console.log("selectedMenu in dashbord2:", selectedMenu);
-  const myData = myCookies.loadData();
-  const email = myData.email;
-  const balance = await getEthBalance(myData.accountId);
-  const current_obj = getChainObj();
+    redirectTo.urlLoggedInCheck();
 
-  return (
-    <Dashboard
-      acctAddr={myData.accountId}
-      ownerId={myData.ownerId}
-      balance={balance}
-      selectedMenu={selectedMenu}
-      txList={
-        selectedMenu == Menu.Transactions
-          ? await queryTransactions(myData.accountId)
-          : null
-      }
-      assets={
-        selectedMenu == Menu.Asset ? await queryAssets(myData.accountId) : null
-      }
-      chainId={current_obj.id}
-      verifyingContract={myData.accountId}
-      email={email}
-      chainObj={current_obj}
-      selectedQuestionIds={
-        selectedMenu == Menu.PrivateSetting
-          ? await queryQuestionIds(myData.accountId)
-          : null
-      }
-    ></Dashboard>
-  );
+    selectedMenu = selectedMenu ? selectedMenu : Menu.Asset;
+
+    const myData = myCookies.loadData();
+    const emailDisplay = myData.emailDisplay;
+    const email = myData.email;
+    const selectedOrderNo = myData.selectedOrderNo;
+
+    const w3eapAddr = await getW3eapAddr();
+
+    const userInfo: UserInfo = {
+        selectedMenu: selectedMenu,
+        chainCode: myCookies.getChainCode(),
+        factoryAddr: getFactoryAddr(myCookies.getChainCode()) as string,
+        w3eapAddr: w3eapAddr as string,
+        email: email,
+        emailDisplay: emailDisplay,
+        bigBrotherOwnerId: getOwnerIdBigBrother(email),
+        selectedOwnerId: "",
+        selectedOrderNo: selectedOrderNo,
+        selectedAccountAddr: "",
+        accountAddrList: [], // last one has not created, others has created.
+        accountToOwnerIdMap: new Map(), // key is accountAddr, val is ownerId
+        accountToOrderNoMap: new Map(), // key is accountAddr, val is orderNo
+    };
+
+    console.log("dashboard server:", uiToString(userInfo));
+    return <Dashboard userInfo={userInfo}></Dashboard>;
 }

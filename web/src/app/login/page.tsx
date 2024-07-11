@@ -2,12 +2,12 @@
 
 import Login from "./login";
 
-import { getChainObj } from "../serverside/blockchain/myChain";
+import myCookies from "../serverside/myCookies";
 
 export default async function Page() {
   return (
     <div>
-      <Login chainCode={getChainObj().chainCode}></Login>
+      <Login chainCode={myCookies.getChainCode()}></Login>
     </div>
   );
 }

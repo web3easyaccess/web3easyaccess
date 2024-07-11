@@ -1,19 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import { useState, useEffect } from "react";
 
 import Navbar from "../navbar/navbar";
 
 import { Avatar, AvatarGroup, AvatarIcon } from "@nextui-org/avatar";
+import { Divider, Card, CardHeader, CardBody } from "@nextui-org/react";
 
-import UserProfile from "./userProfile";
 import OpMenu from "./opMenu";
 import { ShowMain } from "./opMenu";
-
-function decrypt(data: any) {
-  return data;
-}
+import { Menu, UserInfo, uiToString } from "../lib/myTypes";
 
 // export function getSessionData(req) {
 //   const encryptedSessionData = cookies().get("session")?.value;
@@ -22,55 +19,50 @@ function decrypt(data: any) {
 //     : null;
 // }
 
-export default function Home({
-  acctAddr,
-  ownerId,
-  balance,
-  selectedMenu,
-  txList,
-  assets,
-  chainId,
-  verifyingContract,
-  email,
-  chainObj,
-  selectedQuestionIds,
-}) {
-  // Logic to determine if a redirect is needed
-  //   if (getSessionData(null)) {
-  //     redirect("/login");
-  //   }
+export default function Home({ userInfo }: { userInfo: UserInfo }) {
+    //   const [currentChainCode, setCurrentChainCode] = useState(chainObj.chainCode);
+    //   const setMyCurrentChainCode = (cc: string) => {
+    //     setCurrentChainCode(cc);
+    //   };
 
-  // const [selectedMenu, setSelectedMenu] = useState("assets");
-  // const selectedMenuState = useState("transactions"); // transactions
-  console.log("dashborad,acctAddr:", acctAddr);
-  console.log("dashborad xxxx333,chainObj:", chainObj.chainCode);
+    const [currentUserInfo, setCurrentUserInfo] = useState(userInfo);
 
-  return (
-    <>
-      <Navbar chainCode={chainObj.chainCode}></Navbar>
-      <div style={{ display: "flex", marginLeft: "10px", marginRight: "10px" }}>
-        <div style={{ width: "200px" }}>
-          <UserProfile
-            acctAddr={acctAddr}
-            ownerId={ownerId}
-            balance={balance}
-          />
-          <OpMenu selectedMenu={selectedMenu} />
-        </div>
-        <div style={{ width: "900px", marginLeft: "2px" }}>
-          <ShowMain
-            selectedMenu={selectedMenu}
-            txList={txList}
-            assets={assets}
-            acctAddr={acctAddr}
-            chainId={chainId}
-            verifyingContract={verifyingContract}
-            email={email}
-            chainObj={chainObj}
-            selectedQuestionIds={selectedQuestionIds}
-          />
-        </div>
-      </div>
-    </>
-  );
+    const updateCurrentUserInfo = (cu: UserInfo) => {
+        setCurrentUserInfo(cu);
+    };
+
+    console.log("dashborad,ui:", uiToString(userInfo));
+
+    return (
+        <>
+            <Navbar
+                currentUserInfo={currentUserInfo}
+                updateCurrentUserInfo={updateCurrentUserInfo}
+            ></Navbar>
+            <Divider
+                orientation="horizontal"
+                style={{ backgroundColor: "grey", height: "5px" }}
+            ></Divider>
+            <div
+                style={{
+                    display: "flex",
+                    marginLeft: "10px",
+                    marginRight: "10px",
+                }}
+            >
+                <Card className="max-w-full">
+                    <OpMenu selectedMenu={currentUserInfo.selectedMenu} />
+                </Card>
+
+                <Card
+                    className="max-w-full w-full"
+                    style={{ marginLeft: "5px" }}
+                >
+                    <CardBody>
+                        <ShowMain currentUserInfo={currentUserInfo} />
+                    </CardBody>
+                </Card>
+            </div>
+        </>
+    );
 }

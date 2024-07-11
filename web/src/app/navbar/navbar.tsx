@@ -1,12 +1,22 @@
 import React from "react";
-import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
 import {
-  Navbar,
-  NavbarBrand,
-  NavbarContent,
-  NavbarItem,
-  Link,
-  Button,
+    Autocomplete,
+    AutocompleteItem,
+    Avatar,
+    Tooltip,
+} from "@nextui-org/react";
+import {
+    Navbar,
+    NavbarBrand,
+    NavbarContent,
+    NavbarItem,
+    Link,
+    Button,
+    Input,
+    CardHeader,
+    Card,
+    CardBody,
+    Divider,
 } from "@nextui-org/react";
 import { useRef } from "react";
 import { useState } from "react";
@@ -14,85 +24,140 @@ import { useEffect } from "react";
 
 import { ChainLogo } from "./myLogo";
 
-import { saveChainName } from "../serverside/serverActions";
+import { Logout } from "./logout";
 
 import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
 
 import { chains } from "./chains";
 
-import CallServerByForm from "../lib/callServerByForm";
+import { SelectedChainIcon, ChainIcons } from "./chainIcons";
+import UserProfile from "./userProfile";
 
-export default function App({ chainCode }) {
-  const inputDataJsonRef = useRef("[-]");
-  const outputDataJsonRef = useRef("[-]");
-  const buttonRef = useRef(null);
+import { Menu, UserInfo, uiToString, ChainCode } from "../lib/myTypes";
 
-  console.log("navbar, input param[chainCode]:", chainCode);
-  const [myChain, setMyChain] = useState({ value: chainCode });
+export default function App({
+    currentUserInfo,
+    updateCurrentUserInfo,
+}: {
+    currentUserInfo: UserInfo;
+    updateCurrentUserInfo: any;
+}) {
+    console.log("ui in navbar:", uiToString(currentUserInfo));
 
-  const triggerCallServer = (newChain) => {
-    inputDataJsonRef.current = JSON.stringify({ value: newChain });
-    buttonRef.current.click();
-    setTimeout(() => {
-      setMyChain({ value: newChain });
-    }, 500);
-  };
+    const [selectedChainCode, setSelectedChainCode] = useState(
+        currentUserInfo.chainCode
+    );
 
-  // const [chainCode, setChainCode] = useState("MORPH_TEST_CHAIN");
-  const onSelectionChange = (cc) => {
-    console.log("onSelectionChange, selected chain:", cc);
-    triggerCallServer(cc);
-    // setTimeout(triggerCallServer, 500);
-  };
+    const handleNewChainCodeState = (newChainCode: ChainCode) => {
+        const oldChainCode = selectedChainCode;
+        console.log("chainCode now set to be0,old:" + oldChainCode);
+        if (oldChainCode != newChainCode) {
+            console.log("chainCode now set to be1:" + newChainCode);
+            setSelectedChainCode(newChainCode);
+            const iii = setTimeout(() => {
+                console.log(
+                    "page reload...00..",
+                    selectedChainCode,
+                    newChainCode
+                );
+                location.reload();
+            }, 3000);
+        }
+    };
+    // max-w-[30ch]
+    return (
+        <Navbar isBordered isBlurred={false} maxWidth="full">
+            <NavbarBrand>
+                <p
+                    className="text-md"
+                    style={{ color: "black" }}
+                    title={currentUserInfo.email}
+                >
+                    {currentUserInfo.emailDisplay}
+                </p>
+                <Divider
+                    orientation="vertical"
+                    style={{ marginLeft: "20px" }}
+                />
+                <NavbarItem>
+                    <SelectedChainIcon
+                        chainCodeState={currentUserInfo.chainCode}
+                    ></SelectedChainIcon>
+                </NavbarItem>
+                <Divider
+                    orientation="vertical"
+                    style={{ marginLeft: "10px" }}
+                />
+                <NavbarItem>
+                    <UserProfile
+                        currentChainCode={selectedChainCode}
+                        currentUserInfo={currentUserInfo}
+                        updateCurrentUserInfo={updateCurrentUserInfo}
+                    />
+                </NavbarItem>
+                {/* <NavbarItem className="hidden lg:flex">
+  <Link href="/login">Swithch User</Link>
+</NavbarItem> */}
+                <Divider orientation="vertical" />
+                <NavbarItem></NavbarItem>
+            </NavbarBrand>
 
-  // max-w-[30ch]
-  return (
-    <Navbar isBordered isBlurred={false} maxWidth="full">
-      <CallServerByForm
-        method={saveChainName}
-        inputDataJsonRef={inputDataJsonRef}
-        outputDataJsonRef={outputDataJsonRef}
-        buttonRef={buttonRef}
-        show={false}
-      ></CallServerByForm>
-      <NavbarBrand>
-        <ChainLogo chainCode={chainCode} />
-        <Autocomplete
-          color={"success"}
-          defaultItems={chains}
-          placeholder="Choose a chain"
-          aria-label="Choose a chain"
-          defaultSelectedKey={myChain.value}
-          className="max-w-xs"
-          onSelectionChange={onSelectionChange}
-        >
-          {(item) => (
-            <AutocompleteItem key={item.value}>{item.label}</AutocompleteItem>
-          )}
-        </Autocomplete>
-
-        <p className="font-bold text-inherit"></p>
-      </NavbarBrand>
-      <NavbarContent className="hidden sm:flex gap-4" justify="center">
-        <NavbarItem>
-          <Link color="foreground" href="#"></Link>
-        </NavbarItem>
-        <NavbarItem isActive>
-          <Link href="#" aria-current="page">
-            Web3EasyAccess.link
-          </Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Link color="foreground" href="#"></Link>
-        </NavbarItem>
-      </NavbarContent>
-      <NavbarContent justify="end">
-        <NavbarItem className="hidden lg:flex">
-          <Link href="/login">Swithch User</Link>
-        </NavbarItem>
-        {/* <NavbarItem>{newAcctButton()}</NavbarItem> */}
-      </NavbarContent>
-    </Navbar>
-  );
+            <NavbarContent className="hidden sm:flex gap-4" justify="center">
+                <NavbarItem isActive></NavbarItem>
+                <NavbarItem>
+                    <Link color="foreground" href="#"></Link>
+                </NavbarItem>
+            </NavbarContent>
+            <NavbarContent justify="end">
+                <ChainIcons
+                    chainCodeState={currentUserInfo.chainCode}
+                    handleNewChainCodeState={handleNewChainCodeState}
+                />
+                <NavbarItem className="hidden lg:flex">
+                    <Logout></Logout>
+                </NavbarItem>
+            </NavbarContent>
+        </Navbar>
+    );
 }
-9 * 3;
+
+export function Navbar4Login({ chainCode }: { chainCode: string }) {
+    const [chainCodeState, setCurrentChainCode] = useState(chainCode);
+    const handleNewChainCodeState = (newChainCode: string) => {
+        console.log("chainCode now set to be1:" + newChainCode);
+        setCurrentChainCode(newChainCode);
+    };
+    // max-w-[30ch]
+    return (
+        <Navbar isBordered isBlurred={false} maxWidth="full">
+            <NavbarBrand>
+                <Divider
+                    orientation="vertical"
+                    style={{ marginLeft: "20px" }}
+                />
+                <NavbarItem>
+                    <SelectedChainIcon
+                        chainCodeState={chainCodeState}
+                    ></SelectedChainIcon>
+                </NavbarItem>
+                <Divider
+                    orientation="vertical"
+                    style={{ marginLeft: "10px" }}
+                />
+                <NavbarItem></NavbarItem>
+                {/* <NavbarItem className="hidden lg:flex">
+    <Link href="/login">Swithch User</Link>
+  </NavbarItem> */}
+                <Divider orientation="vertical" />
+            </NavbarBrand>
+
+            <NavbarContent justify="end">
+                <ChainIcons
+                    chainCodeState={chainCodeState}
+                    handleNewChainCodeState={handleNewChainCodeState}
+                />
+                <NavbarItem className="hidden lg:flex"></NavbarItem>
+            </NavbarContent>
+        </Navbar>
+    );
+}
