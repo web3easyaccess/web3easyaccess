@@ -97,7 +97,7 @@ export async function checkEmail(
         //
         const sixNum = generateRandomDigitInteger().toString();
         verifyCode[email] = sixNum + ":" + new Date().valueOf();
-        // await sendMail(email, sixNum); // ignore tmp.
+        await sendMail(email, sixNum); // ignore tmp.
         console.log("sent email", email, "========> [" + sixNum + "]");
         // Please log in to your email address "123@a.com" and check for the verification code.
         var rtn = {

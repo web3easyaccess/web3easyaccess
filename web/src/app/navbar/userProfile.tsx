@@ -104,15 +104,19 @@ export default function App({
                 accountToOrderNoMap.set(a.addr, a.orderNo);
             });
 
+            let mySelectedNo = currentUserInfo.selectedOrderNo;
+            if (mySelectedNo >= accountAddrList.length) {
+                mySelectedNo = 0;
+            }
+
             const cUserInfo = {
                 ...currentUserInfo,
                 selectedOwnerId: getOwnerIdSelfByBigBrother(
                     currentUserInfo.bigBrotherOwnerId,
-                    currentUserInfo.selectedOrderNo
+                    mySelectedNo
                 ),
-                selectedOrderNo: currentUserInfo.selectedOrderNo,
-                selectedAccountAddr:
-                    accountAddrList[currentUserInfo.selectedOrderNo],
+                selectedOrderNo: mySelectedNo,
+                selectedAccountAddr: accountAddrList[mySelectedNo],
                 accountAddrList: accountAddrList,
                 accountToOwnerIdMap: accountToOwnerIdMap,
                 accountToOrderNoMap: accountToOrderNoMap,
@@ -305,7 +309,7 @@ export default function App({
                 <BtnselectedOrderNo />
             </form>
 
-            <Card className="max-w-[400px]">
+            <Card className="max-w-[480px]">
                 <CardHeader className="flex gap-3">
                     <AcctIcon
                         addr={acctAddrDisplay(

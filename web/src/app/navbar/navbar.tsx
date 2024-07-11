@@ -49,8 +49,20 @@ export default function App({
     );
 
     const handleNewChainCodeState = (newChainCode: ChainCode) => {
-        console.log("chainCode now set to be0:" + newChainCode);
-        setSelectedChainCode(newChainCode);
+        const oldChainCode = selectedChainCode;
+        console.log("chainCode now set to be0,old:" + oldChainCode);
+        if (oldChainCode != newChainCode) {
+            console.log("chainCode now set to be1:" + newChainCode);
+            setSelectedChainCode(newChainCode);
+            const iii = setTimeout(() => {
+                console.log(
+                    "page reload...00..",
+                    selectedChainCode,
+                    newChainCode
+                );
+                location.reload();
+            }, 3000);
+        }
     };
     // max-w-[30ch]
     return (

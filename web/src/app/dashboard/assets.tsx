@@ -58,6 +58,9 @@ export default function App({
     //   balance: balance,
 
     const addrDisplay = (fullAddr: string) => {
+        if (fullAddr == undefined || fullAddr.length < 40) {
+            return fullAddr;
+        }
         return fullAddr.substring(0, 6) + "..." + fullAddr.substring(38);
     };
 

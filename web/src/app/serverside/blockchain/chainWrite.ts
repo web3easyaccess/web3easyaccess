@@ -98,9 +98,10 @@ export async function newAccountAndTransferETH(
     to: `0x${string}`,
     amount: BigInt,
     signature: `0x${string}`,
-    inputMaxFeePerGas: bigint,
     onlyQueryFee: boolean,
-    detectEstimatedFee: bigint
+    detectEstimatedFee: bigint,
+    preparedMaxFeePerGas: bigint,
+    preparedGasPrice: bigint
 ) {
     console.log(
         `newAccountAndTransferETH called ..onlyQueryFee=${onlyQueryFee}. ownerId= ${ownerId}, passwdAddr=${passwdAddr},detectEstimatedFee=${detectEstimatedFee}`
@@ -130,22 +131,44 @@ export async function newAccountAndTransferETH(
             ],
         });
 
+        console.log(
+            "xxx:account,factory:",
+            myClient.account.address,
+            myClient.factoryAddr,
+            "data:"
+            // newAccountData
+        );
+        console.log("xxxxxxx---1,");
         // estimate transaction fee.
         if (onlyQueryFee) {
+            console.log("xxxxxxx---2,");
             request = await myClient.walletClient.prepareTransactionRequest({
                 account: myClient.account,
                 to: myClient.factoryAddr,
                 value: BigInt(0), // parseEther("0.0"),
                 data: newAccountData,
             });
-            const realEstimatedFee = request.gas * request.maxFeePerGas;
+            // console.log("xxxxxxx---3:", request);
+            let realEstimatedFee = BigInt(0);
+            if (request.maxFeePerGas != undefined) {
+                //eip-1559
+                console.log("xxxxxxx---3-1:", request.maxFeePerGas);
+                realEstimatedFee = request.gas * request.maxFeePerGas;
+            } else if (request.gasPrice != undefined) {
+                // Legacy
+                console.log("xxxxxxx---3-2:", request.gasPrice);
+                realEstimatedFee = request.gas * request.gasPrice;
+            } else {
+                console.log("unsupport prepare req:", request);
+                throw Error("unsupport prepare req!");
+            }
 
             console.log(
-                `newAccountAndTransferETH detected. detectEstimatedFee=${detectEstimatedFee},realEstimatedFee=${realEstimatedFee},req.gas=${request.gas}, maxFeePerGas=${request.maxFeePerGas},gasPrice=${request.gasPrice}`
+                `xxxxx-4,newAccountAndTransferETH detected. detectEstimatedFee=${detectEstimatedFee},realEstimatedFee=${realEstimatedFee},req.gas=${request.gas}, maxFeePerGas=${request.maxFeePerGas},gasPrice=${request.gasPrice}`
             );
 
             console.log(
-                "newAccountAndTransferETH detected by prepareTransactionRequest result:",
+                "xxxxx-5,newAccountAndTransferETH detected by prepareTransactionRequest result:",
                 {
                     realEstimatedFee: realEstimatedFee,
                     request: request,
@@ -155,13 +178,18 @@ export async function newAccountAndTransferETH(
                 success: true,
                 msg: "",
                 realEstimatedFee: realEstimatedFee,
-                feePerGas: request.maxFeePerGas,
+                maxFeePerGas: request.maxFeePerGas, //eip-1559
+                gasPrice: request.gasPrice, // Legacy
                 gasCount: request.gas,
                 tx: "",
             };
         } else {
             // specified maxFeePerGas to send Transaction....
-            if (inputMaxFeePerGas == BigInt(0)) {
+            if (
+                (preparedMaxFeePerGas == undefined ||
+                    preparedMaxFeePerGas == BigInt(0)) &&
+                (preparedGasPrice == undefined || preparedGasPrice == BigInt(0))
+            ) {
                 // throw new Error("maxFeePerGas error!");
                 return { success: false, msg: "maxFeePerGas error!", tx: "" };
             }
@@ -170,7 +198,8 @@ export async function newAccountAndTransferETH(
                 to: myClient.factoryAddr,
                 value: BigInt(0), // parseEther("0.0"),
                 data: newAccountData,
-                maxFeePerGas: inputMaxFeePerGas,
+                maxFeePerGas: preparedMaxFeePerGas, //eip-1559
+                gasPrice: preparedGasPrice, // Legacy
             });
             console.log("sendTransaction with new Account:", hash);
             return { success: true, tx: hash, msg: "" };
@@ -191,9 +220,10 @@ export async function createTransaction(
     amount: bigint,
     data: `0x${string}`,
     signature: `0x${string}`,
-    inputMaxFeePerGas: bigint,
     onlyQueryFee: boolean,
-    detectEstimatedFee: bigint
+    detectEstimatedFee: bigint,
+    preparedMaxFeePerGas: bigint,
+    preparedGasPrice: bigint
 ) {
     console.log(
         `createTransaction called ... ownerId= ${ownerId},accountAddr=${accountAddr}, amount=${amount},detectEstimatedFee=${detectEstimatedFee},onlyQueryFee=${onlyQueryFee},detectEstimatedFee=${detectEstimatedFee}`
@@ -216,7 +246,21 @@ export async function createTransaction(
                 value: BigInt(0), // parseEther("0.0"),
                 data: dataSendToAccount,
             });
-            const realEstimatedFee = request.gas * request.maxFeePerGas;
+
+            // console.log("xxxxxxx---3:", request);
+            let realEstimatedFee = BigInt(0);
+            if (request.maxFeePerGas != undefined) {
+                //eip-1559
+                console.log("xxxxxxx---3-1:", request.maxFeePerGas);
+                realEstimatedFee = request.gas * request.maxFeePerGas;
+            } else if (request.gasPrice != undefined) {
+                // Legacy
+                console.log("xxxxxxx---3-2:", request.gasPrice);
+                realEstimatedFee = request.gas * request.gasPrice;
+            } else {
+                console.log("unsupport prepare req2:", request);
+                throw Error("unsupport prepare req2!");
+            }
 
             console.log(
                 `createTransaction detected. detectEstimatedFee=${detectEstimatedFee},realEstimatedFee=${realEstimatedFee},req.gas=${request.gas}, maxFeePerGas=${request.maxFeePerGas},gasPrice=${request.gasPrice}`
@@ -229,17 +273,23 @@ export async function createTransaction(
                     request: request,
                 }
             );
+
             return {
                 success: true,
                 msg: "",
                 realEstimatedFee: realEstimatedFee,
-                feePerGas: request.maxFeePerGas,
+                maxFeePerGas: request.maxFeePerGas, //eip-1559
+                gasPrice: request.gasPrice, // Legacy
                 gasCount: request.gas,
                 tx: "",
             };
         } else {
             // specified maxFeePerGas to send Transaction....
-            if (inputMaxFeePerGas == BigInt(0)) {
+            if (
+                (preparedMaxFeePerGas == undefined ||
+                    preparedMaxFeePerGas == BigInt(0)) &&
+                (preparedGasPrice == undefined || preparedGasPrice == BigInt(0))
+            ) {
                 // throw new Error("maxFeePerGas error!");
                 return { success: false, msg: "maxFeePerGas error!", tx: "" };
             }
@@ -248,7 +298,8 @@ export async function createTransaction(
                 to: accountAddr,
                 value: BigInt(0), // parseEther("0.0"),
                 data: dataSendToAccount,
-                maxFeePerGas: inputMaxFeePerGas,
+                maxFeePerGas: preparedMaxFeePerGas, //eip-1559
+                gasPrice: preparedGasPrice, // Legacy
             });
             console.log("createTransaction success:", hash);
             return { success: true, tx: hash, msg: "" };

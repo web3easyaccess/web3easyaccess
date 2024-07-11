@@ -154,7 +154,10 @@ export default function App({
         router.push("/dashboard/transactions");
     };
 
-    const inputMaxFeePerGasRef = useRef("0");
+    const preparedPriceRef = useRef({
+        preparedMaxFeePerGas: undefined,
+        preparedGasPrice: undefined,
+    });
     const [transactionFee, setTransactionFee] = useState("? ETH");
 
     useEffect(() => {
@@ -194,7 +197,7 @@ export default function App({
                         chainObj,
                         myAccountCreated,
                         questionNosEnc,
-                        inputMaxFeePerGasRef
+                        preparedPriceRef
                     );
 
                     console.log(",estimateTransFee...:" + eFee);
@@ -339,7 +342,10 @@ export default function App({
                 <Tab key="swap" title="Swap Token">
                     <p>Not Yet</p>
                 </Tab>
-                <Tab key="createTransaction" title="Create Transaction">
+                <Tab
+                    key="createCustomTransaction"
+                    title="Create Custom Transaction"
+                >
                     <p>Not Yet</p>
                 </Tab>
                 <Tab
@@ -419,7 +425,7 @@ export default function App({
                         buttonText={buttonText}
                         myAccountCreated={myAccountCreated}
                         currentPriInfoRef={currentPriInfoRef}
-                        inputMaxFeePerGasRef={inputMaxFeePerGasRef}
+                        preparedPriceRef={preparedPriceRef}
                         updateCurrentTx={updateCurrentTx}
                     />
                 </div>
@@ -440,7 +446,7 @@ function SendTransaction({
     buttonText,
     myAccountCreated,
     currentPriInfoRef,
-    inputMaxFeePerGasRef,
+    preparedPriceRef,
     updateCurrentTx,
 }: {
     myOwnerId: string;
@@ -450,7 +456,7 @@ function SendTransaction({
     buttonText: string;
     myAccountCreated: boolean;
     currentPriInfoRef: React.MutableRefObject<PrivateInfoType>;
-    inputMaxFeePerGasRef: any;
+    preparedPriceRef: any;
     updateCurrentTx: any;
 }) {
     const router = useRouter();
@@ -520,7 +526,7 @@ function SendTransaction({
             chainObj,
             myAccountCreated,
             questionNosEnc,
-            inputMaxFeePerGasRef
+            preparedPriceRef
         );
 
         updateCurrentTx(tx);
@@ -571,7 +577,7 @@ async function estimateTransFee(
     chainObj: any,
     myAccountCreated: boolean,
     questionNos: string,
-    inputMaxFeePerGasRef: any
+    preparedPriceRef: any
 ) {
     let myDetectEstimatedFee = BigInt(0);
     const receiverAmt = parseEther(receiverAmountETH);
@@ -582,9 +588,10 @@ async function estimateTransFee(
         "myAccountCreated=" + myAccountCreated
     );
     let detectRes: {
-        realEstimatedFee: BigInt;
-        feePerGas: BigInt;
-        gasCount: BigInt;
+        realEstimatedFee: bigint;
+        maxFeePerGas: bigint; //eip-1559
+        gasPrice: bigint; // Legacy
+        gasCount: bigint;
         success: boolean;
         msg: string;
     } = {};
@@ -635,9 +642,10 @@ async function estimateTransFee(
                 receiverAmt,
                 receiverData,
                 sign.signature,
-                BigInt(0),
                 onlyQueryFee,
-                myDetectEstimatedFee
+                myDetectEstimatedFee,
+                BigInt(0),
+                BigInt(0)
             );
         } else {
             console.log(
@@ -652,9 +660,10 @@ async function estimateTransFee(
                 receiverAddr,
                 receiverAmt,
                 sign.signature,
-                BigInt(0),
                 onlyQueryFee,
-                myDetectEstimatedFee
+                myDetectEstimatedFee,
+                BigInt(0),
+                BigInt(0)
             );
         }
 
@@ -667,12 +676,20 @@ async function estimateTransFee(
             detectRes
         );
         if (Number(myDetectEstimatedFee) > Number(detectRes.realEstimatedFee)) {
-            inputMaxFeePerGasRef.current = detectRes.feePerGas;
+            preparedPriceRef.current = {
+                preparedMaxFeePerGas: detectRes.maxFeePerGas,
+                preparedGasPrice: detectRes.gasPrice,
+            };
             break;
         } else {
             myDetectEstimatedFee = BigInt(
                 Number(detectRes.realEstimatedFee) +
-                    Number(detectRes.feePerGas) * 1000
+                    Number(
+                        !detectRes.maxFeePerGas && detectRes.maxFeePerGas > 0
+                            ? detectRes.maxFeePerGas
+                            : detectRes.gasPrice
+                    ) *
+                        1000
             );
         }
     }
@@ -690,7 +707,7 @@ async function executeTransaction(
     chainObj: any,
     myAccountCreated: boolean,
     questionNos: string,
-    inputMaxFeePerGasRef: any
+    preparedPriceRef: any
 ) {
     let eFee = await estimateTransFee(
         myOwnerId,
@@ -702,7 +719,7 @@ async function executeTransaction(
         chainObj,
         myAccountCreated,
         questionNos,
-        inputMaxFeePerGasRef
+        preparedPriceRef
     );
     console.log("user realtime fee, when executeing:", eFee);
     if (eFee.feeWei == undefined || eFee.feeWei == 0) {
@@ -735,9 +752,10 @@ async function executeTransaction(
     );
 
     let detectRes: {
-        realEstimatedFee: BigInt;
-        feePerGas: BigInt;
-        gasCount: BigInt;
+        realEstimatedFee: bigint;
+        preparedMaxfeePerGas: bigint;
+        preparedGasPrice: bigint;
+        gasCount: bigint;
         success: boolean;
         msg: string;
     } = {};
@@ -758,9 +776,10 @@ async function executeTransaction(
             receiverAmt,
             receiverData,
             sign.signature,
-            inputMaxFeePerGasRef.current,
             onlyQueryFee,
-            eFee.feeWei
+            eFee.feeWei,
+            preparedPriceRef.current.preparedMaxFeePerGas,
+            preparedPriceRef.current.preparedGasPrice
         );
     } else {
         console.log(
@@ -775,9 +794,10 @@ async function executeTransaction(
             receiverAddr,
             receiverAmt,
             sign.signature,
-            inputMaxFeePerGasRef.current,
             onlyQueryFee,
-            eFee.feeWei
+            eFee.feeWei,
+            preparedPriceRef.current.preparedMaxFeePerGas,
+            preparedPriceRef.current.preparedGasPrice
         );
     }
 

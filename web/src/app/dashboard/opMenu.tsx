@@ -19,7 +19,7 @@ import {
 import Assets from "./assets";
 import Transactions from "./transactions";
 import SendTransaction from "./newtransaction/sendtransaction";
-import PrivateInfo from "./newtransaction/privateinfo";
+import { PrivateInfo } from "./newtransaction/privateinfo";
 import { useRouter } from "next/navigation";
 
 import { Menu, UserInfo, uiToString } from "../lib/myTypes";

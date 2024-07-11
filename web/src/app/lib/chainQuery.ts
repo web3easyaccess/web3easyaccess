@@ -5,7 +5,7 @@ import { Axios, AxiosResponse, AxiosError } from "axios";
 
 import { isMorphNet } from "./myChain";
 import { Transaction } from "./myTypes";
-
+import { getChainObj } from "./myChain";
 import {
     getContract,
     formatEther,
@@ -157,6 +157,10 @@ const getW3eapAddr = async (cpc, chainCode: string, factoryAddr: string) => {
         args: [],
     });
 
+    console.log(
+        `++++++====factoryAddr ${factoryAddr} called.getW3eapAddr=${addr}`
+    );
+
     return addr;
 };
 
@@ -239,11 +243,11 @@ export async function queryAssets(
     factoryAddr: string,
     addr: string
 ) {
-    const tokenList = [];
+    let tokenList = [];
     try {
         const cpc = chainPublicClient(chainCode, factoryAddr);
         // console.log("rpc:", cpc.rpcUrl);
-        console.log("factoryAddr:", factoryAddr);
+        console.log("queryAssets factoryAddr xxxx::", factoryAddr);
         const w3eapAddr = await getW3eapAddr(cpc, chainCode, factoryAddr);
         tokenList.push(w3eapAddr);
 
@@ -258,52 +262,61 @@ export async function queryAssets(
         const result = [];
 
         if (isMorphNet(chainCode)) {
-            const res = await _queryMorphTokens(addr);
-            result.unshift(res);
-        } else {
-            for (let k = 0; k < tokenList.length; k++) {
-                const tknAddr = tokenList[k];
-                const symbol = await cpc.publicClient.readContract({
-                    account: accountOnlyForRead,
-                    address: tknAddr,
-                    abi: abis.symbol,
-                    functionName: "symbol",
-                    args: [],
-                });
-
-                const decimals = await cpc.publicClient.readContract({
-                    account: accountOnlyForRead,
-                    address: tknAddr,
-                    abi: abis.decimals,
-                    functionName: "decimals",
-                    args: [],
-                });
-                let balance = await cpc.publicClient.readContract({
-                    account: accountOnlyForRead,
-                    address: tknAddr,
-                    abi: abis.balanceOf,
-                    functionName: "balanceOf",
-                    args: [addr],
-                });
-
-                balance = formatEther(balance);
-
-                if (decimals != 18) {
-                    balance =
-                        Number(balance) *
-                        10 ** (18 - Number(decimals.toString()));
-                }
-
-                result.push({
-                    token_address: tknAddr,
-                    token_symbol: symbol,
-                    balance: balance,
-                });
+            const w3eapIncluded = { addr: w3eapAddr, included: false };
+            const res = await _queryMorphTokens(chainCode, addr, w3eapIncluded);
+            console.log("result.length==000==", res.length, result.length);
+            if (res.length > 0) {
+                result.unshift(res);
+            }
+            console.log("result.length==111==", res.length, result.length);
+            if (!w3eapIncluded.included) {
+                tokenList = [w3eapAddr];
+            } else {
+                tokenList = [];
             }
         }
 
-        result.unshift(myETH);
+        for (let k = 0; k < tokenList.length; k++) {
+            const tknAddr = tokenList[k];
+            const symbol = await cpc.publicClient.readContract({
+                account: accountOnlyForRead,
+                address: tknAddr,
+                abi: abis.symbol,
+                functionName: "symbol",
+                args: [],
+            });
 
+            const decimals = await cpc.publicClient.readContract({
+                account: accountOnlyForRead,
+                address: tknAddr,
+                abi: abis.decimals,
+                functionName: "decimals",
+                args: [],
+            });
+            let balance = await cpc.publicClient.readContract({
+                account: accountOnlyForRead,
+                address: tknAddr,
+                abi: abis.balanceOf,
+                functionName: "balanceOf",
+                args: [addr],
+            });
+
+            balance = formatEther(balance);
+
+            if (decimals != 18) {
+                balance =
+                    Number(balance) * 10 ** (18 - Number(decimals.toString()));
+            }
+
+            result.push({
+                token_address: tknAddr,
+                token_symbol: symbol,
+                balance: balance,
+            });
+        }
+
+        result.unshift(myETH);
+        console.log("result.length====", result.length);
         return result;
     } catch (e) {
         console.log(
@@ -320,23 +333,27 @@ export async function queryTransactions(
     addr: string
 ): Promise<Transaction[]> {
     if (isMorphNet(chainCode)) {
-        const res = await _queryMorphTransactions(addr);
+        const res = await _queryMorphTransactions(chainCode, addr);
         return res;
     } else {
         return [];
     }
 }
 
-async function _queryMorphTransactions(addr: string): Promise<Transaction[]> {
+async function _queryMorphTransactions(
+    chainCode: string,
+    addr: string
+): Promise<Transaction[]> {
+    const apiUrl = getChainObj(chainCode).explorerApiUrl; // process.env.MORPH_EXPLORER_API_URL
     const url =
-        process.env.MORPH_EXPLORER_API_URL +
+        apiUrl +
         "/addresses/" +
         // "0x3d078713797d3a9B39a95681538A1A535C3Cd6f6" + //
         addr +
         "/transactions";
     console.log("query morph trans:", url);
     const url2 =
-        process.env.MORPH_EXPLORER_API_URL +
+        apiUrl +
         "/addresses/" +
         // "0x3d078713797d3a9B39a95681538A1A535C3Cd6f6" +
         addr +
@@ -470,9 +487,14 @@ function formatBalance(value, decimals) {
     return x / y;
 }
 
-async function _queryMorphTokens(addr: string) {
+async function _queryMorphTokens(
+    chainCode: string,
+    addr: string,
+    w3eapIncluded: { addr: string; included: boolean }
+) {
+    const apiUrl = getChainObj(chainCode).explorerApiUrl;
     const url =
-        process.env.MORPH_EXPLORER_API_URL +
+        apiUrl +
         "/addresses/" +
         // "0x3d078713797d3a9B39a95681538A1A535C3Cd6f6" + //
         addr +
@@ -497,6 +519,9 @@ async function _queryMorphTokens(addr: string) {
                 token_type: e.token.type,
                 balance: formatBalance(e.value, e.token.decimals), // BigInt(e.value) / BigInt(e.token.decimals),
             };
+            if (w3eapIncluded.addr == e.token.address) {
+                w3eapIncluded.included = true;
+            }
             resultData.push(aRow);
         });
     } catch (error) {

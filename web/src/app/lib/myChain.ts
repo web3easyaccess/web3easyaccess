@@ -52,6 +52,7 @@ const morphHoleskyTestnet = defineChain({
             blockCreated: 1,
         },
     },
+    explorerApiUrl: "https://explorer-api-holesky.morphl2.io/api/v2",
 });
 
 export const getChainObj = (chainCode) => {
@@ -69,6 +70,7 @@ export const getChainObj = (chainCode) => {
 }; // morphHoleskyTestnet;
 
 export function isMorphNet(chainCode) {
+    console.log("chaincode in isMorphNet:", chainCode);
     return chainCode == "MORPH_TEST_CHAIN";
 }
 // export const getChainObj = localChain;

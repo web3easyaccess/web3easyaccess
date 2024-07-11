@@ -37,7 +37,11 @@ export function chainClient() {
     } else {
         var a = 1 / 0;
     }
-
+    console.log(
+        `_currentPrivateKey:len:${
+            _currentPrivateKey?.length
+        },p2:${_currentPrivateKey?.substring(0, 2)}`
+    );
     let account = null;
     if (
         typeof _currentPrivateKey === "undefined" ||

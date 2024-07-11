@@ -183,7 +183,7 @@ export function PrivateInfo({
         let pinX = getInputValueById("id_private_pin_1") as string;
         if (pinX.length == 0 || !pwdRegex.test(pinX)) {
             setPinErrorMsg(
-                "pin required: The length is greater than 10, contains special characters for upper and lower case letters"
+                "PIN required: The length is greater than 10, contains special characters for upper and lower case letters"
             );
             return;
         }
@@ -531,7 +531,7 @@ export function PrivateInfo({
                                             <p>PIN Code:</p>
                                         </CardBody>
                                     </Card>
-                                    <Card
+                                    <p
                                         style={{
                                             width: "340px",
                                             marginTop: "5px",
@@ -541,10 +541,8 @@ export function PrivateInfo({
                                             // backgroundColor: "#FAD7A0",
                                         }}
                                     >
-                                        <label title={pinErrorMsg}>
-                                            {pinErrorMsg}
-                                        </label>
-                                    </Card>
+                                        {pinErrorMsg}
+                                    </p>
                                 </div>
 
                                 <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
