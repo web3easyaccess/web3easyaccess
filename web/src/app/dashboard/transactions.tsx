@@ -119,6 +119,15 @@ export default function App({
         return tt.substring(0, 19);
     };
 
+    const calGasFee = (tx: any) => {
+        const res = tx.l1_fee + Number(tx.gas_price) * tx.gas_used;
+        if (res.toString() == "NaN") {
+            return "-";
+        } else {
+            return res;
+        }
+    };
+
     return (
         <Tabs aria-label="Options">
             <Tab key="assetTransactions" title="Asset Transactions">
@@ -155,7 +164,7 @@ export default function App({
                                 Transaction Order
                             </TableColumn>
                             <TableColumn style={{ width: "100px" }}>
-                                Gas Fee
+                                Gas Fee(ETH)
                             </TableColumn>
                         </TableHeader>
                         <TableBody>
@@ -215,18 +224,18 @@ export default function App({
                                         <TableCell>
                                             {txOrder(tx.hash)}
                                         </TableCell>
-                                        <TableCell>
-                                            {tx.l1_fee +
-                                                Number(tx.gas_price) *
-                                                    tx.gas_used}
-                                        </TableCell>
+                                        <TableCell>{calGasFee(tx)}</TableCell>
                                     </TableRow>
                                 ))}
                         </TableBody>
                     </Table>
                 </div>
             </Tab>
-            <Tab key="allTransactions" title="All Transactions">
+            <Tab
+                key="allTransactions"
+                title="All Transactions"
+                style={{ display: "none" }}
+            >
                 <Table
                     removeWrapper
                     aria-label="Example static collection table"

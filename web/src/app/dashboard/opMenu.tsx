@@ -44,7 +44,7 @@ export default function OpMenu({ selectedMenu }: { selectedMenu: Menu }) {
             route.push("/dashboard/transactions");
         } else if (elementTextContent.indexOf("Send Transaction") >= 0) {
             route.push("/dashboard/newtransaction");
-        } else if (elementTextContent.indexOf("Private Info") >= 0) {
+        } else if (elementTextContent.indexOf("PrivateInfo") >= 0) {
             route.push("/dashboard/privateinfo");
         }
     };
@@ -65,7 +65,7 @@ export default function OpMenu({ selectedMenu }: { selectedMenu: Menu }) {
         } else if (menu == Menu.SendTransaction) {
             menuText = "Send Transaction";
         } else if (menu == Menu.PrivateSetting) {
-            menuText = "Private Info";
+            menuText = "Change PrivateInfo";
         } else if (menu == Menu.Guardian) {
             menuText = "Guardian(Not Yet)";
         }
@@ -114,7 +114,7 @@ export default function OpMenu({ selectedMenu }: { selectedMenu: Menu }) {
                 <CardBody>
                     <MenuItem menu={Menu.PrivateSetting}></MenuItem>
                 </CardBody>
-                <CardBody>
+                <CardBody style={{ display: "none" }}>
                     <MenuItem menu={Menu.Guardian}></MenuItem>
                 </CardBody>
                 <Divider />
@@ -137,12 +137,18 @@ export function ShowMain({ currentUserInfo }: { currentUserInfo: UserInfo }) {
         return <SendTransaction currentUserInfo={currentUserInfo} />;
     } else if (currentUserInfo.selectedMenu == Menu.PrivateSetting) {
         console.log("selectedMenu11111111144:", currentUserInfo.selectedMenu);
+        // alert("coming soon!");
         return (
-            <PrivateInfo
-                currentUserInfo={currentUserInfo}
-                forTransaction={false}
-            />
+            <div>
+                <h3 style={{ fontSize: "40px" }}>coming soon ... </h3>
+            </div>
         );
+        // return (
+        //     <PrivateInfo
+        //         currentUserInfo={curren  tUserInfo}
+        //         forTransaction={false}
+        //     />
+        // );
     }
     console.log("selectedMenu11111111133:", currentUserInfo.selectedMenu);
 }

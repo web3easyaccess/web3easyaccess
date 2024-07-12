@@ -26,6 +26,9 @@ const COOKIE_KEY_CHAIN = "w3ea_data_chain";
 
 function getChainCode() {
     let cname = _parseString(cookies().get(COOKIE_KEY_CHAIN));
+    if (cname == undefined || cname == "") {
+        return "MORPH_TEST_CHAIN";
+    }
     return cname;
 }
 

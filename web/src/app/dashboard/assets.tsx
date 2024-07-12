@@ -120,10 +120,14 @@ export default function App({
                 </Tab>
                 <Tab key="nfts" title="NFTs">
                     <Card>
-                        <CardBody>Not Yet!</CardBody>
+                        <CardBody>Coming soon!</CardBody>
                     </Card>
                 </Tab>
-                <Tab key="bridge" title="Bridge" style={{ fontWeight: "bold" }}>
+                <Tab
+                    key="bridge"
+                    title="Bridge"
+                    style={{ fontWeight: "bold", display: "none" }}
+                >
                     <Card
                         style={{
                             maxWidth: "400px",

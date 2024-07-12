@@ -334,19 +334,19 @@ export default function App({
                     </div>
                 </Tab>
                 <Tab key="sendToken" title="Send Token">
-                    <p>Not Yet</p>
+                    <p>Coming soon...</p>
                 </Tab>
                 <Tab key="sendNFT" title="Send NFT">
-                    <p>Not Yet</p>
+                    <p>Coming soon...</p>
                 </Tab>
                 <Tab key="swap" title="Swap Token">
-                    <p>Not Yet</p>
+                    <p>Coming soon...</p>
                 </Tab>
                 <Tab
                     key="createCustomTransaction"
                     title="Create Custom Transaction"
                 >
-                    <p>Not Yet</p>
+                    <p>Coming soon...</p>
                 </Tab>
                 <Tab
                     key="bridgeL2AndMain"
@@ -355,14 +355,22 @@ export default function App({
                     <p>Not Yet</p>
                 </Tab>
             </Tabs>
-            <PrivateInfo
-                currentUserInfo={currentUserInfo}
-                forTransaction={true}
-                currentPriInfoRef={currentPriInfoRef}
-                oldPriInfoRef={oldPriInfoRef}
-                updateFillInOk={updateFillInOk}
-                privateinfoHidden={privateinfoHidden}
-            ></PrivateInfo>
+            <div
+                style={
+                    currentTabTag == "sendETH"
+                        ? { display: "block" }
+                        : { display: "none" }
+                }
+            >
+                <PrivateInfo
+                    currentUserInfo={currentUserInfo}
+                    forTransaction={true}
+                    currentPriInfoRef={currentPriInfoRef}
+                    oldPriInfoRef={oldPriInfoRef}
+                    updateFillInOk={updateFillInOk}
+                    privateinfoHidden={privateinfoHidden}
+                ></PrivateInfo>
+            </div>
             <div
                 style={
                     transactionFee.indexOf("ERROR") >= 0
