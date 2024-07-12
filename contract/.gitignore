@@ -6,7 +6,6 @@ out/
 !/broadcast
 /broadcast/*/31337/
 /broadcast/*/1337/
-/broadcast/*/2810/
 /broadcast/**/dry-run/
 
 # Docs
@@ -15,4 +14,5 @@ docs/
 # Dotenv file
 .env
 
-lib/
+.local.script
+.local.script*
