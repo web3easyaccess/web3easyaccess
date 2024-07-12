@@ -43,7 +43,7 @@ export default function App({
                 currentUserInfo.factoryAddr,
                 `0x${currentUserInfo.selectedAccountAddr.substring(2)}`
             );
-            setAssets(a);
+            setAssets(a as any);
         };
         if (currentUserInfo.selectedAccountAddr != "") {
             fetchAssets();
