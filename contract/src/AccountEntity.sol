@@ -44,9 +44,10 @@ contract AccountEntity is EIP712 {
     event InitAccount(address passwdAddr, address factory);
     event ChgEntry(address newEntry);
     event ChgPasswdAddr(address oldPasswdAddr, address newPasswdAddr);
-    // event SendTransaction(address to, bytes data, uint256 value);
     event SyncEntryEOA(address newEntryEOA);
     event UpgradeImpl(address oldImpl, address newImpl);
+    event SendTransaction(address to, bytes data, uint256 value);
+
     error FunctionError();
 
     receive() external payable {}

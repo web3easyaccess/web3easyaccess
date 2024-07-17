@@ -213,7 +213,6 @@ contract AccountLogicImplV1 is AccountEntity, IAccountLogic {
         )
         returns (bytes memory rtnData)
     {
-        // emit SendTransaction(to, data, amount);
         require(address(this).balance >= amount, "TransferAmount notEnough");
         (bool success, bytes memory returndata) = to.call{value: amount}(data);
         if (!success) {
@@ -229,6 +228,7 @@ contract AccountLogicImplV1 is AccountEntity, IAccountLogic {
         } else {
             rtnData = returndata;
         }
+        emit SendTransaction(to, data, amount);
     }
 
     function upImplAfterSend(
@@ -249,13 +249,7 @@ contract AccountLogicImplV1 is AccountEntity, IAccountLogic {
         )
         returns (bytes memory rtnData)
     {
-        address newImpl = Factory(payable(factory)).accountImpl();
-        if (accountImpl != newImpl) {
-            emit UpgradeImpl(accountImpl, newImpl);
-            accountImpl = newImpl;
-        }
         // // //
-        // emit SendTransaction(to, data, amount);
         require(address(this).balance >= amount, "transferAmount notEnough");
         (bool success, bytes memory returndata) = to.call{value: amount}(data);
         if (!success) {
@@ -270,6 +264,13 @@ contract AccountLogicImplV1 is AccountEntity, IAccountLogic {
             }
         } else {
             rtnData = returndata;
+        }
+        emit SendTransaction(to, data, amount);
+
+        address newImpl = Factory(payable(factory)).accountImpl();
+        if (accountImpl != newImpl) {
+            emit UpgradeImpl(accountImpl, newImpl);
+            accountImpl = newImpl;
         }
     }
 
@@ -293,7 +294,6 @@ contract AccountLogicImplV1 is AccountEntity, IAccountLogic {
     {
         results = new bytes[](toArr.length);
         for (uint256 i = 0; i < toArr.length; i++) {
-            //emit SendTransaction(toArr[i], dataArr[i], amountArr[i]);
             (bool success, bytes memory returndata) = toArr[i].call{
                 value: amountArr[i]
             }(dataArr[i]);
@@ -306,6 +306,7 @@ contract AccountLogicImplV1 is AccountEntity, IAccountLogic {
             } else {
                 results[i] = returndata;
             }
+            emit SendTransaction(toArr[i], dataArr[i], amountArr[i]);
         }
         return results;
     }

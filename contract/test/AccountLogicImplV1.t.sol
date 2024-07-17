@@ -5,6 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import "../src/AccountEntity.sol";
 import "../src/AccountLogicImplV1.sol";
 import "../src/FactoryLogicV1.sol";
+import "../src/FactoryProxy.sol";
 import "../src/W3EAPoint.sol";
 import "../src/IAccountLogic.sol";
 
@@ -51,7 +52,11 @@ contract AccountImplV1Test is Test {
     function deploySysContracts() private {
         accountTemplate = new AccountEntity();
         acctImplV1 = new AccountLogicImplV1();
-        factory = new Factory(
+        Factory factoryLogic = new Factory();
+        factory = Factory(
+            payable(address(new FactoryProxy(address(factoryLogic), "")))
+        );
+        factory.init(
             entryEOA,
             address(accountTemplate),
             address(acctImplV1),
@@ -358,7 +363,12 @@ contract AccountImplV1Test is Test {
         address _admin2,
         address _admin3
         */
-        factory = new Factory(
+
+        Factory factoryLogic = new Factory();
+        factory = Factory(
+            payable(address(new FactoryProxy(address(factoryLogic), "")))
+        );
+        factory.init(
             address(0x1),
             address(0x2),
             address(0x3),
@@ -366,6 +376,7 @@ contract AccountImplV1Test is Test {
             address(0x102),
             address(0x103)
         );
+
         console.logBytes32(bytes32(factory.admin1()));
         console.logBytes32(bytes32(factory.admin2()));
         console.logBytes32(bytes32(factory.admin3()));
