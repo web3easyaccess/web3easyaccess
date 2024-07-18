@@ -82,9 +82,20 @@ export async function queryAccount(
                 functionName: "predictAccountAddress",
                 args: [ownerId],
             });
-            return { accountAddr: predictAddr, created: false };
+            return { accountAddr: predictAddr, created: false, passwdAddr: "" };
         } else {
-            return { accountAddr: accountAddr, created: true };
+            const passwdAddr = await cpc.publicClient.readContract({
+                account: accountOnlyForRead,
+                address: accountAddr,
+                abi: abis.passwdAddr,
+                functionName: "passwdAddr",
+                args: [],
+            });
+            return {
+                accountAddr: accountAddr,
+                created: true,
+                passwdAddr: passwdAddr,
+            };
         }
     } catch (e) {
         console.log(

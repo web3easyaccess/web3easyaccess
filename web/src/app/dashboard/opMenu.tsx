@@ -19,7 +19,7 @@ import {
 import Assets from "./assets";
 import Transactions from "./transactions";
 import SendTransaction from "./newtransaction/sendtransaction";
-import { PrivateInfo } from "./newtransaction/privateinfo";
+import SendChgPrivateInfo from "./newtransaction/sendchgprivateinfo";
 import { useRouter } from "next/navigation";
 
 import { Menu, UserInfo, uiToString } from "../lib/myTypes";
@@ -138,17 +138,17 @@ export function ShowMain({ currentUserInfo }: { currentUserInfo: UserInfo }) {
     } else if (currentUserInfo.selectedMenu == Menu.PrivateSetting) {
         console.log("selectedMenu11111111144:", currentUserInfo.selectedMenu);
         // alert("coming soon!");
-        return (
-            <div>
-                <h3 style={{ fontSize: "40px" }}>coming soon ... </h3>
-            </div>
-        );
         // return (
-        //     <PrivateInfo
-        //         currentUserInfo={curren  tUserInfo}
-        //         forTransaction={false}
-        //     />
+        //     <div>
+        //         <h3 style={{ fontSize: "40px" }}>coming soon ... </h3>
+        //     </div>
         // );
+        return (
+            <SendChgPrivateInfo
+                currentUserInfo={currentUserInfo}
+                forTransaction={false}
+            />
+        );
     }
     console.log("selectedMenu11111111133:", currentUserInfo.selectedMenu);
 }

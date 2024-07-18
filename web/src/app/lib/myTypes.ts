@@ -22,6 +22,7 @@ export type UserInfo = {
     email: string;
     emailDisplay: string;
     bigBrotherOwnerId: string;
+    bigBrotherPasswdAddr: string;
     selectedOwnerId: string;
     selectedOrderNo: number;
     selectedAccountAddr: string;

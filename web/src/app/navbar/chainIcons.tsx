@@ -56,6 +56,10 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
 
     const handleClick = (chainCode) => {
         console.log(chainCode);
+        if ("ETHEREUM_MAIN_NET" == chainCode) {
+            alert("not supprted ...");
+            return;
+        }
         handleNewChainCodeState(chainCode);
         // // //
         setChainCodeHere(chainCode);
@@ -86,18 +90,21 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
         <div className="flex gap-3 items-center" style={{ cursor: "pointer" }}>
             <SetChainForm />
             {/* <Badge content="" color="secondary"> */}
-            <Tooltip content="MorphL2 testnet">
-                <Avatar
-                    src="/chain/morphl2test.png"
-                    size={morphl2testState.size}
-                    isBordered={morphl2testState.bordered}
-                    onClick={() => {
-                        handleClick("MORPH_TEST_CHAIN");
-                    }}
-                    color="primary"
-                    radius="sm"
-                />
-            </Tooltip>
+
+            <div style={{ display: "none" }}>
+                <Tooltip content="MorphL2 testnet">
+                    <Avatar
+                        src="/chain/morphl2test.png"
+                        size={morphl2testState.size}
+                        isBordered={morphl2testState.bordered}
+                        onClick={() => {
+                            handleClick("MORPH_TEST_CHAIN");
+                        }}
+                        color="primary"
+                        radius="sm"
+                    />
+                </Tooltip>
+            </div>
 
             <Tooltip content="Scroll Sepolia testnet">
                 <Avatar

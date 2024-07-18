@@ -1,17 +1,14 @@
 "use server";
 
 import myCookies from "../serverside/myCookies";
-import {
-    queryAssets,
-    queryQuestionIds,
-} from "../serverside/blockchain/queryAccountInfo";
+
 import Dashboard from "./dashboard";
 
 import { getFactoryAddr } from "../serverside/blockchain/chainWriteClient";
 import { getW3eapAddr } from "../serverside/blockchain/chainWrite";
-import { queryTransactions } from "../serverside/blockchain/queryAccountInfo";
-import redirectTo from "../serverside/redirectTo";
 
+import redirectTo from "../serverside/redirectTo";
+import { queryAccount } from "../lib/chainQuery";
 import { useState } from "react";
 
 import { getOwnerIdBigBrother } from "./privateinfo/lib/keyTools";
@@ -29,15 +26,23 @@ export default async function Page({ selectedMenu }: { selectedMenu: Menu }) {
     const selectedOrderNo = myData.selectedOrderNo;
 
     const w3eapAddr = await getW3eapAddr();
+    const factoryAddr = getFactoryAddr(myCookies.getChainCode()) as string;
+    const bigBrotherOwnerId = getOwnerIdBigBrother(email);
+    const acctData = await queryAccount(
+        myCookies.getChainCode(),
+        factoryAddr,
+        bigBrotherOwnerId
+    );
 
     const userInfo: UserInfo = {
         selectedMenu: selectedMenu,
         chainCode: myCookies.getChainCode(),
-        factoryAddr: getFactoryAddr(myCookies.getChainCode()) as string,
+        factoryAddr: factoryAddr,
         w3eapAddr: w3eapAddr as string,
         email: email,
         emailDisplay: emailDisplay,
-        bigBrotherOwnerId: getOwnerIdBigBrother(email),
+        bigBrotherOwnerId: bigBrotherOwnerId,
+        bigBrotherPasswdAddr: acctData.passwdAddr,
         selectedOwnerId: "",
         selectedOrderNo: selectedOrderNo,
         selectedAccountAddr: "",

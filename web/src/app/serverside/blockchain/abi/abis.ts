@@ -13,6 +13,8 @@ const nonce = account.abi.filter((e) => e.name == "nonce");
 
 const questionNos = account.abi.filter((e) => e.name == "questionNos");
 
+const passwdAddr = account.abi.filter((e) => e.name == "passwdAddr");
+
 const queryAccount = factory.abi.filter((e) => e.name == "queryAccount");
 
 const predictAccountAddress = factory.abi.filter(
@@ -42,6 +44,7 @@ export default {
     sendTransaction,
     chgPasswdAddr,
     questionNos,
+    passwdAddr,
 
     balanceOf,
     symbol,
