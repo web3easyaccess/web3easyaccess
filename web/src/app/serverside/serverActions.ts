@@ -6,7 +6,7 @@ import redirectTo from "./redirectTo";
 
 import myCookies from "./myCookies";
 import { sendMail } from "./mailService";
-import { queryAccount } from "../lib/chainQuery";
+import { queryAccount, formatTimestamp } from "../lib/chainQuery";
 import { getFactoryAddr } from "./blockchain/chainWriteClient";
 import {
     newAccount,
@@ -179,6 +179,104 @@ export async function saveSelectedOrderNo(
     const sNo = formData.get("selectedOrderNo");
     myCookies.flushSelectedOrderNo(Number(sNo));
     console.log("cookie saveSelectedOrderNo:", sNo);
+}
+
+const THEGRAPH_API_KEY = "27078366ee0927aec4a68aae6d7ce9e6";
+export async function thegraphQueryOpLog(accountAddr) {
+    const query =
+        "{" +
+        // " createAccounts(first: 999) { id ownerId account blockNumber blockTimestamp transactionHash}" +
+        ` initAccounts(where: { account: "${accountAddr}" } ) { id account passwdAddr factory blockNumber blockTimestamp transactionHash} ` +
+        ` chgEntries(where: { account: "${accountAddr}" } ) { id account newEntry blockNumber blockTimestamp transactionHash} ` +
+        ` chgPasswdAddrs(where: { account: "${accountAddr}" } ) { id account oldPasswdAddr newPasswdAddr blockNumber blockTimestamp transactionHash} ` +
+        ` syncEntryEOAs(where: { account: "${accountAddr}" } ) { id account newEntryEOA blockNumber blockTimestamp transactionHash} ` +
+        ` upgradeImpls(where: { account: "${accountAddr}" } ) { id account oldImpl newImpl blockTimestamp transactionHash} ` +
+        ` sendTransactions(where: { account: "${accountAddr}" } ) { id account to data value blockTimestamp transactionHash} ` +
+        "}";
+    console.log("xxx==============================:", accountAddr, query);
+    const myData = await fetch(
+        `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/4pPyuX64mqazXXjL2xUCJESDbhHj9KPnzWudeZrfDs1R`,
+        {
+            method: "POST",
+            body: JSON.stringify({
+                query: query,
+                operationName: "Subgraphs",
+                variables: {},
+            }),
+        }
+    );
+    const sss = await myData.json();
+    const result: {
+        operationType: string;
+        description: string;
+        timestamp: string;
+        hash: string;
+    }[] = [];
+
+    sss.data.chgEntries.forEach((e: any) => {
+        result.push({
+            operationType: "Change Entry",
+            description: "new entry:" + e.newEntry,
+            timestamp: formatTimestamp(e.blockTimestamp),
+            hash: e.transactionHash,
+        });
+    });
+
+    sss.data.chgPasswdAddrs.forEach((e: any) => {
+        result.push({
+            operationType: "Change Password",
+            description: "",
+            timestamp: formatTimestamp(e.blockTimestamp),
+            hash: e.transactionHash,
+        });
+    });
+
+    sss.data.initAccounts.forEach((e: any) => {
+        result.push({
+            operationType: "Init Account",
+            description: "",
+            timestamp: formatTimestamp(e.blockTimestamp),
+            hash: e.transactionHash,
+        });
+    });
+
+    sss.data.sendTransactions.forEach((e: any) => {
+        result.push({
+            operationType: "Send Transaction",
+            description:
+                "to:" + e.to + "; value:" + e.value + "; data:" + e.data,
+            timestamp: formatTimestamp(e.blockTimestamp),
+            hash: e.transactionHash,
+        });
+    });
+
+    sss.data.syncEntryEOAs.forEach((e: any) => {
+        result.push({
+            operationType: "Send Transaction",
+            description: "newEntryEOA:" + e.newEntryEOA,
+            timestamp: formatTimestamp(e.blockTimestamp),
+            hash: e.transactionHash,
+        });
+    });
+
+    sss.data.upgradeImpls.forEach((e: any) => {
+        result.push({
+            operationType: "Upgrade Implementation",
+            description: "oldImpl:" + e.oldImpl + "; newImpl:" + e.newImpl,
+            timestamp: formatTimestamp(e.blockTimestamp),
+            hash: e.transactionHash,
+        });
+    });
+
+    result.sort((a: any, b: any) => {
+        if (a.timestamp < b.timestamp) {
+            return -1;
+        } else {
+            return 1;
+        }
+    });
+
+    return result;
 }
 
 export async function createAccount(

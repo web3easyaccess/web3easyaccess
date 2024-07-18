@@ -3,7 +3,8 @@ import { keccak256, toHex } from "viem";
 import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
 import redirectTo from "./redirectTo";
 import { getOwnerIdBigBrother } from "../dashboard/privateinfo/lib/keyTools";
-import { queryAccount } from "./blockchain/chainWrite";
+
+import { ChainCode } from "../lib/myTypes";
 
 export type CookieData = {
     ownerId: string;
