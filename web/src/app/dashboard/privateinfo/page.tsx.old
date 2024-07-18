@@ -1,0 +1,24 @@
+"use server";
+
+import myCookies from "../../serverside/myCookies";
+
+import Private from "../privateinfo";
+import { createAccount } from "../../serverside/serverActions";
+import { getChainObj } from "../../serverside/blockchain/myChain";
+import redirectTo from "../../serverside/redirectTo";
+
+export default async function Page() {
+  const myData = myCookies.loadData();
+  const email = myData.email; // || "abc@def.com";
+  redirectTo.urlLoggedInCheck();
+  const current_net = getChainObj();
+  return (
+    <Private
+      chainId={current_net.id}
+      verifyingContract={myData.accountId}
+      email={email}
+      getChainObj={current_net}
+      forSigning={false}
+    ></Private>
+  );
+}
