@@ -124,8 +124,23 @@ export default function App({
 export function Navbar4Login({ chainCode }: { chainCode: string }) {
     const [chainCodeState, setCurrentChainCode] = useState(chainCode);
     const handleNewChainCodeState = (newChainCode: string) => {
-        console.log("chainCode now set to be1:" + newChainCode);
-        setCurrentChainCode(newChainCode);
+        // console.log("chainCode now set to be1:" + newChainCode);
+        // setCurrentChainCode(newChainCode);
+
+        const oldChainCode = chainCodeState;
+        console.log("chainCode now set to be0,old login:" + oldChainCode);
+        if (oldChainCode != newChainCode) {
+            console.log("chainCode now set to be1 login:" + newChainCode);
+            setCurrentChainCode(newChainCode);
+            const iii = setTimeout(() => {
+                console.log(
+                    "page reload...00.111.",
+                    chainCodeState,
+                    newChainCode
+                );
+                location.reload();
+            }, 3000);
+        }
     };
     // max-w-[30ch]
     return (
