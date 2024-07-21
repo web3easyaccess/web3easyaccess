@@ -167,7 +167,7 @@ export async function verifyEmail(
         }
         // return "";
     } else {
-        console.log("verify failure!", email, code);
+        console.log("verify failure!", email, code, "stored code:" + myCode);
         return "verify code invalid";
     }
 }

@@ -77,6 +77,7 @@ export function PrivateInfo({
     updateFillInOk: any;
     privateinfoHidden: boolean;
 }) {
+    const questions = pq.questions[1];
     const bigBrotherAccountCreated = () => {
         console.log(
             "in bigBrotherAccountCreated, addr length:",
@@ -627,7 +628,7 @@ export function PrivateInfo({
                                     <div style={{ marginBottom: "10px" }}>
                                         <Autocomplete
                                             label="old first question"
-                                            className="max-w-2xl"
+                                            className="max-w-3xl"
                                             onSelectionChange={
                                                 onSelectionChange1Old
                                             }
@@ -636,7 +637,7 @@ export function PrivateInfo({
                                                 myOldFirstQuestionNo
                                             }
                                         >
-                                            {pq.questions[1].map((item) => (
+                                            {questions.map((item) => (
                                                 <AutocompleteItem
                                                     key={item.idx}
                                                     value={item.question}
@@ -656,12 +657,12 @@ export function PrivateInfo({
                                 ) : null}
                                 <Autocomplete
                                     label="Choose the first question"
-                                    className="max-w-2xl"
+                                    className="max-w-3xl"
                                     onSelectionChange={onSelectionChange1}
                                     selectedKey={myFirstQuestionNo}
                                     defaultSelectedKey={myFirstQuestionNo}
                                 >
-                                    {pq.questions[1].map((item) => (
+                                    {questions.map((item) => (
                                         <AutocompleteItem
                                             key={item.idx}
                                             value={item.question}
@@ -710,7 +711,7 @@ export function PrivateInfo({
                                     <div style={{ marginBottom: "10px" }}>
                                         <Autocomplete
                                             label="old second question"
-                                            className="max-w-2xl"
+                                            className="max-w-3xl"
                                             onSelectionChange={
                                                 onSelectionChange2Old
                                             }
@@ -719,7 +720,7 @@ export function PrivateInfo({
                                                 myOldSecondQuestionNo
                                             }
                                         >
-                                            {pq.questions[1].map((item) => (
+                                            {questions.map((item) => (
                                                 <AutocompleteItem
                                                     key={item.idx}
                                                     value={item.question}
@@ -738,12 +739,12 @@ export function PrivateInfo({
                                 ) : null}
                                 <Autocomplete
                                     label="Choose the second question"
-                                    className="max-w-2xl"
+                                    className="max-w-3xl"
                                     onSelectionChange={onSelectionChange2}
                                     selectedKey={mySecondQuestionNo}
                                     defaultSelectedKey={mySecondQuestionNo}
                                 >
-                                    {pq.questions[2].map((item) => (
+                                    {questions.map((item) => (
                                         <AutocompleteItem
                                             key={item.idx}
                                             value={item.question}
