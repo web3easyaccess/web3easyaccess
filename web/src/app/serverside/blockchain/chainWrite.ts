@@ -332,7 +332,129 @@ export async function createTransaction(
     }
 }
 
-export async function transferETH(
+export async function changePasswdAddr(
+    bigBrotherOwnerId: `0x${string}`,
+    bigBrotherAccountAddr: `0x${string}`,
+    passwdAddr: `0x${string}`,
+    newPasswdAddr: `0x${string}`,
+    newQuestionNos: `0x${string}`,
+    signature: `0x${string}`,
+    onlyQueryFee: boolean,
+    detectEstimatedFee: bigint,
+    preparedMaxFeePerGas: bigint,
+    preparedGasPrice: bigint
+) {
+    console.log(
+        `changePaswdAddr called ... bigBrotherOwnerId= ${bigBrotherOwnerId},bigBrotherAccountAddr=${bigBrotherAccountAddr}, newPasswdAddr=${newPasswdAddr},newQuestionNos=${newQuestionNos},detectEstimatedFee=${detectEstimatedFee},onlyQueryFee=${onlyQueryFee}`
+    );
+    let chgPasswdData = null;
+    let request = null;
+    let hash = "";
+    const myClient = chainClient();
+    try {
+        chgPasswdData = encodeFunctionData({
+            abi: abis.chgPasswdAddr,
+            functionName: "chgPasswdAddr",
+            args: [
+                newPasswdAddr,
+                newQuestionNos,
+                detectEstimatedFee,
+                passwdAddr,
+                signature,
+            ],
+        });
+
+        if (onlyQueryFee) {
+            request = await myClient.walletClient.prepareTransactionRequest({
+                account: myClient.account,
+                to: bigBrotherAccountAddr,
+                value: BigInt(0), // parseEther("0.0"),
+                data: chgPasswdData,
+            });
+
+            // console.log("xxxxxxx---3:", request);
+            let realEstimatedFee = BigInt(0);
+            if (request.maxFeePerGas != undefined) {
+                //eip-1559
+                console.log("xxxxxxx-chgpasswd---3-1:", request.maxFeePerGas);
+                realEstimatedFee = request.gas * request.maxFeePerGas;
+            } else if (request.gasPrice != undefined) {
+                // Legacy
+                console.log("xxxxxxx-chgpasswd---3-2:", request.gasPrice);
+                realEstimatedFee = request.gas * request.gasPrice;
+            } else {
+                console.log("unsupport prepare req2XX:", request);
+                throw Error("unsupport prepare req2XX!");
+            }
+
+            console.log(
+                `changePaswdAddr detected. detectEstimatedFee=${detectEstimatedFee},realEstimatedFee=${realEstimatedFee},req.gas=${request.gas}, maxFeePerGas=${request.maxFeePerGas},gasPrice=${request.gasPrice}`
+            );
+
+            console.log(
+                "changePaswdAddr detected by prepareTransactionRequest result:",
+                {
+                    realEstimatedFee: realEstimatedFee,
+                    request: request,
+                }
+            );
+
+            return {
+                success: true,
+                msg: "",
+                realEstimatedFee: realEstimatedFee,
+                maxFeePerGas: request.maxFeePerGas, //eip-1559
+                gasPrice: request.gasPrice, // Legacy
+                gasCount: request.gas,
+                tx: "",
+            };
+        } else {
+            // specified maxFeePerGas to send Transaction....
+            if (
+                (preparedMaxFeePerGas == undefined ||
+                    preparedMaxFeePerGas == BigInt(0)) &&
+                (preparedGasPrice == undefined || preparedGasPrice == BigInt(0))
+            ) {
+                // throw new Error("maxFeePerGas error!");
+                return { success: false, msg: "maxFeePerGas error!", tx: "" };
+            }
+
+            // simulate again
+            request = await myClient.walletClient.prepareTransactionRequest({
+                account: myClient.account,
+                to: bigBrotherAccountAddr,
+                value: BigInt(0), // parseEther("0.0"),
+                data: chgPasswdData,
+                maxFeePerGas: preparedMaxFeePerGas, //eip-1559
+                gasPrice: preparedGasPrice, // Legacy
+            });
+
+            hash = await myClient.walletClient.sendTransaction({
+                account: myClient.account,
+                to: bigBrotherAccountAddr,
+                value: BigInt(0), // parseEther("0.0"),
+                data: chgPasswdData,
+                maxFeePerGas: preparedMaxFeePerGas, //eip-1559
+                gasPrice: preparedGasPrice, // Legacy
+            });
+            console.log("chgPasswdAddr success:", hash);
+            return { success: true, tx: hash, msg: "" };
+        }
+    } catch (e) {
+        console.log("chgPasswdAddr error:", e);
+        return { success: false, msg: e.shortMessage, tx: hash };
+    }
+}
+
+//////////////////
+
+//////////////////
+
+/////////////////  **************************
+
+///////////////
+
+export async function transferETHXXXXX(
     ownerId: `0x${string}`,
     to: `0x${string}`,
     amount: bigint,
@@ -361,7 +483,7 @@ export async function transferETH(
     }
 }
 
-export async function chgPasswdAddr(
+export async function chgPasswdAddrXXXX(
     ownerId: `0x${string}`,
     newPasswdAddr: `0x${string}`,
     newQuestionNos: string,

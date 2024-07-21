@@ -61,7 +61,7 @@ export default function App({
                     newChainCode
                 );
                 location.reload();
-            }, 3000);
+            }, 1000);
         }
     };
     // max-w-[30ch]
@@ -139,7 +139,7 @@ export function Navbar4Login({ chainCode }: { chainCode: string }) {
                     newChainCode
                 );
                 location.reload();
-            }, 3000);
+            }, 1000);
         }
     };
     // max-w-[30ch]

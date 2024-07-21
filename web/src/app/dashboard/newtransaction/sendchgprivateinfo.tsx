@@ -55,6 +55,7 @@ import {
 import {
     newAccountAndTransferETH,
     createTransaction,
+    changePasswdAddr,
 } from "../../serverside/blockchain/chainWrite";
 
 import { PrivateInfo } from "./privateinfo4chg";
@@ -178,7 +179,22 @@ export default function App({
                     );
 
                     let eFee = {};
-                    if (currentTabTag != "chgPrivate") {
+                    if (currentTabTag == "chgPrivate") {
+                        const oldPasswdAccount = getPasswdAccount(
+                            oldPriInfoRef.current
+                        );
+
+                        eFee = await estimateChgPasswdFee(
+                            currentUserInfo.bigBrotherOwnerId,
+                            currentUserInfo.accountAddrList[0],
+                            oldPasswdAccount,
+                            passwdAccount.address,
+                            chainObj,
+                            bigBrotherAccountCreated(),
+                            questionNosEnc,
+                            preparedPriceRef
+                        );
+                    } else {
                         if (receiverAddr != "" && amountETH != "") {
                             eFee = await estimateTransFee(
                                 currentUserInfo.selectedOwnerId,
@@ -195,26 +211,27 @@ export default function App({
                         } else {
                             return;
                         }
-                    } else {
-                        eFee = await estimateChgPasswdFee(
-                            currentUserInfo.bigBrotherOwnerId,
-                            currentUserInfo.accountAddrList[0],
-                            passwdAccount,
-                            newPasswdAddr,
-                            chainObj,
-                            myAccountCreated,
-                            questionNosEnc,
-                            preparedPriceRef
-                        );
                     }
 
-                    console.log(",estimateTransFee...:" + eFee);
+                    console.log(
+                        ",estimateFee...XXX:",
+                        currentTabTag,
+                        "Fee:",
+                        eFee
+                    );
+
                     if (eFee.feeDisplay.indexOf("ERROR") >= 0) {
                         console.log(
-                            "[ERROR]:" +
+                            "[ERROR]1:" +
                                 eFee.feeDisplay +
                                 "....currentPriInfoRef.current:",
                             currentPriInfoRef.current
+                        );
+                        console.log(
+                            "[ERROR]2:" +
+                                eFee.feeDisplay +
+                                "....oldPriInfoRef.current:",
+                            oldPriInfoRef.current
                         );
                     } else {
                         if (privateFillInOk > 0) {
@@ -375,9 +392,11 @@ export default function App({
                         chainObj={chainObj}
                         buttonText={buttonText}
                         myAccountCreated={myAccountCreated}
+                        oldPriInfoRef={oldPriInfoRef}
                         currentPriInfoRef={currentPriInfoRef}
                         preparedPriceRef={preparedPriceRef}
                         updateCurrentTx={updateCurrentTx}
+                        currentTabTag={currentTabTag}
                     />
                 </div>
             </div>
@@ -396,9 +415,11 @@ function SendTransaction({
     chainObj,
     buttonText,
     myAccountCreated,
+    oldPriInfoRef,
     currentPriInfoRef,
     preparedPriceRef,
     updateCurrentTx,
+    currentTabTag,
 }: {
     myOwnerId: string;
     verifyingContract: string;
@@ -406,9 +427,11 @@ function SendTransaction({
     chainObj: any;
     buttonText: string;
     myAccountCreated: boolean;
+    oldPriInfoRef: React.MutableRefObject<PrivateInfoType>;
     currentPriInfoRef: React.MutableRefObject<PrivateInfoType>;
     preparedPriceRef: any;
     updateCurrentTx: any;
+    currentTabTag: string;
 }) {
     const router = useRouter();
     const { pending } = useFormStatus();
@@ -419,32 +442,6 @@ function SendTransaction({
             return;
         }
 
-        let receiverAddr = getInputValueById("id_newtrans_receiver_addr_ui");
-        setInputValueById("id_newtrans_receiver_addr", receiverAddr);
-
-        let amountETH = getInputValueById("id_newtrans_amount_ui");
-        setInputValueById("id_newtrans_amount", amountETH);
-
-        if (
-            receiverAddr == null ||
-            receiverAddr.trim().length != 42 ||
-            receiverAddr.trim().startsWith("0x") == false
-        ) {
-            alert("Receiver Address invalid!");
-            return;
-        }
-        if (isNaN(parseFloat(amountETH))) {
-            alert("Amount invalid!");
-            return;
-        }
-
-        // let pin1 = getInputValueById("id_private_pin_1");
-        // let question1_answer_1 = getInputValueById(
-        //     "id_private_question1_answer_1"
-        // );
-        // let question2_answer_1 = getInputValueById(
-        //     "id_private_question2_answer_1"
-        // );
         if (
             currentPriInfoRef.current.pin == "" ||
             currentPriInfoRef.current.question1answer == "" ||
@@ -454,33 +451,105 @@ function SendTransaction({
             alert("please input private info first!");
             return;
         }
-        // myOwnerId
-        const passwdAccount = getPasswdAccount(currentPriInfoRef.current);
 
-        // keccak256(abi.encode(...));
-        console.log("encodeAbiParameters1111zzzz:", receiverAddr, amountETH);
-        let myDetectEstimatedFee = BigInt(0);
+        if (currentTabTag == "chgPrivate") {
+            if (
+                oldPriInfoRef.current.pin == "" ||
+                oldPriInfoRef.current.question1answer == "" ||
+                oldPriInfoRef.current.question2answer == ""
+            ) {
+                console.log("old private info invalid:", oldPriInfoRef.current);
+                alert("please input old private info first!");
+                return;
+            }
 
-        const questionNosEnc = questionNosEncode(
-            currentPriInfoRef.current.firstQuestionNo,
-            currentPriInfoRef.current.secondQuestionNo,
-            currentPriInfoRef.current.pin
-        );
+            const oldPasswdAccount = getPasswdAccount(oldPriInfoRef.current);
+            const newPasswdAccount = getPasswdAccount(
+                currentPriInfoRef.current
+            );
 
-        const tx = await executeTransaction(
-            myOwnerId,
-            verifyingContract,
-            passwdAccount,
-            receiverAddr,
-            amountETH,
-            "",
-            chainObj,
-            myAccountCreated,
-            questionNosEnc,
-            preparedPriceRef
-        );
+            let myDetectEstimatedFee = BigInt(0);
 
-        updateCurrentTx(tx);
+            const newQuestionNosEnc = questionNosEncode(
+                currentPriInfoRef.current.firstQuestionNo,
+                currentPriInfoRef.current.secondQuestionNo,
+                currentPriInfoRef.current.pin
+            );
+
+            const tx = await executeChgPasswd(
+                myOwnerId, // bigBrotherOwnerId,
+                verifyingContract, // bigBrotherAccountAddr,
+                oldPasswdAccount,
+                newPasswdAccount.address,
+                chainObj,
+                myAccountCreated,
+                newQuestionNosEnc,
+                preparedPriceRef
+            );
+
+            updateCurrentTx(tx);
+        } else {
+            let receiverAddr = getInputValueById(
+                "id_newtrans_receiver_addr_ui"
+            );
+            setInputValueById("id_newtrans_receiver_addr", receiverAddr);
+
+            let amountETH = getInputValueById("id_newtrans_amount_ui");
+            setInputValueById("id_newtrans_amount", amountETH);
+
+            if (
+                receiverAddr == null ||
+                receiverAddr.trim().length != 42 ||
+                receiverAddr.trim().startsWith("0x") == false
+            ) {
+                alert("Receiver Address invalid!");
+                return;
+            }
+            if (isNaN(parseFloat(amountETH))) {
+                alert("Amount invalid!");
+                return;
+            }
+
+            // let pin1 = getInputValueById("id_private_pin_1");
+            // let question1_answer_1 = getInputValueById(
+            //     "id_private_question1_answer_1"
+            // );
+            // let question2_answer_1 = getInputValueById(
+            //     "id_private_question2_answer_1"
+            // );
+
+            // myOwnerId
+            const passwdAccount = getPasswdAccount(currentPriInfoRef.current);
+
+            // keccak256(abi.encode(...));
+            console.log(
+                "encodeAbiParameters1111zzzz:",
+                receiverAddr,
+                amountETH
+            );
+            let myDetectEstimatedFee = BigInt(0);
+
+            const questionNosEnc = questionNosEncode(
+                currentPriInfoRef.current.firstQuestionNo,
+                currentPriInfoRef.current.secondQuestionNo,
+                currentPriInfoRef.current.pin
+            );
+
+            const tx = await executeTransaction(
+                myOwnerId,
+                verifyingContract,
+                passwdAccount,
+                receiverAddr,
+                amountETH,
+                "",
+                chainObj,
+                myAccountCreated,
+                questionNosEnc,
+                preparedPriceRef
+            );
+
+            updateCurrentTx(tx);
+        }
 
         // signature: signature, eoa: eoa, nonce: nonce.toString()
         // document.getElementById("id_newtrans_owner_id").value = ownerId;
@@ -516,6 +585,221 @@ function SendTransaction({
             </Button>
         </div>
     );
+}
+
+async function estimateChgPasswdFee(
+    bigBrotherOwnerId: string,
+    bigBrotherAccountAddr: string,
+    passwdAccount: any,
+    newPasswdAddr: string,
+    chainObj: any,
+    bigBrotherAccountCreated: boolean,
+    questionNos: string,
+    preparedPriceRef: any
+) {
+    let myDetectEstimatedFee = BigInt(0);
+    console.log(
+        "estimateChgPasswdFee...",
+        bigBrotherOwnerId,
+        bigBrotherAccountAddr,
+        "bigBrotherAccountCreated=" + bigBrotherAccountCreated
+    );
+    let detectRes: {
+        realEstimatedFee: bigint;
+        maxFeePerGas: bigint; //eip-1559
+        gasPrice: bigint; // Legacy
+        gasCount: bigint;
+        success: boolean;
+        msg: string;
+    } = {};
+    for (let k = 0; k < 15; k++) {
+        let argumentsHash = encodeAbiParameters(
+            [
+                { name: "funcId", type: "uint256" },
+                { name: "newPasswdAddr", type: "address" },
+                { name: "newQuestionNos", type: "bytes32" },
+                { name: "estimatedFee", type: "uint256" },
+            ],
+            [
+                BigInt(2),
+                newPasswdAddr,
+                keccak256(questionNos),
+                myDetectEstimatedFee,
+            ]
+        );
+        console.log("encodeAbiParametersxx2222:", argumentsHash);
+        argumentsHash = keccak256(argumentsHash);
+        console.log("encodeAbiParametersxx3333:", argumentsHash);
+        let chainId = chainObj.id;
+        if (!bigBrotherAccountCreated) {
+            alert("No account is currently created in email. not supported.");
+            return;
+        }
+        let withZeroNonce = !bigBrotherAccountCreated;
+        const sign = await signAuth(
+            passwdAccount,
+            chainId,
+            bigBrotherAccountAddr,
+            chainObj,
+            argumentsHash, // "" //
+            withZeroNonce
+        );
+
+        const onlyQueryFee = true;
+
+        if (bigBrotherAccountCreated) {
+            console.log(
+                "account has created, do chg password:",
+                bigBrotherOwnerId,
+                bigBrotherAccountAddr
+            );
+            detectRes = await changePasswdAddr(
+                bigBrotherOwnerId,
+                bigBrotherAccountAddr,
+                passwdAccount.address,
+                newPasswdAddr,
+                questionNos,
+                sign.signature,
+                onlyQueryFee,
+                myDetectEstimatedFee,
+                BigInt(0),
+                BigInt(0)
+            );
+        } else {
+            console.log("error...not supported...");
+            return;
+        }
+
+        if (!detectRes.success) {
+            return { feeDisplay: "ERROR: " + detectRes.msg };
+        }
+        console.log(
+            "chg passwd myDetectEstimatedFee=" + myDetectEstimatedFee,
+            "query estimatedFee detect,k=" + k + ",result:",
+            detectRes
+        );
+        if (Number(myDetectEstimatedFee) > Number(detectRes.realEstimatedFee)) {
+            preparedPriceRef.current = {
+                preparedMaxFeePerGas: detectRes.maxFeePerGas,
+                preparedGasPrice: detectRes.gasPrice,
+            };
+            break;
+        } else {
+            myDetectEstimatedFee = BigInt(
+                Number(detectRes.realEstimatedFee) +
+                    Number(
+                        detectRes.maxFeePerGas != undefined &&
+                            detectRes.maxFeePerGas > 0
+                            ? detectRes.maxFeePerGas
+                            : detectRes.gasPrice
+                    ) *
+                        1000
+            );
+        }
+    }
+    const feeDisplay = formatEther(myDetectEstimatedFee) + " ETH";
+    return { ...detectRes, feeDisplay, feeWei: myDetectEstimatedFee };
+}
+
+async function executeChgPasswd(
+    bigBrotherOwnerId: string,
+    bigBrotherAccountAddr: string,
+    passwdAccount: any,
+    newPasswdAddr: string,
+    chainObj: any,
+    bigBrotherAccountCreated: boolean,
+    newQuestionNos: string,
+    preparedPriceRef: any
+) {
+    let eFee = await estimateChgPasswdFee(
+        bigBrotherOwnerId,
+        bigBrotherAccountAddr,
+        passwdAccount,
+        newPasswdAddr,
+        chainObj,
+        bigBrotherAccountCreated,
+        newQuestionNos,
+        preparedPriceRef
+    );
+    console.log("user realtime fee, when changing Passwd:", eFee);
+    if (eFee.feeWei == undefined || eFee.feeWei == 0) {
+        throw Error("estimateChgPasswdFee realtime fee ERROR.");
+    }
+
+    let argumentsHash = encodeAbiParameters(
+        [
+            { name: "funcId", type: "uint256" },
+            { name: "newPasswdAddr", type: "address" },
+            { name: "newQuestionNos", type: "bytes32" },
+            { name: "estimatedFee", type: "uint256" },
+        ],
+        [BigInt(2), newPasswdAddr, keccak256(newQuestionNos), eFee.feeWei]
+    );
+
+    console.log("encodeAbiParameters2222ccc:", argumentsHash);
+    argumentsHash = keccak256(argumentsHash);
+    console.log("encodeAbiParameters3333ddd:", argumentsHash);
+    let chainId = chainObj.id;
+
+    if (!bigBrotherAccountCreated) {
+        alert("No account is currently created in email. not supported2.");
+        return;
+    }
+    let withZeroNonce = !bigBrotherAccountCreated;
+    const sign = await signAuth(
+        passwdAccount,
+        chainId,
+        bigBrotherAccountAddr,
+        chainObj,
+        argumentsHash, // "" //
+        withZeroNonce
+    );
+
+    let detectRes: {
+        realEstimatedFee: bigint;
+        preparedMaxfeePerGas: bigint;
+        preparedGasPrice: bigint;
+        gasCount: bigint;
+        success: boolean;
+        msg: string;
+    } = {};
+
+    const onlyQueryFee = false;
+
+    if (bigBrotherAccountCreated) {
+        console.log(
+            "big brother account has created, do chg passwd:",
+            bigBrotherOwnerId,
+            bigBrotherAccountAddr
+        );
+        detectRes = await changePasswdAddr(
+            bigBrotherOwnerId,
+            bigBrotherAccountAddr,
+            passwdAccount.address,
+            newPasswdAddr,
+            newQuestionNos,
+            sign.signature,
+            onlyQueryFee,
+            eFee.feeWei,
+            preparedPriceRef.current.preparedMaxFeePerGas,
+            preparedPriceRef.current.preparedGasPrice
+        );
+    } else {
+        console.log(
+            "big brother account has not created, not supperoted...!!!:",
+            bigBrotherOwnerId,
+            bigBrotherAccountAddr
+        );
+        alert("not supported ...!");
+    }
+
+    if (!detectRes.success) {
+        console.log("ERRORx1:", detectRes);
+        return "ERROR: " + detectRes.msg;
+    }
+
+    console.log("detectRes.x1.tx=" + detectRes.tx);
+    return detectRes.tx;
 }
 
 async function estimateTransFee(
