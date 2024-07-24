@@ -11,7 +11,7 @@
 
 ## 架构(Architecture)
 
-![arch](./W3EA-ARCH.png "architecture")
+![arch](./resources/W3EA-ARCH.png "architecture")
 
 如上图，在浏览器端，有两个环节（或两个部分）：
 
@@ -37,5 +37,19 @@
 1. 发起交易页面增加功能：转让 token、转让 NFT、自定义交易参数、对接 swap、内置 L2 与 L1 桥接
 2. 增加账户守护功能
 3. 对接更多链（EMV 及其他）
+
+## 主要功能截图
+
+![1](./resources/01login.png "x")
+
+![1](./resources/02asset.png "x")
+
+![1](./resources/03navbar.png "x")
+
+![1](./resources/04transactions.png "x")
+
+![1](./resources/05sendtransaction.png "x")
+
+![1](./resources/06modifaction.png "x")
 
 </font>
