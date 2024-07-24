@@ -91,20 +91,18 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
             <SetChainForm />
             {/* <Badge content="" color="secondary"> */}
 
-            <div style={{ display: "none" }}>
-                <Tooltip content="MorphL2 testnet">
-                    <Avatar
-                        src="/chain/morphl2test.png"
-                        size={morphl2testState.size}
-                        isBordered={morphl2testState.bordered}
-                        onClick={() => {
-                            handleClick("MORPH_TEST_CHAIN");
-                        }}
-                        color="primary"
-                        radius="sm"
-                    />
-                </Tooltip>
-            </div>
+            <Tooltip content="MorphL2 testnet">
+                <Avatar
+                    src="/chain/morphl2test.png"
+                    size={morphl2testState.size}
+                    isBordered={morphl2testState.bordered}
+                    onClick={() => {
+                        handleClick("MORPH_TEST_CHAIN");
+                    }}
+                    color="primary"
+                    radius="sm"
+                />
+            </Tooltip>
 
             <Tooltip content="Scroll Sepolia testnet">
                 <Avatar
