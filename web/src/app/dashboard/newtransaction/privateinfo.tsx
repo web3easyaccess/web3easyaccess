@@ -80,7 +80,7 @@ export function PrivateInfo({
     const questions = pq.questions[1];
     const bigBrotherAccountCreated = () => {
         console.log(
-            "in bigBrotherAccountCreated, addr length:",
+            "in bigBrotherAccountCreated, addr length x:",
             currentUserInfo.accountAddrList.length
         );
         return currentUserInfo.accountAddrList.length > 1;
@@ -948,7 +948,7 @@ function SubmitMessage({
     let marginLeft = "0px";
 
     console.log("private info, submitMessage, submitOpType:", submitOpType);
-    console.log("private info, forModification:", forModification);
+    console.log("private info, forModification 2:", forModification);
 
     if (submitOpType == OP_TYPE.OP_newInfoFirstTime) {
         buttonType = "button";
