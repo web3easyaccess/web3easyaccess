@@ -163,7 +163,6 @@ export default function App({
     useEffect(() => {
         const refreshFee = async () => {
             try {
-                console.log("xxx id_newtrans_receiver_addr_ui yyy:");
                 const receiverAddr = getInputValueById(
                     "id_newtrans_receiver_addr_ui"
                 );
@@ -178,7 +177,6 @@ export default function App({
                     currentPriInfoRef.current.question2answer != "" &&
                     currentPriInfoRef.current.confirmedSecondary == true
                 ) {
-                    console.log("xxx id_newtrans_receiver_addr_ui yyyAAA:");
                     const passwdAccount = getPasswdAccount(
                         currentPriInfoRef.current
                     );
@@ -217,7 +215,6 @@ export default function App({
                     }
                     setTransactionFee(eFee.feeDisplay);
                 } else {
-                    console.log("xxx id_newtrans_receiver_addr_ui yyyBBB:");
                     setTransactionFee("? ETH.");
                 }
             } catch (e) {
@@ -290,58 +287,6 @@ export default function App({
         currentUserInfo.chainCode,
     ]);
 
-    const TransactionUI = ({ type }: { type: string }) => {
-        return (
-            <div>
-                <div className="w-x-full flex flex-col gap-4">
-                    <div
-                        className="flex w-x-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
-                        style={
-                            type == "sendToken"
-                                ? { width: "500px" }
-                                : { display: "none" }
-                        }
-                    >
-                        <Input
-                            id="id_newtrans_token_addr_ui"
-                            type="text"
-                            variant={"bordered"}
-                            label="Token Address"
-                            placeholder="Enter Token Address"
-                            onBlur={updateInputFillInChange}
-                        />
-                    </div>
-                    <div
-                        className="flex w-x-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
-                        style={{ width: "500px" }}
-                    >
-                        <Input
-                            id="id_newtrans_receiver_addr_ui"
-                            type="text"
-                            variant={"bordered"}
-                            label="Receiver Address"
-                            placeholder="Enter your Receiver Address"
-                            onBlur={updateInputFillInChange}
-                        />
-                    </div>
-                    <div
-                        className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
-                        style={{ width: "500px" }}
-                    >
-                        <Input
-                            id="id_newtrans_amount_ui"
-                            type="text"
-                            variant={"bordered"}
-                            label="Amount"
-                            placeholder="Enter your Amount"
-                            onBlur={updateInputFillInChange}
-                        />
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
     return (
         <>
             <div id="var_tmp" style={{ display: "none" }}>
@@ -357,10 +302,77 @@ export default function App({
                 defaultSelectedKey={currentTabTag}
             >
                 <Tab key="sendETH" title="Send ETH">
-                    <TransactionUI type="sendETH"></TransactionUI>
+                    <div className="w-x-full flex flex-col gap-4">
+                        <div
+                            className="flex w-x-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
+                            style={{ width: "500px" }}
+                        >
+                            <Input
+                                id="id_newtrans_receiver_addr_ui"
+                                type="text"
+                                variant={"bordered"}
+                                label="Receiver Address"
+                                placeholder="Enter your Receiver Address"
+                                onBlur={updateInputFillInChange}
+                            />
+                        </div>
+                        <div
+                            className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
+                            style={{ width: "500px" }}
+                        >
+                            <Input
+                                id="id_newtrans_amount_ui"
+                                type="text"
+                                variant={"bordered"}
+                                label="Amount"
+                                placeholder="Enter your Amount"
+                                onBlur={updateInputFillInChange}
+                            />
+                        </div>
+                    </div>
                 </Tab>
                 <Tab key="sendToken" title="Send Token">
-                    <TransactionUI type="sendToken"></TransactionUI>
+                    <div className="w-x-full flex flex-col gap-4">
+                        <div
+                            className="flex w-x-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
+                            style={{ width: "500px" }}
+                        >
+                            <Input
+                                id="id_newtrans_token_addr_ui_token"
+                                color="primary"
+                                type="text"
+                                label="Token Address"
+                                placeholder="Enter Token Address"
+                                onBlur={updateInputFillInChange}
+                            />
+                        </div>
+                        <div
+                            className="flex w-x-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
+                            style={{ width: "500px" }}
+                        >
+                            <Input
+                                id="id_newtrans_receiver_addr_ui_token"
+                                type="text"
+                                variant={"bordered"}
+                                label="Receiver Address"
+                                placeholder="Enter your Receiver Address"
+                                onBlur={updateInputFillInChange}
+                            />
+                        </div>
+                        <div
+                            className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
+                            style={{ width: "500px" }}
+                        >
+                            <Input
+                                id="id_newtrans_amount_ui_token"
+                                type="text"
+                                variant={"bordered"}
+                                label="Amount"
+                                placeholder="Enter your Amount"
+                                onBlur={updateInputFillInChange}
+                            />
+                        </div>
+                    </div>
                 </Tab>
                 <Tab key="sendNFT" title="Send NFT">
                     <p>Coming soon...</p>
