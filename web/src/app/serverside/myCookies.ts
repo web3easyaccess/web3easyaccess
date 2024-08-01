@@ -3,7 +3,7 @@ import { keccak256, toHex } from "viem";
 import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
 import redirectTo from "./redirectTo";
 import { getOwnerIdBigBrother } from "../dashboard/privateinfo/lib/keyTools";
-
+import { v4 as uuidv4 } from "uuid";
 import { ChainCode } from "../lib/myTypes";
 
 export type CookieData = {
@@ -11,6 +11,7 @@ export type CookieData = {
     email: string;
     emailDisplay: string;
     selectedOrderNo: number;
+    passId: string;
 };
 
 const DEFAULT_DATA: CookieData = {
@@ -18,6 +19,7 @@ const DEFAULT_DATA: CookieData = {
     email: "",
     emailDisplay: "",
     selectedOrderNo: 0,
+    passId: "",
 };
 
 const COOKIE_KEY = "w3ea_data";
@@ -52,6 +54,17 @@ function cookieIsValid() {
 function loadData() {
     let md: CookieData = _parseData(cookies().get(COOKIE_KEY));
     return md;
+    // Cookies set directly on the browser are invalid
+    // passIdMap 有问题，不会保存先前设置的值，这里不能用，先直接返回
+    console.log("passId get:", md.email, md.passId, passIdMap.size);
+    if (md.passId == passIdMap.get(md.ownerId)) {
+        return md;
+    } else {
+        if (md.email != "") {
+            console.warn("passId invalid:", md.email, md.passId);
+        }
+        return DEFAULT_DATA;
+    }
 }
 
 function clearData() {
@@ -65,6 +78,7 @@ function flushSelectedOrderNo(sNo: number) {
     cookies().set(COOKIE_KEY, JSON.stringify(md), { maxAge: MAX_AGE });
 }
 //
+const passIdMap = new Map();
 function flushData(email: string) {
     let idx = email.indexOf("@");
     let emailDisplay = "";
@@ -86,6 +100,9 @@ function flushData(email: string) {
         md.email = email;
         md.emailDisplay = emailDisplay;
     }
+    md.passId = uuidv4();
+    passIdMap.set(md.ownerId, md.passId);
+    console.log("passId set:", md.email, md.passId);
 
     cookies().set(COOKIE_KEY, JSON.stringify(md), { maxAge: MAX_AGE });
     return md;

@@ -33,6 +33,18 @@ const balanceOf = w3eaPointJSON.abi.filter((e) => e.name == "balanceOf");
 const symbol = w3eaPointJSON.abi.filter((e) => e.name == "symbol");
 const decimals = w3eaPointJSON.abi.filter((e) => e.name == "decimals");
 
+const getL1DataFee = {
+    abi: [
+        {
+            type: "function",
+            name: "_NEED_DYNAMIC_SET", // "getL1Fee",
+            inputs: [{ name: "_data", type: "bytes", internalType: "bytes" }],
+            outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+            stateMutability: "view",
+        },
+    ],
+}.abi.filter((e) => e.name == "_NEED_DYNAMIC_SET");
+
 export default {
     nonce,
     queryAccount,
@@ -49,4 +61,5 @@ export default {
     balanceOf,
     symbol,
     decimals,
+    getL1DataFee,
 };

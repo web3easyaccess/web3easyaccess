@@ -162,6 +162,7 @@ export default function App({
 
     useEffect(() => {
         const refreshFee = async () => {
+            setTransactionFee("Please Waiting ... ");
             try {
                 const receiverAddr = getInputValueById(
                     "id_newtrans_receiver_addr_ui"
@@ -626,6 +627,7 @@ async function estimateTransFee(
     preparedPriceRef: any
 ) {
     let myDetectEstimatedFee = BigInt(0);
+    let myL1DataFee = BigInt(0);
     const receiverAmt = parseEther(receiverAmountETH);
     console.log(
         "estimateTransFee...",
@@ -635,6 +637,7 @@ async function estimateTransFee(
     );
     let detectRes: {
         realEstimatedFee: bigint;
+        l1DataFee: bigint;
         maxFeePerGas: bigint; //eip-1559
         gasPrice: bigint; // Legacy
         gasCount: bigint;
@@ -655,7 +658,7 @@ async function estimateTransFee(
                 receiverAddr,
                 receiverAmt,
                 receiverData,
-                myDetectEstimatedFee,
+                myDetectEstimatedFee + myL1DataFee,
             ]
         );
         console.log("encodeAbiParameters2222:", argumentsHash);
@@ -690,6 +693,7 @@ async function estimateTransFee(
                 sign.signature,
                 onlyQueryFee,
                 myDetectEstimatedFee,
+                myL1DataFee,
                 BigInt(0),
                 BigInt(0)
             );
@@ -708,6 +712,7 @@ async function estimateTransFee(
                 sign.signature,
                 onlyQueryFee,
                 myDetectEstimatedFee,
+                myL1DataFee,
                 BigInt(0),
                 BigInt(0)
             );
@@ -718,6 +723,7 @@ async function estimateTransFee(
         }
         console.log(
             "myDetectEstimatedFee=" + myDetectEstimatedFee,
+            "myL1DataFee=" + myL1DataFee,
             "query estimatedFee detect,k=" + k + ",result:",
             detectRes
         );
@@ -726,6 +732,7 @@ async function estimateTransFee(
                 preparedMaxFeePerGas: detectRes.maxFeePerGas,
                 preparedGasPrice: detectRes.gasPrice,
             };
+            myL1DataFee = detectRes.l1DataFee;
             break;
         } else {
             myDetectEstimatedFee = BigInt(
@@ -738,10 +745,17 @@ async function estimateTransFee(
                     ) *
                         1000
             );
+            myL1DataFee = detectRes.l1DataFee;
         }
     }
-    const feeDisplay = formatEther(myDetectEstimatedFee) + " ETH";
-    return { ...detectRes, feeDisplay, feeWei: myDetectEstimatedFee };
+    const feeDisplay =
+        formatEther(myDetectEstimatedFee + detectRes.l1DataFee) + " ETH";
+    return {
+        ...detectRes,
+        feeDisplay,
+        feeWei: myDetectEstimatedFee,
+        l1DataFeeWei: detectRes.l1DataFee,
+    };
 }
 
 async function executeTransaction(
@@ -782,7 +796,13 @@ async function executeTransaction(
             { name: "data", type: "bytes" },
             { name: "estimatedFee", type: "uint256" },
         ],
-        [BigInt(3), receiverAddr, receiverAmt, receiverData, eFee.feeWei]
+        [
+            BigInt(3),
+            receiverAddr,
+            receiverAmt,
+            receiverData,
+            eFee.feeWei + eFee.l1DataFeeWei,
+        ]
     );
     console.log("encodeAbiParameters2222aaa:", argumentsHash);
     argumentsHash = keccak256(argumentsHash);
@@ -800,6 +820,7 @@ async function executeTransaction(
 
     let detectRes: {
         realEstimatedFee: bigint;
+        l1DataFee: bigint;
         preparedMaxfeePerGas: bigint;
         preparedGasPrice: bigint;
         gasCount: bigint;
@@ -825,6 +846,7 @@ async function executeTransaction(
             sign.signature,
             onlyQueryFee,
             eFee.feeWei,
+            eFee.l1DataFeeWei,
             preparedPriceRef.current.preparedMaxFeePerGas,
             preparedPriceRef.current.preparedGasPrice
         );
@@ -843,6 +865,7 @@ async function executeTransaction(
             sign.signature,
             onlyQueryFee,
             eFee.feeWei,
+            eFee.l1DataFeeWei,
             preparedPriceRef.current.preparedMaxFeePerGas,
             preparedPriceRef.current.preparedGasPrice
         );

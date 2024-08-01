@@ -24,6 +24,8 @@ export function chainClient() {
     const chainCode = myCookies.getChainCode();
     const myClient = chainPublicClient(chainCode, getFactoryAddr(chainCode));
 
+    let _l1GasPriceOracleContract = "0x0";
+    let _l1DataFeeFunc = "";
     let _freeFeeAmountWhenCreated = 0;
     let _currentPrivateKey = undefined;
     if (chainCode == "DEFAULT_ANVIL_CHAIN") {
@@ -36,11 +38,17 @@ export function chainClient() {
             process.env.INIT_FREE_FEE_AMOUNT_MORPH_TEST
         );
         _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_MORPH_TEST;
+        _l1GasPriceOracleContract =
+            "0x53000000000000000000000000000000000000??";
+        _l1DataFeeFunc = "getL1Fee";
     } else if (chainCode == "SCROLL_TEST_CHAIN") {
         _freeFeeAmountWhenCreated = Number(
             process.env.INIT_FREE_FEE_AMOUNT_SCROLL_TEST
         );
         _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_SCROLL_TEST;
+        _l1GasPriceOracleContract =
+            "0x5300000000000000000000000000000000000002";
+        _l1DataFeeFunc = "getL1Fee";
     } else {
         var a = 1 / 0;
     }
@@ -65,5 +73,7 @@ export function chainClient() {
         ...myClient,
         account: account,
         freeFeeWhen1stCreated: _freeFeeAmountWhenCreated,
+        l1GasPriceOracleContract: _l1GasPriceOracleContract,
+        l1DataFeeFunc: _l1DataFeeFunc,
     };
 }

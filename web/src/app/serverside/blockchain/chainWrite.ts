@@ -8,6 +8,7 @@ import {
     parseEther,
     encodeAbiParameters,
     encodeFunctionData,
+    encodePacked,
 } from "viem";
 
 import { chainClient } from "./chainWriteClient";
@@ -91,6 +92,25 @@ export async function newAccount(
     }
 }
 
+async function getL1DataFee(cc: any, data: any) {
+    if (cc.l1GasPriceOracleContract.length < 42) {
+        return BitInt(0);
+    }
+
+    const myAbi = abis.getL1DataFee;
+    myAbi[0].name = cc.l1DataFeeFunc;
+    console.log("getL1DataFee:", myAbi, data, cc.publicClient.readContract);
+    const l1DataFee = await cc.publicClient.readContract({
+        account: cc.account,
+        address: cc.l1GasPriceOracleContract,
+        abi: myAbi,
+        functionName: cc.l1DataFeeFunc,
+        args: [data],
+    });
+    console.log("getL1DataFee22:", l1DataFee);
+    return BigInt((l1DataFee * BigInt(105)) / BigInt(100));
+}
+
 export async function newAccountAndTransferETH(
     ownerId: `0x${string}`,
     passwdAddr: `0x${string}`,
@@ -100,6 +120,7 @@ export async function newAccountAndTransferETH(
     signature: `0x${string}`,
     onlyQueryFee: boolean,
     detectEstimatedFee: bigint,
+    l1DataFee: bigint,
     preparedMaxFeePerGas: bigint,
     preparedGasPrice: bigint
 ) {
@@ -126,10 +147,17 @@ export async function newAccountAndTransferETH(
                 to,
                 amount,
                 "",
-                detectEstimatedFee,
+                detectEstimatedFee + l1DataFee, // L2fee+L1fee  on client side.
                 signature,
             ],
         });
+
+        console.log(
+            "total fee = txFee+L1DataFee =",
+            detectEstimatedFee,
+            "+",
+            l1DataFee
+        );
 
         console.log(
             "xxx:account,factory:",
@@ -174,10 +202,38 @@ export async function newAccountAndTransferETH(
                     request: request,
                 }
             );
+
+            console.log("xxxxxxx---2a,");
+            const _l1DataFee = await getL1DataFee(
+                myClient,
+                encodePacked(
+                    // from,to,value,data,nonce,gasPrice,gasLimit
+                    [
+                        "address",
+                        "address",
+                        "uint256",
+                        "bytes",
+                        "uint256",
+                        "uint256",
+                        "uint256",
+                    ],
+                    [
+                        myClient.account?.address,
+                        myClient.factoryAddr,
+                        BigInt(0),
+                        newAccountData,
+                        BigInt(999999),
+                        BigInt(999999999),
+                        BigInt(99999),
+                    ]
+                )
+            );
+
             return {
                 success: true,
                 msg: "",
                 realEstimatedFee: realEstimatedFee,
+                l1DataFee: _l1DataFee,
                 maxFeePerGas: request.maxFeePerGas, //eip-1559
                 gasPrice: request.gasPrice, // Legacy
                 gasCount: request.gas,
@@ -233,6 +289,7 @@ export async function createTransaction(
     signature: `0x${string}`,
     onlyQueryFee: boolean,
     detectEstimatedFee: bigint,
+    l1DataFee: bigint,
     preparedMaxFeePerGas: bigint,
     preparedGasPrice: bigint
 ) {
@@ -247,8 +304,24 @@ export async function createTransaction(
         dataSendToAccount = encodeFunctionData({
             abi: abis.sendTransaction,
             functionName: "sendTransaction",
-            args: [to, amount, data, detectEstimatedFee, passwdAddr, signature],
+            args: [
+                to,
+                amount,
+                data,
+                detectEstimatedFee + l1DataFee,
+                passwdAddr,
+                signature,
+            ],
         });
+
+        console.log(
+            "22 total fee = txFee+L1DataFee =",
+            detectEstimatedFee,
+            "+",
+            l1DataFee
+        );
+
+        // console.log("dataSendToAccount:", dataSendToAccount);
 
         if (onlyQueryFee) {
             request = await myClient.walletClient.prepareTransactionRequest({
@@ -285,10 +358,36 @@ export async function createTransaction(
                 }
             );
 
+            const _l1DataFee = await getL1DataFee(
+                myClient,
+                encodePacked(
+                    // from,to,value,data,nonce,gasPrice,gasLimit
+                    [
+                        "address",
+                        "address",
+                        "uint256",
+                        "bytes",
+                        "uint256",
+                        "uint256",
+                        "uint256",
+                    ],
+                    [
+                        myClient.account?.address,
+                        accountAddr,
+                        BigInt(0),
+                        dataSendToAccount,
+                        BigInt(999999),
+                        BigInt(999999999),
+                        BigInt(99999),
+                    ]
+                )
+            );
+
             return {
                 success: true,
                 msg: "",
                 realEstimatedFee: realEstimatedFee,
+                l1DataFee: _l1DataFee,
                 maxFeePerGas: request.maxFeePerGas, //eip-1559
                 gasPrice: request.gasPrice, // Legacy
                 gasCount: request.gas,

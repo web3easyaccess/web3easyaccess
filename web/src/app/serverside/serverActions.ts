@@ -151,20 +151,10 @@ export async function verifyEmail(
 
         md = myCookies.loadData();
 
-        if (
-            md.accountId == popularAddr.ZERO_ADDR ||
-            md.accountId == popularAddr.ZERO_ADDRError
-        ) {
-            console.log(
-                `verifyEmail-current owner ${email} havn't account, redirect to urlPrivateinfo.`
-            );
-            redirectTo.urlPrivateinfo();
-        } else {
-            console.log(
-                `verifyEmail-current owner ${email} have account ${md.accountId}, redirect to urlDashboard.`
-            );
-            redirectTo.urlDashboard();
-        }
+        console.log(
+            `verifyEmail-current owner ${email} have account ${md.accountId}, redirect to urlDashboard.`
+        );
+        redirectTo.urlDashboard();
         // return "";
     } else {
         console.log("verify failure!", email, code, "stored code:" + myCode);
