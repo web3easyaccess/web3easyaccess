@@ -22,7 +22,10 @@ import {
     parseAbiParameters,
     parseEther,
     formatEther,
+    encodeFunctionData,
 } from "viem";
+
+import abis from "../../serverside/blockchain/abi/abis";
 
 import React, { useState, useEffect, useRef } from "react";
 
@@ -45,7 +48,13 @@ import { useFormState, useFormStatus } from "react-dom";
 
 import { useRouter } from "next/navigation";
 import { getOwnerIdSelfByBigBrother } from "../privateinfo/lib/keyTools";
-import { queryAccount, queryQuestionIdsEnc } from "../../lib/chainQuery";
+import {
+    queryAccount,
+    queryQuestionIdsEnc,
+    queryTokenDetail,
+    formatUnits,
+    parseUnits,
+} from "../../lib/chainQuery";
 import { getInputValueById, setInputValueById } from "../../lib/elementById";
 import {
     newTransaction,
@@ -79,10 +88,43 @@ export default function App({
 }) {
     const router = useRouter();
 
-    const [currentTabTag, setCurrentTabTag] = useState("sendETH");
+    const chainObj = getChainObj(currentUserInfo.chainCode);
+    const explorerUrl = chainObj.blockExplorers.default.url;
+
+    const currentTabTagRef = useRef("sendETH");
 
     const handleSelectionChage = (e: any) => {
-        setCurrentTabTag(e.toString());
+        currentTabTagRef.current = e.toString();
+        setPrivateFillInOk(0);
+        refreshButtonText();
+    };
+
+    const readReceiverInfo = () => {
+        let receiverAddr = "";
+        let amount = "";
+        let tokenAddr = "";
+        let amountDecimals = 18;
+        if (currentTabTagRef.current == "sendETH") {
+            receiverAddr = getInputValueById("id_newtrans_receiver_addr_ui");
+            amount = getInputValueById("id_newtrans_amount_ui");
+        } else if (currentTabTagRef.current == "sendToken") {
+            receiverAddr = getInputValueById(
+                "id_newtrans_receiver_addr_ui_token"
+            );
+            amount = getInputValueById("id_newtrans_amount_ui_token");
+            tokenAddr = getInputValueById("id_newtrans_token_addr_ui_token");
+            amountDecimals = Number(tokenDetail.decimals);
+            if (tokenAddr == "") {
+                tokenAddr = "NULL";
+            }
+        }
+
+        return {
+            receiverAddr: receiverAddr,
+            amount: amount,
+            tokenAddr: tokenAddr,
+            amountDecimals: amountDecimals,
+        };
     };
 
     const [privateinfoHidden, setPrivateinfoHidden] = useState(false);
@@ -94,28 +136,86 @@ export default function App({
     };
     const [privateFillInOk, setPrivateFillInOk] = useState(0);
 
-    const updateFillInOk = () => {
-        let x = privateFillInOk;
-        setPrivateFillInOk(x + 1);
-
-        console.log("updateFillInOk, currentTabTag:", currentTabTag);
-        // Send transactions while creating an account
+    const refreshButtonText = () => {
         let msg = "Send ETH";
-        if (currentTabTag == "sendETH") {
+        if (currentTabTagRef.current == "sendETH") {
             if (myAccountCreated) {
                 msg = "Send ETH";
             } else {
                 // todo it's different when create other account.
                 msg = "Create Account and Send ETH";
             }
+        } else if (currentTabTagRef.current == "sendToken") {
+            if (myAccountCreated) {
+                msg = "Send Token";
+            } else {
+                // todo it's different when create other account.
+                msg = "Create Account and Send Token";
+            }
         } else {
         }
+        console.log(
+            "refreshButtonText, currentTabTag:",
+            currentTabTagRef.current
+        );
         setButtonText(msg);
     };
+
+    const updateFillInOk = () => {
+        let x = privateFillInOk;
+        setPrivateFillInOk(x + 1);
+
+        console.log("updateFillInOk, currentTabTag:", currentTabTagRef.current);
+        // Send transactions while creating an account
+        refreshButtonText();
+    };
+
     const [inputFillInChange, setInputFillInChange] = useState(0);
     const updateInputFillInChange = () => {
         let x = inputFillInChange + 1;
         setInputFillInChange(x);
+
+        refreshButtonText();
+    };
+
+    const [tokenDetail, setTokenDetail] = useState({
+        tokenAddress: "",
+        symbol: "",
+        name: "",
+        totalSupply: "0",
+        myBalance: "0",
+        decimals: "0",
+    });
+
+    const shortAddr = (aa: string) => {
+        if (aa == undefined || aa == null) {
+            return "";
+        }
+        return aa.substring(0, 6) + " ... " + aa.substring(aa.length - 4);
+    };
+
+    const tokenAddressBlur = async () => {
+        const addr = getInputValueById("id_newtrans_token_addr_ui_token");
+        setTokenDetail({
+            tokenAddress: "",
+            symbol: "Waiting ... ",
+            name: "",
+            totalSupply: "0",
+            myBalance: "0",
+            decimals: "0",
+        });
+
+        const detail = await queryTokenDetail(
+            currentUserInfo.chainCode,
+            currentUserInfo.factoryAddr,
+            addr,
+            currentUserInfo.selectedAccountAddr
+        );
+
+        console.log("tokenAddressBlur:", detail);
+        setTokenDetail(detail);
+
+        updateInputFillInChange();
     };
 
     const [myAccountCreated, setMyAccountCreated] = useState(false);
@@ -131,8 +231,6 @@ export default function App({
     };
     const currentPriInfoRef = useRef(piInit);
     const oldPriInfoRef = useRef(piInit);
-
-    const chainObj = getChainObj(currentUserInfo.chainCode);
 
     // const [myPrivateInfo, setMyPrivateInfo] = useState({
     //     email: "",
@@ -163,15 +261,14 @@ export default function App({
     useEffect(() => {
         const refreshFee = async () => {
             setTransactionFee("Please Waiting ... ");
+            setPrivateinfoHidden(false);
             try {
-                const receiverAddr = getInputValueById(
-                    "id_newtrans_receiver_addr_ui"
-                );
-                const amountETH = getInputValueById("id_newtrans_amount_ui");
+                const { receiverAddr, amount, tokenAddr, amountDecimals } =
+                    readReceiverInfo();
 
                 if (
                     receiverAddr != "" &&
-                    amountETH != "" &&
+                    amount != "" &&
                     currentPriInfoRef.current.email != "" &&
                     currentPriInfoRef.current.pin != "" &&
                     currentPriInfoRef.current.question1answer != "" &&
@@ -188,18 +285,49 @@ export default function App({
                         currentPriInfoRef.current.pin
                     );
 
-                    const eFee = await estimateTransFee(
-                        currentUserInfo.selectedOwnerId,
-                        currentUserInfo.selectedAccountAddr,
-                        passwdAccount,
-                        receiverAddr,
-                        amountETH,
-                        "",
-                        chainObj,
-                        myAccountCreated,
-                        questionNosEnc,
-                        preparedPriceRef
-                    );
+                    let eFee;
+
+                    if (
+                        tokenAddr != undefined &&
+                        tokenAddr != null &&
+                        tokenAddr.length > 2
+                    ) {
+                        // to address, value uint256;
+                        const transferTokenData = encodeFunctionData({
+                            abi: abis.transfer,
+                            functionName: "transfer",
+                            args: [
+                                receiverAddr,
+                                parseUnits(amount, amountDecimals),
+                            ],
+                        });
+
+                        eFee = await estimateTransFee(
+                            currentUserInfo.selectedOwnerId,
+                            currentUserInfo.selectedAccountAddr,
+                            passwdAccount,
+                            tokenAddr,
+                            "0",
+                            transferTokenData,
+                            chainObj,
+                            myAccountCreated,
+                            questionNosEnc,
+                            preparedPriceRef
+                        );
+                    } else {
+                        eFee = await estimateTransFee(
+                            currentUserInfo.selectedOwnerId,
+                            currentUserInfo.selectedAccountAddr,
+                            passwdAccount,
+                            receiverAddr,
+                            amount,
+                            "",
+                            chainObj,
+                            myAccountCreated,
+                            questionNosEnc,
+                            preparedPriceRef
+                        );
+                    }
 
                     console.log(",estimateTransFee...:" + eFee);
                     if (eFee.feeDisplay.indexOf("ERROR") >= 0) {
@@ -210,8 +338,9 @@ export default function App({
                             currentPriInfoRef.current
                         );
                     } else {
-                        if (privateFillInOk > 0) {
-                            setPrivateinfoHidden(true);
+                        setPrivateinfoHidden(true);
+                        if (privateFillInOk == 0) {
+                            updateFillInOk();
                         }
                     }
                     setTransactionFee(eFee.feeDisplay);
@@ -227,7 +356,12 @@ export default function App({
 
         //
         refreshFee();
-    }, [privateFillInOk, inputFillInChange]);
+    }, [
+        privateFillInOk,
+        setPrivateFillInOk,
+        inputFillInChange,
+        setInputFillInChange,
+    ]);
 
     //   const privateInfo: PrivateInfoType = {
     //     email: email,
@@ -299,8 +433,8 @@ export default function App({
             <Tabs
                 aria-label="Options"
                 onSelectionChange={handleSelectionChage}
-                selectedKey={currentTabTag}
-                defaultSelectedKey={currentTabTag}
+                selectedKey={currentTabTagRef.current}
+                defaultSelectedKey={currentTabTagRef.current}
             >
                 <Tab key="sendETH" title="Send ETH">
                     <div className="w-x-full flex flex-col gap-4">
@@ -333,46 +467,100 @@ export default function App({
                     </div>
                 </Tab>
                 <Tab key="sendToken" title="Send Token">
-                    <div className="w-x-full flex flex-col gap-4">
-                        <div
-                            className="flex w-x-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
-                            style={{ width: "500px" }}
-                        >
-                            <Input
-                                id="id_newtrans_token_addr_ui_token"
-                                color="primary"
-                                type="text"
-                                label="Token Address"
-                                placeholder="Enter Token Address"
-                                onBlur={updateInputFillInChange}
-                            />
+                    <div style={{ display: "flex" }}>
+                        <div className="w-x-full flex flex-col gap-4">
+                            <div
+                                className="flex w-x-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
+                                style={{ width: "500px" }}
+                            >
+                                <Input
+                                    id="id_newtrans_token_addr_ui_token"
+                                    type="text"
+                                    color="primary"
+                                    variant="underlined"
+                                    label="Token(ERC20) Address"
+                                    placeholder="Enter Token Address"
+                                    onBlur={tokenAddressBlur}
+                                />
+                            </div>
+                            <div
+                                className="flex w-x-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
+                                style={{ width: "500px" }}
+                            >
+                                <Input
+                                    id="id_newtrans_receiver_addr_ui_token"
+                                    type="text"
+                                    variant={"bordered"}
+                                    label="Receiver Address"
+                                    placeholder="Enter your Receiver Address"
+                                    onBlur={updateInputFillInChange}
+                                />
+                            </div>
+                            <div
+                                className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
+                                style={{ width: "500px" }}
+                            >
+                                <Input
+                                    id="id_newtrans_amount_ui_token"
+                                    type="text"
+                                    variant={"bordered"}
+                                    label="Amount"
+                                    placeholder="Enter your Amount"
+                                    onBlur={updateInputFillInChange}
+                                />
+                            </div>
                         </div>
-                        <div
-                            className="flex w-x-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
-                            style={{ width: "500px" }}
+                        <Card
+                            className="w-[360px]"
+                            style={{ marginLeft: "10px" }}
                         >
-                            <Input
-                                id="id_newtrans_receiver_addr_ui_token"
-                                type="text"
-                                variant={"bordered"}
-                                label="Receiver Address"
-                                placeholder="Enter your Receiver Address"
-                                onBlur={updateInputFillInChange}
-                            />
-                        </div>
-                        <div
-                            className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
-                            style={{ width: "500px" }}
-                        >
-                            <Input
-                                id="id_newtrans_amount_ui_token"
-                                type="text"
-                                variant={"bordered"}
-                                label="Amount"
-                                placeholder="Enter your Amount"
-                                onBlur={updateInputFillInChange}
-                            />
-                        </div>
+                            <CardHeader className="flex gap-3">
+                                {/* <Image
+                                    alt="nextui logo"
+                                    height={40}
+                                    radius="sm"
+                                    src="https://avatars.githubusercontent.com/u/86160567?s=200&v=4"
+                                    width={40}
+                                /> */}
+                                <div className="flex flex-col">
+                                    <p className="text-md">
+                                        {tokenDetail.symbol}
+                                    </p>
+                                    <p className="text-small text-default-500">
+                                        {tokenDetail.name}
+                                    </p>
+                                </div>
+                            </CardHeader>
+                            <Divider />
+                            <CardBody>
+                                <Link
+                                    isExternal
+                                    showAnchorIcon
+                                    href={
+                                        explorerUrl +
+                                        "/token/" +
+                                        tokenDetail.tokenAddress
+                                    }
+                                    style={
+                                        tokenDetail.tokenAddress == ""
+                                            ? { display: "none" }
+                                            : {}
+                                    }
+                                >
+                                    {shortAddr(tokenDetail.tokenAddress)}
+                                </Link>
+                            </CardBody>
+                            <Divider />
+                            <CardBody>
+                                <p>My Balance: {tokenDetail.myBalance}</p>
+                            </CardBody>
+                            <Divider />
+                            <CardFooter>
+                                <p className="text-small text-default-500">
+                                    Total Supply: {tokenDetail.totalSupply}
+                                </p>
+                            </CardFooter>
+                        </Card>
                     </div>
                 </Tab>
                 <Tab key="sendNFT" title="Send NFT">
@@ -396,7 +584,8 @@ export default function App({
             </Tabs>
             <div
                 style={
-                    currentTabTag == "sendETH"
+                    currentTabTagRef.current == "sendETH" ||
+                    currentTabTagRef.current == "sendToken"
                         ? { display: "block" }
                         : { display: "none" }
                 }
@@ -474,6 +663,7 @@ export default function App({
                         currentPriInfoRef={currentPriInfoRef}
                         preparedPriceRef={preparedPriceRef}
                         updateCurrentTx={updateCurrentTx}
+                        readReceiverInfo={readReceiverInfo}
                     />
                 </div>
             </div>
@@ -495,6 +685,7 @@ function SendTransaction({
     currentPriInfoRef,
     preparedPriceRef,
     updateCurrentTx,
+    readReceiverInfo,
 }: {
     myOwnerId: string;
     verifyingContract: string;
@@ -505,6 +696,7 @@ function SendTransaction({
     currentPriInfoRef: React.MutableRefObject<PrivateInfoType>;
     preparedPriceRef: any;
     updateCurrentTx: any;
+    readReceiverInfo: any;
 }) {
     const router = useRouter();
     const { pending } = useFormStatus();
@@ -515,11 +707,8 @@ function SendTransaction({
             return;
         }
 
-        let receiverAddr = getInputValueById("id_newtrans_receiver_addr_ui");
-        setInputValueById("id_newtrans_receiver_addr", receiverAddr);
-
-        let amountETH = getInputValueById("id_newtrans_amount_ui");
-        setInputValueById("id_newtrans_amount", amountETH);
+        const { receiverAddr, amount, tokenAddr, amountDecimals } =
+            readReceiverInfo();
 
         if (
             receiverAddr == null ||
@@ -529,7 +718,7 @@ function SendTransaction({
             alert("Receiver Address invalid!");
             return;
         }
-        if (isNaN(parseFloat(amountETH))) {
+        if (isNaN(parseFloat(amount))) {
             alert("Amount invalid!");
             return;
         }
@@ -554,7 +743,7 @@ function SendTransaction({
         const passwdAccount = getPasswdAccount(currentPriInfoRef.current);
 
         // keccak256(abi.encode(...));
-        console.log("encodeAbiParameters1111zzzz:", receiverAddr, amountETH);
+        console.log("encodeAbiParameters1111zzzz:", receiverAddr, amount);
         let myDetectEstimatedFee = BigInt(0);
 
         const questionNosEnc = questionNosEncode(
@@ -563,18 +752,46 @@ function SendTransaction({
             currentPriInfoRef.current.pin
         );
 
-        const tx = await executeTransaction(
-            myOwnerId,
-            verifyingContract,
-            passwdAccount,
-            receiverAddr,
-            amountETH,
-            "",
-            chainObj,
-            myAccountCreated,
-            questionNosEnc,
-            preparedPriceRef
-        );
+        let tx = "";
+
+        if (
+            tokenAddr != undefined &&
+            tokenAddr != null &&
+            tokenAddr.length > 2
+        ) {
+            // to address, value uint256;
+            const transferTokenData = encodeFunctionData({
+                abi: abis.transfer,
+                functionName: "transfer",
+                args: [receiverAddr, parseUnits(amount, amountDecimals)],
+            });
+
+            tx = await executeTransaction(
+                myOwnerId,
+                verifyingContract,
+                passwdAccount,
+                tokenAddr,
+                "0",
+                transferTokenData,
+                chainObj,
+                myAccountCreated,
+                questionNosEnc,
+                preparedPriceRef
+            );
+        } else {
+            tx = await executeTransaction(
+                myOwnerId,
+                verifyingContract,
+                passwdAccount,
+                receiverAddr,
+                amount,
+                "",
+                chainObj,
+                myAccountCreated,
+                questionNosEnc,
+                preparedPriceRef
+            );
+        }
 
         updateCurrentTx(tx);
 

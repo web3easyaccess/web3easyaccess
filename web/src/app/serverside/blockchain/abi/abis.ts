@@ -30,8 +30,11 @@ const newAccountAndSendTrans = factory.abi.filter(
 );
 
 const balanceOf = w3eaPointJSON.abi.filter((e) => e.name == "balanceOf");
+const transfer = w3eaPointJSON.abi.filter((e) => e.name == "transfer");
 const symbol = w3eaPointJSON.abi.filter((e) => e.name == "symbol");
 const decimals = w3eaPointJSON.abi.filter((e) => e.name == "decimals");
+const totalSupply = w3eaPointJSON.abi.filter((e) => e.name == "totalSupply");
+const name = w3eaPointJSON.abi.filter((e) => e.name == "name");
 
 const getL1DataFee = {
     abi: [
@@ -59,7 +62,10 @@ export default {
     passwdAddr,
 
     balanceOf,
+    transfer,
     symbol,
+    name,
     decimals,
+    totalSupply,
     getL1DataFee,
 };

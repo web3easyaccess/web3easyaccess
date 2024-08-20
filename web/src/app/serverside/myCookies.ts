@@ -5,12 +5,14 @@ import redirectTo from "./redirectTo";
 import { getOwnerIdBigBrother } from "../dashboard/privateinfo/lib/keyTools";
 import { v4 as uuidv4 } from "uuid";
 import { ChainCode } from "../lib/myTypes";
+import { getChainObj } from "../lib/myChain";
 
 export type CookieData = {
     ownerId: string;
     email: string;
     emailDisplay: string;
     selectedOrderNo: number;
+    selectedAccountAddr: string;
     passId: string;
 };
 
@@ -19,6 +21,7 @@ const DEFAULT_DATA: CookieData = {
     email: "",
     emailDisplay: "",
     selectedOrderNo: 0,
+    selectedAccountAddr: "",
     passId: "",
 };
 
@@ -26,15 +29,22 @@ const COOKIE_KEY = "w3ea_data";
 const MAX_AGE = 3600 * 12;
 
 const COOKIE_KEY_CHAIN = "w3ea_data_chain";
+const COOKIE_KEY_CHAIN_ID = "w3ea_data_chain_id";
 
 function getChainCode() {
-    let cname = _parseString(cookies().get(COOKIE_KEY_CHAIN));
-
+    const cname = _parseString(cookies().get(COOKIE_KEY_CHAIN));
     return cname;
 }
 
+function getChainId() {
+    const chainId = _parseString(cookies().get(COOKIE_KEY_CHAIN_ID));
+    return parseInt(chainId);
+}
+
 function setChainCode(chainName: string) {
+    const chainId = "" + getChainObj(chainName).id;
     cookies().set(COOKIE_KEY_CHAIN, chainName, { maxAge: MAX_AGE });
+    cookies().set(COOKIE_KEY_CHAIN_ID, chainId, { maxAge: MAX_AGE });
 }
 
 function cookieIsValid() {
@@ -72,9 +82,10 @@ function clearData() {
     // cookies().delete(COOKIE_KEY_CHAIN);
 }
 
-function flushSelectedOrderNo(sNo: number) {
+function flushSelectedOrderNo(sNo: number, selectedAccountAddr: string) {
     let md = loadData();
     md.selectedOrderNo = sNo;
+    md.selectedAccountAddr = selectedAccountAddr;
     cookies().set(COOKIE_KEY, JSON.stringify(md), { maxAge: MAX_AGE });
 }
 //
@@ -108,7 +119,7 @@ function flushData(email: string) {
     return md;
 }
 
-function _parseData(c) {
+function _parseData(c: any) {
     if (
         c != undefined &&
         c?.value != undefined &&
@@ -121,7 +132,7 @@ function _parseData(c) {
     }
 }
 
-function _parseString(c) {
+function _parseString(c: any) {
     if (
         c != undefined &&
         c?.value != undefined &&

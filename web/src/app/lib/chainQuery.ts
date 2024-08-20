@@ -26,6 +26,88 @@ const accountOnlyForRead = privateKeyToAccount(
 /**
  */
 
+/**
+ *  Divides a number by a given exponent of base 10 (10exponent), and formats it into a string representation of the number..
+ *
+ * - Docs: https://viem.sh/docs/utilities/formatUnits
+ *
+ * @example
+ * import { formatUnits } from 'viem'
+ *
+ * formatUnits(420000000000n, 9)
+ * // '420'
+ */
+export function formatUnits(value: bigint, decimals: number) {
+    let display = value.toString();
+
+    const negative = display.startsWith("-");
+    if (negative) display = display.slice(1);
+
+    display = display.padStart(decimals, "0");
+
+    let [integer, fraction] = [
+        display.slice(0, display.length - decimals),
+        display.slice(display.length - decimals),
+    ];
+    fraction = fraction.replace(/(0+)$/, "");
+    return `${negative ? "-" : ""}${integer || "0"}${
+        fraction ? `.${fraction}` : ""
+    }`;
+}
+
+/**
+ * Multiplies a string representation of a number by a given exponent of base 10 (10exponent).
+ *
+ * - Docs: https://viem.sh/docs/utilities/parseUnits
+ *
+ * @example
+ * import { parseUnits } from 'viem'
+ *
+ * parseUnits('420', 9)
+ * // 420000000000n
+ */
+export function parseUnits(value: string, decimals: number) {
+    let [integer, fraction = "0"] = value.split(".");
+
+    const negative = integer.startsWith("-");
+    if (negative) integer = integer.slice(1);
+
+    // trim leading zeros.
+    fraction = fraction.replace(/(0+)$/, "");
+
+    // round off if the fraction is larger than the number of decimals.
+    if (decimals === 0) {
+        if (Math.round(Number(`.${fraction}`)) === 1)
+            integer = `${BigInt(integer) + 1n}`;
+        fraction = "";
+    } else if (fraction.length > decimals) {
+        const [left, unit, right] = [
+            fraction.slice(0, decimals - 1),
+            fraction.slice(decimals - 1, decimals),
+            fraction.slice(decimals),
+        ];
+
+        const rounded = Math.round(Number(`${unit}.${right}`));
+        if (rounded > 9)
+            fraction = `${BigInt(left) + BigInt(1)}0`.padStart(
+                left.length + 1,
+                "0"
+            );
+        else fraction = `${left}${rounded}`;
+
+        if (fraction.length > decimals) {
+            fraction = fraction.slice(1);
+            integer = `${BigInt(integer) + 1n}`;
+        }
+
+        fraction = fraction.slice(0, decimals);
+    } else {
+        fraction = fraction.padEnd(decimals, "0");
+    }
+
+    return BigInt(`${negative ? "-" : ""}${integer}${fraction}`);
+}
+
 export async function queryAccountList(
     chainCode: string,
     factoryAddr: string,
@@ -132,6 +214,93 @@ export async function queryQuestionIdsEnc(
             e
         );
         throw new Error("queryQuestionIdsEnc error!");
+    }
+}
+
+export async function queryTokenDetail(
+    chainCode: string,
+    factoryAddr: string,
+    tokenAddress: string,
+    userAddress: string
+) {
+    try {
+        if (
+            tokenAddress == undefined ||
+            tokenAddress == null ||
+            tokenAddress.trim() == ""
+        ) {
+            return {
+                tokenAddress: "",
+                symbol: "Please input token address",
+                name: "",
+                totalSupply: "",
+                myBalance: "",
+                decimals: "",
+            };
+        }
+        const cpc = chainPublicClient(chainCode, factoryAddr);
+        // console.log("rpc:", cpc.rpcUrl);
+        console.log("factoryAddr in queryAccount:", chainCode, factoryAddr);
+        const symbol = await cpc.publicClient.readContract({
+            account: accountOnlyForRead,
+            address: tokenAddress as `0x${string}`,
+            abi: abis.symbol,
+            functionName: "symbol",
+            args: [],
+        });
+        const name = await cpc.publicClient.readContract({
+            account: accountOnlyForRead,
+            address: tokenAddress as `0x${string}`,
+            abi: abis.name,
+            functionName: "name",
+            args: [],
+        });
+        const totalSupply = await cpc.publicClient.readContract({
+            account: accountOnlyForRead,
+            address: tokenAddress as `0x${string}`,
+            abi: abis.totalSupply,
+            functionName: "totalSupply",
+            args: [],
+        });
+        const myBalance = await cpc.publicClient.readContract({
+            account: accountOnlyForRead,
+            address: tokenAddress as `0x${string}`,
+            abi: abis.balanceOf,
+            functionName: "balanceOf",
+            args: [userAddress],
+        });
+        const decimals = await cpc.publicClient.readContract({
+            account: accountOnlyForRead,
+            address: tokenAddress as `0x${string}`,
+            abi: abis.decimals,
+            functionName: "decimals",
+            args: [],
+        });
+
+        const rtn = {
+            tokenAddress: tokenAddress,
+            symbol: symbol,
+            name: name,
+            totalSupply: formatUnits(totalSupply as bigint, decimals as number),
+            myBalance: formatUnits(myBalance as bigint, decimals as number),
+            decimals: decimals as number,
+        };
+        console.log("queryTokenDetail rtn:", rtn);
+        return rtn;
+    } catch (e) {
+        console.log(
+            "==================queryTokenDetail error======================, tokenAddress=" +
+                tokenAddress,
+            e
+        );
+        return {
+            tokenAddress: "",
+            symbol: "TokenError",
+            name: "TokenError!",
+            totalSupply: "-1",
+            myBalance: "-1",
+            decimals: "-1",
+        };
     }
 }
 

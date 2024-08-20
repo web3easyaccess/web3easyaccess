@@ -305,6 +305,13 @@ export default function App({
                     name="selectedOrderNo"
                     value={currentUserInfo.selectedOrderNo}
                 />
+                <input
+                    id="id_user_selectedAccountAddr"
+                    style={{ display: "none" }}
+                    name="selectedAccountAddr"
+                    value={currentUserInfo.selectedAccountAddr}
+                />
+
                 <div>{resultMsg && <p>1:{resultMsg}</p>}</div>
                 <BtnselectedOrderNo />
             </form>

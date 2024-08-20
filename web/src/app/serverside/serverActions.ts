@@ -167,7 +167,8 @@ export async function saveSelectedOrderNo(
     formData: FormData
 ) {
     const sNo = formData.get("selectedOrderNo");
-    myCookies.flushSelectedOrderNo(Number(sNo));
+    const selectedAccountAddr = formData.get("selectedAccountAddr");
+    myCookies.flushSelectedOrderNo(Number(sNo), selectedAccountAddr);
     console.log("cookie saveSelectedOrderNo:", sNo);
 }
 
