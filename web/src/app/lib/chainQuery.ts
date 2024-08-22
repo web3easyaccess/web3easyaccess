@@ -240,7 +240,7 @@ export async function queryTokenDetail(
         }
         const cpc = chainPublicClient(chainCode, factoryAddr);
         // console.log("rpc:", cpc.rpcUrl);
-        console.log("factoryAddr in queryAccount:", chainCode, factoryAddr);
+        console.log("factoryAddr in queryTokenDetail:", chainCode, factoryAddr);
         const symbol = await cpc.publicClient.readContract({
             account: accountOnlyForRead,
             address: tokenAddress as `0x${string}`,
@@ -301,6 +301,139 @@ export async function queryTokenDetail(
             myBalance: "-1",
             decimals: "-1",
         };
+    }
+}
+
+export async function queryNftDetail(
+    chainCode: string,
+    factoryAddr: string,
+    nftAddress: string,
+    userAddress: string
+) {
+    try {
+        if (
+            nftAddress == undefined ||
+            nftAddress == null ||
+            nftAddress.trim() == ""
+        ) {
+            return {
+                nftAddress: "",
+                symbol: "Please input NFT address",
+                name: "",
+                myBalance: "0",
+            };
+        }
+        const cpc = chainPublicClient(chainCode, factoryAddr);
+        // console.log("rpc:", cpc.rpcUrl);
+        console.log("factoryAddr in queryNftDetail:", chainCode, factoryAddr);
+        let symbol;
+        let name;
+        try {
+            symbol = await cpc.publicClient.readContract({
+                account: accountOnlyForRead,
+                address: nftAddress as `0x${string}`,
+                abi: abis.symbol,
+                functionName: "symbol",
+                args: [],
+            });
+        } catch (eee1) {
+            console.log("warn: query nft symbol error:", eee1);
+            symbol = "-";
+        }
+        try {
+            name = await cpc.publicClient.readContract({
+                account: accountOnlyForRead,
+                address: nftAddress as `0x${string}`,
+                abi: abis.name,
+                functionName: "name",
+                args: [],
+            });
+        } catch (eee2) {
+            console.log("warn: query nft name error:", eee2);
+            name = "-";
+        }
+
+        const myBalance = await cpc.publicClient.readContract({
+            account: accountOnlyForRead,
+            address: nftAddress as `0x${string}`,
+            abi: abis.balanceOf,
+            functionName: "balanceOf",
+            args: [userAddress],
+        });
+
+        const rtn = {
+            nftAddress: nftAddress,
+            symbol: symbol,
+            name: name,
+            myBalance: "" + myBalance,
+        };
+
+        console.log("queryNftDetail rtn:", rtn);
+        return rtn;
+    } catch (e) {
+        console.log(
+            "==================queryNftDetail error======================, nftAddress=" +
+                nftAddress,
+            e
+        );
+        return {
+            nftAddress: "",
+            symbol: "NftError",
+            name: "NftError!",
+            myBalance: "-1",
+        };
+    }
+}
+
+export async function queryNftsOwnerUri(
+    chainCode: string,
+    factoryAddr: string,
+    nftAddress: string,
+    nftId: bigint
+) {
+    try {
+        if (
+            nftAddress == undefined ||
+            nftAddress == null ||
+            nftAddress.trim() == ""
+        ) {
+            return { ownerAddr: "0x0000", tokenUri: "" };
+        }
+        const cpc = chainPublicClient(chainCode, factoryAddr);
+        // console.log("rpc:", cpc.rpcUrl);
+        console.log("factoryAddr in queryNftsOwner:", chainCode, factoryAddr);
+
+        const ownerAddr = await cpc.publicClient.readContract({
+            account: accountOnlyForRead,
+            address: nftAddress as `0x${string}`,
+            abi: abis.ownerOf,
+            functionName: "ownerOf",
+            args: [nftId],
+        });
+
+        let tokenUri;
+        try {
+            tokenUri = await cpc.publicClient.readContract({
+                account: accountOnlyForRead,
+                address: nftAddress as `0x${string}`,
+                abi: abis.tokenURI,
+                functionName: "tokenURI",
+                args: [nftId],
+            });
+        } catch (eee2) {
+            console.log("warn: query nft uri error:", eee2);
+            tokenUri = "";
+        }
+
+        console.log("queryNftsOwner rtn:", ownerAddr);
+        return { ownerAddr: ownerAddr, tokenUri: tokenUri };
+    } catch (e) {
+        console.log(
+            "==================queryNftsOwner error======================, nftAddress=" +
+                nftAddress,
+            e
+        );
+        return { ownerAddr: "0x0000", tokenUri: "" };
     }
 }
 

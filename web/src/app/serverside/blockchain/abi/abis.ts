@@ -2,6 +2,7 @@ import account from "./AccountEntity.json";
 import factory from "./Factory.json";
 import w3eaPointJSON from "./W3EAPoint.json";
 import impl from "./AccountLogicImplV1.json";
+import eip721 from "./Eip721.json";
 
 const chgPasswdAddr = impl.abi.filter((e) => e.name == "chgPasswdAddr");
 
@@ -36,6 +37,10 @@ const decimals = w3eaPointJSON.abi.filter((e) => e.name == "decimals");
 const totalSupply = w3eaPointJSON.abi.filter((e) => e.name == "totalSupply");
 const name = w3eaPointJSON.abi.filter((e) => e.name == "name");
 
+const ownerOf = eip721.abi.filter((e) => e.name == "ownerOf");
+const tokenURI = eip721.abi.filter((e) => e.name == "tokenURI");
+const transferFrom = eip721.abi.filter((e) => e.name == "transferFrom");
+
 const getL1DataFee = {
     abi: [
         {
@@ -68,4 +73,7 @@ export default {
     decimals,
     totalSupply,
     getL1DataFee,
+    ownerOf,
+    tokenURI,
+    transferFrom,
 };

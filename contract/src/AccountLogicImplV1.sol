@@ -24,6 +24,7 @@ that must inherit ImplV1 if you written a ImplV2....
 contract AccountLogicImplV1 is AccountEntity, IAccountLogic {
     // Standard Signature Validation Method for Contracts
     // https://eips.ethereum.org/EIPS/eip-1271
+    // https://docs.alchemy.com/docs/how-to-make-your-dapp-compatible-with-smart-contract-wallets
     function isValidSignature(
         bytes32 _hash,
         bytes memory _signature

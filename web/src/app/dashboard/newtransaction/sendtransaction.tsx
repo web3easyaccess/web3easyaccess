@@ -52,6 +52,8 @@ import {
     queryAccount,
     queryQuestionIdsEnc,
     queryTokenDetail,
+    queryNftDetail,
+    queryNftsOwnerUri,
     formatUnits,
     parseUnits,
 } from "../../lib/chainQuery";
@@ -92,9 +94,13 @@ export default function App({
     const explorerUrl = chainObj.blockExplorers.default.url;
 
     const currentTabTagRef = useRef("sendETH");
+    const [currentTabShow, setCurrentTabShow] = useState(
+        currentTabTagRef.current
+    );
 
     const handleSelectionChage = (e: any) => {
         currentTabTagRef.current = e.toString();
+        setCurrentTabShow(currentTabTagRef.current);
         setPrivateFillInOk(0);
         refreshButtonText();
     };
@@ -104,6 +110,7 @@ export default function App({
         let amount = "";
         let tokenAddr = "";
         let amountDecimals = 18;
+        let nftId = "";
         if (currentTabTagRef.current == "sendETH") {
             receiverAddr = getInputValueById("id_newtrans_receiver_addr_ui");
             amount = getInputValueById("id_newtrans_amount_ui");
@@ -117,13 +124,24 @@ export default function App({
             if (tokenAddr == "") {
                 tokenAddr = "NULL";
             }
+        } else if (currentTabTagRef.current == "sendNFT") {
+            receiverAddr = getInputValueById(
+                "id_newtrans_receiver_addr_ui_nft"
+            );
+            // it is nftId here.
+            nftId = getInputValueById("id_newtrans_nftId_ui_nft");
+            tokenAddr = getInputValueById("id_newtrans_token_addr_ui_nft");
+            if (tokenAddr == "") {
+                tokenAddr = "NULL";
+            }
         }
 
         return {
             receiverAddr: receiverAddr,
             amount: amount,
-            tokenAddr: tokenAddr,
+            tokenAddr: tokenAddr, // it is nft address when sendNFT.
             amountDecimals: amountDecimals,
+            nftId: nftId,
         };
     };
 
@@ -152,8 +170,16 @@ export default function App({
                 // todo it's different when create other account.
                 msg = "Create Account and Send Token";
             }
+        } else if (currentTabTagRef.current == "sendNFT") {
+            if (myAccountCreated) {
+                msg = "Send NFT";
+            } else {
+                // todo it's different when create other account.
+                msg = "Create Account and Send NFT";
+            }
         } else {
         }
+
         console.log(
             "refreshButtonText, currentTabTag:",
             currentTabTagRef.current
@@ -178,6 +204,13 @@ export default function App({
         refreshButtonText();
     };
 
+    const shortAddr = (aa: string) => {
+        if (aa == undefined || aa == null) {
+            return "";
+        }
+        return aa.substring(0, 6) + " ... " + aa.substring(aa.length - 4);
+    };
+
     const [tokenDetail, setTokenDetail] = useState({
         tokenAddress: "",
         symbol: "",
@@ -186,13 +219,6 @@ export default function App({
         myBalance: "0",
         decimals: "0",
     });
-
-    const shortAddr = (aa: string) => {
-        if (aa == undefined || aa == null) {
-            return "";
-        }
-        return aa.substring(0, 6) + " ... " + aa.substring(aa.length - 4);
-    };
 
     const tokenAddressBlur = async () => {
         const addr = getInputValueById("id_newtrans_token_addr_ui_token");
@@ -216,6 +242,69 @@ export default function App({
         setTokenDetail(detail);
 
         updateInputFillInChange();
+    };
+
+    const [nftDetail, setNftDetail] = useState({
+        nftAddress: "",
+        symbol: "",
+        name: "",
+        myBalance: "0",
+        tokenUri: "",
+        tokenIdMsg: "",
+    });
+
+    const nftAddressBlur = async () => {
+        const addr = getInputValueById("id_newtrans_token_addr_ui_nft");
+        setNftDetail({
+            nftAddress: "",
+            symbol: "Waiting ... ",
+            name: "",
+            myBalance: "0",
+            tokenUri: "",
+            tokenIdMsg: "",
+        });
+
+        const detail = await queryNftDetail(
+            currentUserInfo.chainCode,
+            currentUserInfo.factoryAddr,
+            addr,
+            currentUserInfo.selectedAccountAddr
+        );
+
+        detail.tokenUri = "";
+        detail.tokenIdMsg = "";
+
+        console.log("nftAddressBlur:", detail);
+        setNftDetail(detail);
+
+        updateInputFillInChange();
+    };
+
+    const nftIdBlur = async () => {
+        const nftAddr = getInputValueById("id_newtrans_token_addr_ui_nft");
+        const nftId = getInputValueById("id_newtrans_nftId_ui_nft");
+        const { ownerAddr, tokenUri } = await queryNftsOwnerUri(
+            currentUserInfo.chainCode,
+            currentUserInfo.factoryAddr,
+            nftAddr,
+            BigInt(nftId)
+        );
+
+        let tokenIdMsg = "";
+        if (
+            ownerAddr.toLowerCase() !=
+            currentUserInfo.selectedAccountAddr.toLowerCase()
+        ) {
+            tokenIdMsg = `ERROR: NFT ID[${nftId}] is not yours!`;
+        } else {
+            updateInputFillInChange();
+        }
+
+        setNftDetail({
+            ...nftDetail,
+            tokenUri: tokenUri as string,
+            tokenIdMsg: tokenIdMsg,
+        });
     };
 
     const [myAccountCreated, setMyAccountCreated] = useState(false);
@@ -260,15 +349,24 @@ export default function App({
 
     useEffect(() => {
         const refreshFee = async () => {
+            console.log("please waiting ...1");
             setTransactionFee("Please Waiting ... ");
             setPrivateinfoHidden(false);
             try {
-                const { receiverAddr, amount, tokenAddr, amountDecimals } =
-                    readReceiverInfo();
+                const {
+                    receiverAddr,
+                    amount,
+                    tokenAddr,
+                    amountDecimals,
+                    nftId,
+                } = readReceiverInfo();
+                console.log(
+                    `readReceiverInfo, tokenAddr=${tokenAddr}, nftId=${nftId}`
+                );
 
                 if (
                     receiverAddr != "" &&
-                    amount != "" &&
+                    (amount != "" || nftId != "") &&
                     currentPriInfoRef.current.email != "" &&
                     currentPriInfoRef.current.pin != "" &&
                     currentPriInfoRef.current.question1answer != "" &&
@@ -292,15 +390,29 @@ export default function App({
                         tokenAddr != null &&
                         tokenAddr.length > 2
                     ) {
-                        // to address, value uint256;
-                        const transferTokenData = encodeFunctionData({
-                            abi: abis.transfer,
-                            functionName: "transfer",
-                            args: [
-                                receiverAddr,
-                                parseUnits(amount, amountDecimals),
-                            ],
-                        });
+                        let transferTokenData;
+                        if (nftId != "") {
+                            console.log("nft transer From ...");
+                            transferTokenData = encodeFunctionData({
+                                abi: abis.transferFrom,
+                                functionName: "transferFrom",
+                                args: [
+                                    currentUserInfo.selectedAccountAddr,
+                                    receiverAddr,
+                                    BigInt(nftId),
+                                ],
+                            });
+                        } else {
+                            // to address, value uint256;
+                            transferTokenData = encodeFunctionData({
+                                abi: abis.transfer,
+                                functionName: "transfer",
+                                args: [
+                                    receiverAddr,
+                                    parseUnits(amount, amountDecimals),
+                                ],
+                            });
+                        }
 
                         eFee = await estimateTransFee(
                             currentUserInfo.selectedOwnerId,
@@ -564,7 +676,121 @@ export default function App({
                     </div>
                 </Tab>
                 <Tab key="sendNFT" title="Send NFT">
-                    <p>Coming soon...</p>
+                    <div style={{ display: "flex" }}>
+                        <div className="w-x-full flex flex-col gap-4">
+                            <div
+                                className="flex w-x-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
+                                style={{ width: "500px" }}
+                            >
+                                <Input
+                                    id="id_newtrans_token_addr_ui_nft"
+                                    type="text"
+                                    color="primary"
+                                    variant="underlined"
+                                    label="NFT(ERC721) Address"
+                                    placeholder="Enter NFT Address"
+                                    onBlur={nftAddressBlur}
+                                />
+                            </div>
+                            <div
+                                className="flex w-x-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
+                                style={{ width: "500px" }}
+                            >
+                                <Input
+                                    id="id_newtrans_receiver_addr_ui_nft"
+                                    type="text"
+                                    variant={"bordered"}
+                                    label="Receiver Address"
+                                    placeholder="Enter your Receiver Address"
+                                    onBlur={updateInputFillInChange}
+                                />
+                            </div>
+                            <div
+                                className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
+                                style={{ width: "500px" }}
+                            >
+                                <Input
+                                    id="id_newtrans_nftId_ui_nft"
+                                    type="text"
+                                    variant={"bordered"}
+                                    label="NFT ID"
+                                    placeholder="Enter your NFT ID"
+                                    onBlur={nftIdBlur}
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    style={
+                                        nftDetail.tokenIdMsg == ""
+                                            ? { display: "none" }
+                                            : { display: "block" }
+                                    }
+                                >
+                                    {nftDetail.tokenIdMsg}
+                                </label>
+                            </div>
+                        </div>
+                        <Card
+                            className="w-[360px]"
+                            style={{ marginLeft: "10px" }}
+                        >
+                            <CardHeader className="flex gap-3">
+                                {/* <Image
+                                    alt="nextui logo"
+                                    height={40}
+                                    radius="sm"
+                                    src="https://avatars.githubusercontent.com/u/86160567?s=200&v=4"
+                                    width={40}
+                                /> */}
+                                <div className="flex flex-col">
+                                    <p className="text-md">
+                                        {nftDetail.symbol}
+                                    </p>
+                                    <p className="text-small text-default-500">
+                                        {nftDetail.name}
+                                    </p>
+                                </div>
+                            </CardHeader>
+                            <Divider />
+                            <CardBody>
+                                <Link
+                                    isExternal
+                                    showAnchorIcon
+                                    href={
+                                        explorerUrl +
+                                        "/token/" +
+                                        nftDetail.nftAddress
+                                    }
+                                    style={
+                                        nftDetail.nftAddress == ""
+                                            ? { display: "none" }
+                                            : {}
+                                    }
+                                >
+                                    {shortAddr(nftDetail.nftAddress)}
+                                </Link>
+                            </CardBody>
+                            <Divider />
+                            <CardBody>
+                                <p>My NFT Count: {nftDetail.myBalance}</p>
+                            </CardBody>
+                            <Divider />
+                            <CardFooter>
+                                <Link
+                                    isExternal
+                                    showAnchorIcon
+                                    href={nftDetail.tokenUri}
+                                    style={
+                                        nftDetail.tokenUri == ""
+                                            ? { display: "none" }
+                                            : {}
+                                    }
+                                >
+                                    {shortAddr(nftDetail.tokenUri)}
+                                </Link>
+                            </CardFooter>
+                        </Card>
+                    </div>
                 </Tab>
                 <Tab key="swap" title="Swap Token">
                     <p>Coming soon...</p>
@@ -585,7 +811,8 @@ export default function App({
             <div
                 style={
                     currentTabTagRef.current == "sendETH" ||
-                    currentTabTagRef.current == "sendToken"
+                    currentTabTagRef.current == "sendToken" ||
+                    currentTabTagRef.current == "sendNFT"
                         ? { display: "block" }
                         : { display: "none" }
                 }
@@ -707,7 +934,7 @@ function SendTransaction({
             return;
         }
 
-        const { receiverAddr, amount, tokenAddr, amountDecimals } =
+        const { receiverAddr, amount, tokenAddr, amountDecimals, nftId } =
             readReceiverInfo();
 
         if (
@@ -718,8 +945,8 @@ function SendTransaction({
             alert("Receiver Address invalid!");
             return;
         }
-        if (isNaN(parseFloat(amount))) {
-            alert("Amount invalid!");
+        if (isNaN(parseFloat(amount)) && nftId == "") {
+            alert("NFT ID or Amount invalid!");
             return;
         }
 
@@ -759,13 +986,22 @@ function SendTransaction({
             tokenAddr != null &&
             tokenAddr.length > 2
         ) {
-            // to address, value uint256;
-            const transferTokenData = encodeFunctionData({
-                abi: abis.transfer,
-                functionName: "transfer",
-                args: [receiverAddr, parseUnits(amount, amountDecimals)],
-            });
-
+            let transferTokenData;
+            if (nftId != "") {
+                console.log("nft transer From 2...");
+                transferTokenData = encodeFunctionData({
+                    abi: abis.transferFrom,
+                    functionName: "transferFrom",
+                    args: [verifyingContract, receiverAddr, BigInt(nftId)],
+                });
+            } else {
+                // to address, value uint256;
+                transferTokenData = encodeFunctionData({
+                    abi: abis.transfer,
+                    functionName: "transfer",
+                    args: [receiverAddr, parseUnits(amount, amountDecimals)],
+                });
+            }
             tx = await executeTransaction(
                 myOwnerId,
                 verifyingContract,
