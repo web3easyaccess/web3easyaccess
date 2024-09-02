@@ -14,6 +14,8 @@ export function getFactoryAddr(chainCode: string) {
         return process.env.CHAIN_FACTORY_ADDRESS_MORPH_TEST;
     } else if (chainCode == "SCROLL_TEST_CHAIN") {
         return process.env.CHAIN_FACTORY_ADDRESS_SCROLL_TEST;
+    } else if (chainCode == "LINEA_TEST_CHAIN") {
+        return process.env.CHAIN_FACTORY_ADDRESS_LINEA_TEST;
     } else {
         var a = 1 / 0;
     }
@@ -49,6 +51,13 @@ export function chainClient() {
         _l1GasPriceOracleContract =
             "0x5300000000000000000000000000000000000002";
         _l1DataFeeFunc = "getL1Fee";
+    } else if (chainCode == "LINEA_TEST_CHAIN") {
+        _freeFeeAmountWhenCreated = Number(
+            process.env.INIT_FREE_FEE_AMOUNT_LINEA_TEST
+        );
+        _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_LINEA_TEST;
+        _l1GasPriceOracleContract = "0x0";
+        _l1DataFeeFunc = "";
     } else {
         var a = 1 / 0;
     }

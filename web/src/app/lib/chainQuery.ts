@@ -3,7 +3,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import axios from "axios";
 import { Axios, AxiosResponse, AxiosError } from "axios";
 
-import { isMorphNet, isScrollNet } from "./myChain";
+import { isMorphNet, isScrollNet, isLineaNet } from "./myChain";
 import { Transaction } from "./myTypes";
 import { getChainObj } from "./myChain";
 import {
@@ -651,6 +651,9 @@ export async function queryTransactions(
     } else if (isScrollNet(chainCode)) {
         const res = await _queryScrollTransactions(chainCode, addr);
         return res;
+    } else if (isLineaNet(chainCode)) {
+        const res = await _queryLineaTransactions(chainCode, addr);
+        return res;
     } else {
         return [];
     }
@@ -675,6 +678,82 @@ export const formatTimestamp = (tm: number) => {
     s = s < 10 ? "0" + s : s;
     return year + "-" + month + "-" + day + " " + h + ":" + m + ":" + s;
 };
+
+async function _queryLineaTransactions(
+    chainCode: string,
+    addr: string
+): Promise<Transaction[]> {
+    const apiUrl = getChainObj(chainCode).blockExplorers.default.apiUrl;
+    const normalTransactionsUrl = `${apiUrl}?module=account&action=txlist&address=${addr}&startblock=550000&endblock=99999999&page=1&offset=200&sort=asc&apikey=YourApiKeyToken`;
+    const internalTransactionsUrl = `${apiUrl}?module=account&action=txlistinternal&address=${addr}&startblock=550000&endblock=99999999&page=1&offset=200&sort=asc&apikey=YourApiKeyToken`;
+
+    const resultData: Transaction[] = [];
+    try {
+        console.log(
+            "_queryLineaTransactions,77077,normalTransactionsUrl:",
+            normalTransactionsUrl
+        );
+        const response: AxiosResponse = await axios.get(normalTransactionsUrl);
+        response.data.result.forEach((e: any) => {
+            const aRow: Transaction = {
+                timestamp: formatTimestamp(e.timeStamp),
+                block_number: e.blockNumber,
+                result: e.isError == "0" ? "success" : "fail",
+                to: e.to,
+                hash: e.hash,
+                gas_price: formatEther(BigInt(e.gasPrice)),
+                gas_used: e.gasUsed,
+                gas_limit: e.gas,
+                l1_fee: 0, //
+                from: e.from,
+                value: formatEther(BigInt(e.value)),
+            };
+            resultData.push(aRow);
+        });
+    } catch (error) {
+        console.error(
+            `_queryScrollTransactions error1 url=${normalTransactionsUrl}:`,
+            error.toString().indexOf("status code 404") >= 0
+                ? "ERROR 404"
+                : error
+        );
+    }
+
+    try {
+        console.log(
+            "_queryScrollTransactions,77077,internalTransactionsUrl:",
+            internalTransactionsUrl
+        );
+        const response: AxiosResponse = await axios.get(
+            internalTransactionsUrl
+        );
+        response.data.result.forEach((e: any) => {
+            const aRow: Transaction = {
+                timestamp: formatTimestamp(e.timeStamp),
+                block_number: e.blockNumber,
+                result: e.isError == "0" ? "success" : "fail",
+                to: e.to,
+                hash: e.hash + "::" + "/" + "::" + "/",
+                gas_price: formatEther(BigInt("0")),
+                gas_used: e.gasUsed,
+                gas_limit: e.gas,
+                l1_fee: 0, //
+                from: e.from,
+                value: formatEther(BigInt(e.value)),
+            };
+            resultData.push(aRow);
+        });
+    } catch (error) {
+        console.error(
+            `_queryScrollTransactions error2 url=${internalTransactionsUrl}:`,
+            error.toString().indexOf("status code 404") >= 0
+                ? "ERROR 404"
+                : error
+        );
+    }
+
+    return resultData;
+}
 
 async function _queryScrollTransactions(
     chainCode: string,

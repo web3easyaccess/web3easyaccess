@@ -94,7 +94,7 @@ export async function newAccount(
 
 async function getL1DataFee(cc: any, data: any) {
     if (cc.l1GasPriceOracleContract.length < 42) {
-        return BitInt(0);
+        return BigInt(0);
     }
 
     const myAbi = abis.getL1DataFee;

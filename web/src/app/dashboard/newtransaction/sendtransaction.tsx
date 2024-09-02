@@ -30,6 +30,7 @@ import abis from "../../serverside/blockchain/abi/abis";
 import React, { useState, useEffect, useRef } from "react";
 
 import { Button } from "@nextui-org/button";
+import { Chip } from "@nextui-org/react";
 import {
     Card,
     CardHeader,
@@ -71,6 +72,8 @@ import {
 import { PrivateInfo } from "./privateinfo";
 
 import { getChainObj } from "../../lib/myChain";
+
+import { SelectedChainIcon } from "../../navbar/chainIcons";
 
 import { Menu, UserInfo, uiToString, Transaction } from "../../lib/myTypes";
 
@@ -792,10 +795,11 @@ export default function App({
                         </Card>
                     </div>
                 </Tab>
-                <Tab key="swap" title="Swap Token">
+                <Tab style={{ display: "none" }} key="swap" title="Swap Token">
                     <p>Coming soon...</p>
                 </Tab>
                 <Tab
+                    style={{ display: "none" }}
                     key="createCustomTransaction"
                     title="Create Custom Transaction"
                 >
@@ -805,7 +809,29 @@ export default function App({
                     key="bridgeL2AndMain"
                     title="Bridge between L2 and Ethereum"
                 >
-                    <p>Not Yet</p>
+                    <div>
+                        <div className="flex gap-4">
+                            <Chip color="secondary" radius="sm" size="lg">
+                                From
+                            </Chip>
+                            <SelectedChainIcon chainCodeState="ETHEREUM_MAIN_NET"></SelectedChainIcon>
+                        </div>
+                        <Divider
+                            style={{
+                                marginTop: "10px",
+                                width: "500px",
+                            }}
+                        />
+                        <div
+                            className="flex gap-4"
+                            style={{ marginTop: "10px" }}
+                        >
+                            <Chip color="success" radius="sm" size="lg">
+                                To &nbsp;&nbsp;&nbsp;
+                            </Chip>
+                            <SelectedChainIcon chainCodeState="ETHEREUM_MAIN_NET"></SelectedChainIcon>
+                        </div>
+                    </div>
                 </Tab>
             </Tabs>
             <div

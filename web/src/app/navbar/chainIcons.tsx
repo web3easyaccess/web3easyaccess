@@ -28,6 +28,7 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
 
     const [morphl2testState, setMorphl2testState] = useState(myDefault);
     const [scrolltestState, setScrolltestState] = useState(myDefault);
+    const [lineatestState, setLineatestState] = useState(myDefault);
     const [defaultAnvilState, setDefaultAnvilState] = useState(myDefault);
     const [ethereumMainnetState, setEthereumMainnetState] = useState(myDefault);
 
@@ -36,6 +37,7 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
         setDefaultAnvilState(myDefault);
         setEthereumMainnetState(myDefault);
         setScrolltestState(myDefault);
+        setLineatestState(myDefault);
         if (cc == "MORPH_TEST_CHAIN") {
             setMorphl2testState(myChecked);
         } else if (cc == "DEFAULT_ANVIL_CHAIN") {
@@ -44,6 +46,8 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
             setEthereumMainnetState(myChecked);
         } else if (cc == "SCROLL_TEST_CHAIN") {
             setScrolltestState(myChecked);
+        } else if (cc == "LINEA_TEST_CHAIN") {
+            setLineatestState(myChecked);
         }
     };
 
@@ -91,13 +95,13 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
             <SetChainForm />
             {/* <Badge content="" color="secondary"> */}
 
-            <Tooltip content="MorphL2 testnet">
+            <Tooltip content="Linea Sepolia testnet">
                 <Avatar
-                    src="/chain/morphl2test.png"
-                    size={morphl2testState.size}
-                    isBordered={morphl2testState.bordered}
+                    src="/chain/lineatest.png"
+                    size={lineatestState.size}
+                    isBordered={lineatestState.bordered}
                     onClick={() => {
-                        handleClick("MORPH_TEST_CHAIN");
+                        handleClick("LINEA_TEST_CHAIN");
                     }}
                     color="primary"
                     radius="sm"
@@ -117,6 +121,19 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
                 />
             </Tooltip>
             {/* </Badge> */}
+
+            <Tooltip content="MorphL2 testnet">
+                <Avatar
+                    src="/chain/morphl2test.png"
+                    size={morphl2testState.size}
+                    isBordered={morphl2testState.bordered}
+                    onClick={() => {
+                        handleClick("MORPH_TEST_CHAIN");
+                    }}
+                    color="primary"
+                    radius="sm"
+                />
+            </Tooltip>
 
             <div style={{ display: "none" }}>
                 <Tooltip content="anvil testnet">
@@ -187,6 +204,21 @@ export const SelectedChainIcon = ({ chainCodeState }) => {
                     <Tooltip content="scroll sepolia testnet">
                         <Avatar
                             src="/chain/scrolltest.png"
+                            size="sm"
+                            color="primary"
+                            radius="sm"
+                        />
+                    </Tooltip>
+                </Badge>
+            </div>
+        );
+    } else if (chainCodeState == "LINEA_TEST_CHAIN") {
+        return (
+            <div className="flex gap-3 items-center">
+                <Badge content="" color="secondary">
+                    <Tooltip content="linea sepolia testnet">
+                        <Avatar
+                            src="/chain/lineatest.png"
                             size="sm"
                             color="primary"
                             radius="sm"
