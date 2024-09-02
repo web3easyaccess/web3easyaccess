@@ -173,7 +173,7 @@ export async function saveSelectedOrderNo(
 }
 
 const THEGRAPH_API_KEY = "27078366ee0927aec4a68aae6d7ce9e6";
-export async function thegraphQueryOpLog(accountAddr) {
+export async function thegraphQueryOpLog(accountAddr, chainCode) {
     const query =
         "{" +
         // " createAccounts(first: 999) { id ownerId account blockNumber blockTimestamp transactionHash}" +

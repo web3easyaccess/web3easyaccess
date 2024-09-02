@@ -684,8 +684,8 @@ async function _queryLineaTransactions(
     addr: string
 ): Promise<Transaction[]> {
     const apiUrl = getChainObj(chainCode).blockExplorers.default.apiUrl;
-    const normalTransactionsUrl = `${apiUrl}?module=account&action=txlist&address=${addr}&startblock=550000&endblock=99999999&page=1&offset=200&sort=asc&apikey=YourApiKeyToken`;
-    const internalTransactionsUrl = `${apiUrl}?module=account&action=txlistinternal&address=${addr}&startblock=550000&endblock=99999999&page=1&offset=200&sort=asc&apikey=YourApiKeyToken`;
+    const normalTransactionsUrl = `${apiUrl}?module=account&action=txlist&address=${addr}&startblock=3735000&endblock=99999999&page=1&offset=200&sort=asc&apikey=YourApiKeyToken`;
+    const internalTransactionsUrl = `${apiUrl}?module=account&action=txlistinternal&address=${addr}&startblock=3735000&endblock=99999999&page=1&offset=200&sort=asc&apikey=YourApiKeyToken`;
 
     const resultData: Transaction[] = [];
     try {
@@ -712,7 +712,7 @@ async function _queryLineaTransactions(
         });
     } catch (error) {
         console.error(
-            `_queryScrollTransactions error1 url=${normalTransactionsUrl}:`,
+            `_queryLineaTransactions error1 url=${normalTransactionsUrl}:`,
             error.toString().indexOf("status code 404") >= 0
                 ? "ERROR 404"
                 : error
@@ -721,7 +721,7 @@ async function _queryLineaTransactions(
 
     try {
         console.log(
-            "_queryScrollTransactions,77077,internalTransactionsUrl:",
+            "_queryLineaTransactions,77077,internalTransactionsUrl:",
             internalTransactionsUrl
         );
         const response: AxiosResponse = await axios.get(
@@ -745,7 +745,7 @@ async function _queryLineaTransactions(
         });
     } catch (error) {
         console.error(
-            `_queryScrollTransactions error2 url=${internalTransactionsUrl}:`,
+            `_queryLineaTransactions error2 url=${internalTransactionsUrl}:`,
             error.toString().indexOf("status code 404") >= 0
                 ? "ERROR 404"
                 : error
