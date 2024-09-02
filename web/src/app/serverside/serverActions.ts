@@ -172,7 +172,11 @@ export async function saveSelectedOrderNo(
     console.log("cookie saveSelectedOrderNo:", sNo);
 }
 
-const THEGRAPH_API_KEY = "27078366ee0927aec4a68aae6d7ce9e6";
+const THEGRAPH_API_KEY = "45b51ce2c02aeacab0659ebfe9efc100";
+const THEGRAPH_URLS: { [key: string]: string } = {
+    SCROLL_TEST_CHAIN: ``,
+    LINEA_TEST_CHAIN: `https://gateway.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/5zap7aqMFgJkErfkhHrngaGs24x5h2YyrWLeni5TkVZL`,
+};
 export async function thegraphQueryOpLog(accountAddr, chainCode) {
     const query =
         "{" +
@@ -186,7 +190,9 @@ export async function thegraphQueryOpLog(accountAddr, chainCode) {
         "}";
     console.log("xxx==============================:", accountAddr, query);
     const myData = await fetch(
-        `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/4pPyuX64mqazXXjL2xUCJESDbhHj9KPnzWudeZrfDs1R`,
+        // `https://api.studio.thegraph.com/query/87992/w3ealineasepolia/version/latest`,
+        // `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/4pPyuX64mqazXXjL2xUCJESDbhHj9KPnzWudeZrfDs1R`,
+        THEGRAPH_URLS[chainCode],
         {
             method: "POST",
             body: JSON.stringify({
@@ -197,6 +203,7 @@ export async function thegraphQueryOpLog(accountAddr, chainCode) {
         }
     );
     const sss = await myData.json();
+    console.log("xxx,sss:", sss);
     const result: {
         operationType: string;
         description: string;
@@ -261,9 +268,9 @@ export async function thegraphQueryOpLog(accountAddr, chainCode) {
 
     result.sort((a: any, b: any) => {
         if (a.timestamp < b.timestamp) {
-            return -1;
-        } else {
             return 1;
+        } else {
+            return -1;
         }
     });
 
