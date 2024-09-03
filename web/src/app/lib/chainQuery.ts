@@ -664,7 +664,12 @@ export const formatTimestamp = (tm: number) => {
     if (tt < 1000000000000) {
         tt = tt * 1000;
     }
+    let tos_second = new Date().getTimezoneOffset() * 60;
+    console.log("tt-======1,", tt, tos_second);
+    // tt = tt + tos_second * 1000;
+    console.log("tt-======2,", tt, tos_second);
     let date = new Date(tt);
+    console.log("tt-======3,", date);
     let year = date.getFullYear();
     let month = date.getMonth() + 1;
     month = month < 10 ? "0" + month : month;
@@ -683,9 +688,13 @@ async function _queryLineaTransactions(
     chainCode: string,
     addr: string
 ): Promise<Transaction[]> {
+    // have error here. client can't read env.
+    //
+    const LINEASCAN_APIKEY = "Y3EURWY2JI96686J7G6G4I614IF48ZM6JF";
+
     const apiUrl = getChainObj(chainCode).blockExplorers.default.apiUrl;
-    const normalTransactionsUrl = `${apiUrl}?module=account&action=txlist&address=${addr}&startblock=3735000&endblock=99999999&page=1&offset=200&sort=asc&apikey=YourApiKeyToken`;
-    const internalTransactionsUrl = `${apiUrl}?module=account&action=txlistinternal&address=${addr}&startblock=3735000&endblock=99999999&page=1&offset=200&sort=asc&apikey=YourApiKeyToken`;
+    const normalTransactionsUrl = `${apiUrl}?module=account&action=txlist&address=${addr}&startblock=3735000&endblock=99999999&page=1&offset=200&sort=asc&apikey=${LINEASCAN_APIKEY}`;
+    const internalTransactionsUrl = `${apiUrl}?module=account&action=txlistinternal&address=${addr}&startblock=3735000&endblock=99999999&page=1&offset=200&sort=asc&apikey=${LINEASCAN_APIKEY}`;
 
     const resultData: Transaction[] = [];
     try {
@@ -694,7 +703,14 @@ async function _queryLineaTransactions(
             normalTransactionsUrl
         );
         const response: AxiosResponse = await axios.get(normalTransactionsUrl);
-        response.data.result.forEach((e: any) => {
+        let data;
+        if (response.data != undefined) {
+            data = response.data;
+        } else {
+            data = response;
+        }
+
+        data.result.forEach((e: any) => {
             const aRow: Transaction = {
                 timestamp: formatTimestamp(e.timeStamp),
                 block_number: e.blockNumber,
@@ -727,7 +743,14 @@ async function _queryLineaTransactions(
         const response: AxiosResponse = await axios.get(
             internalTransactionsUrl
         );
-        response.data.result.forEach((e: any) => {
+        let data;
+        if (response.data != undefined) {
+            data = response.data;
+        } else {
+            data = response;
+        }
+
+        data.result.forEach((e: any) => {
             const aRow: Transaction = {
                 timestamp: formatTimestamp(e.timeStamp),
                 block_number: e.blockNumber,
