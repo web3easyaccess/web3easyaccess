@@ -172,9 +172,12 @@ export async function saveSelectedOrderNo(
     console.log("cookie saveSelectedOrderNo:", sNo);
 }
 
+// f77a钱包地址对应的thegraph账号, 不再进一步使用
+const THEGRAPH_API_KEY_f77a = "27078366ee0927aec4a68aae6d7ce9e6";
+
 const THEGRAPH_API_KEY = "45b51ce2c02aeacab0659ebfe9efc100";
 const THEGRAPH_URLS: { [key: string]: string } = {
-    SCROLL_TEST_CHAIN: ``,
+    SCROLL_TEST_CHAIN: `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY_f77a}/subgraphs/id/4pPyuX64mqazXXjL2xUCJESDbhHj9KPnzWudeZrfDs1R`,
     LINEA_TEST_CHAIN: `https://gateway.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/5zap7aqMFgJkErfkhHrngaGs24x5h2YyrWLeni5TkVZL`,
 };
 export async function thegraphQueryOpLog(accountAddr, chainCode) {
