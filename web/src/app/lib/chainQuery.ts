@@ -3,7 +3,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import axios from "axios";
 import { Axios, AxiosResponse, AxiosError } from "axios";
 
-import { isMorphNet, isScrollNet } from "./myChain";
+import { isMorphNet, isScrollNet, isLineaNet } from "./myChain";
 import { Transaction } from "./myTypes";
 import { getChainObj } from "./myChain";
 import {
@@ -25,6 +25,88 @@ const accountOnlyForRead = privateKeyToAccount(
 // console.log("have a look. what is the address:", accountOnlyForRead.address);
 /**
  */
+
+/**
+ *  Divides a number by a given exponent of base 10 (10exponent), and formats it into a string representation of the number..
+ *
+ * - Docs: https://viem.sh/docs/utilities/formatUnits
+ *
+ * @example
+ * import { formatUnits } from 'viem'
+ *
+ * formatUnits(420000000000n, 9)
+ * // '420'
+ */
+export function formatUnits(value: bigint, decimals: number) {
+    let display = value.toString();
+
+    const negative = display.startsWith("-");
+    if (negative) display = display.slice(1);
+
+    display = display.padStart(decimals, "0");
+
+    let [integer, fraction] = [
+        display.slice(0, display.length - decimals),
+        display.slice(display.length - decimals),
+    ];
+    fraction = fraction.replace(/(0+)$/, "");
+    return `${negative ? "-" : ""}${integer || "0"}${
+        fraction ? `.${fraction}` : ""
+    }`;
+}
+
+/**
+ * Multiplies a string representation of a number by a given exponent of base 10 (10exponent).
+ *
+ * - Docs: https://viem.sh/docs/utilities/parseUnits
+ *
+ * @example
+ * import { parseUnits } from 'viem'
+ *
+ * parseUnits('420', 9)
+ * // 420000000000n
+ */
+export function parseUnits(value: string, decimals: number) {
+    let [integer, fraction = "0"] = value.split(".");
+
+    const negative = integer.startsWith("-");
+    if (negative) integer = integer.slice(1);
+
+    // trim leading zeros.
+    fraction = fraction.replace(/(0+)$/, "");
+
+    // round off if the fraction is larger than the number of decimals.
+    if (decimals === 0) {
+        if (Math.round(Number(`.${fraction}`)) === 1)
+            integer = `${BigInt(integer) + 1n}`;
+        fraction = "";
+    } else if (fraction.length > decimals) {
+        const [left, unit, right] = [
+            fraction.slice(0, decimals - 1),
+            fraction.slice(decimals - 1, decimals),
+            fraction.slice(decimals),
+        ];
+
+        const rounded = Math.round(Number(`${unit}.${right}`));
+        if (rounded > 9)
+            fraction = `${BigInt(left) + BigInt(1)}0`.padStart(
+                left.length + 1,
+                "0"
+            );
+        else fraction = `${left}${rounded}`;
+
+        if (fraction.length > decimals) {
+            fraction = fraction.slice(1);
+            integer = `${BigInt(integer) + 1n}`;
+        }
+
+        fraction = fraction.slice(0, decimals);
+    } else {
+        fraction = fraction.padEnd(decimals, "0");
+    }
+
+    return BigInt(`${negative ? "-" : ""}${integer}${fraction}`);
+}
 
 export async function queryAccountList(
     chainCode: string,
@@ -132,6 +214,226 @@ export async function queryQuestionIdsEnc(
             e
         );
         throw new Error("queryQuestionIdsEnc error!");
+    }
+}
+
+export async function queryTokenDetail(
+    chainCode: string,
+    factoryAddr: string,
+    tokenAddress: string,
+    userAddress: string
+) {
+    try {
+        if (
+            tokenAddress == undefined ||
+            tokenAddress == null ||
+            tokenAddress.trim() == ""
+        ) {
+            return {
+                tokenAddress: "",
+                symbol: "Please input token address",
+                name: "",
+                totalSupply: "",
+                myBalance: "",
+                decimals: "",
+            };
+        }
+        const cpc = chainPublicClient(chainCode, factoryAddr);
+        // console.log("rpc:", cpc.rpcUrl);
+        console.log("factoryAddr in queryTokenDetail:", chainCode, factoryAddr);
+        const symbol = await cpc.publicClient.readContract({
+            account: accountOnlyForRead,
+            address: tokenAddress as `0x${string}`,
+            abi: abis.symbol,
+            functionName: "symbol",
+            args: [],
+        });
+        const name = await cpc.publicClient.readContract({
+            account: accountOnlyForRead,
+            address: tokenAddress as `0x${string}`,
+            abi: abis.name,
+            functionName: "name",
+            args: [],
+        });
+        const totalSupply = await cpc.publicClient.readContract({
+            account: accountOnlyForRead,
+            address: tokenAddress as `0x${string}`,
+            abi: abis.totalSupply,
+            functionName: "totalSupply",
+            args: [],
+        });
+        const myBalance = await cpc.publicClient.readContract({
+            account: accountOnlyForRead,
+            address: tokenAddress as `0x${string}`,
+            abi: abis.balanceOf,
+            functionName: "balanceOf",
+            args: [userAddress],
+        });
+        const decimals = await cpc.publicClient.readContract({
+            account: accountOnlyForRead,
+            address: tokenAddress as `0x${string}`,
+            abi: abis.decimals,
+            functionName: "decimals",
+            args: [],
+        });
+
+        const rtn = {
+            tokenAddress: tokenAddress,
+            symbol: symbol,
+            name: name,
+            totalSupply: formatUnits(totalSupply as bigint, decimals as number),
+            myBalance: formatUnits(myBalance as bigint, decimals as number),
+            decimals: decimals as number,
+        };
+        console.log("queryTokenDetail rtn:", rtn);
+        return rtn;
+    } catch (e) {
+        console.log(
+            "==================queryTokenDetail error======================, tokenAddress=" +
+                tokenAddress,
+            e
+        );
+        return {
+            tokenAddress: "",
+            symbol: "TokenError",
+            name: "TokenError!",
+            totalSupply: "-1",
+            myBalance: "-1",
+            decimals: "-1",
+        };
+    }
+}
+
+export async function queryNftDetail(
+    chainCode: string,
+    factoryAddr: string,
+    nftAddress: string,
+    userAddress: string
+) {
+    try {
+        if (
+            nftAddress == undefined ||
+            nftAddress == null ||
+            nftAddress.trim() == ""
+        ) {
+            return {
+                nftAddress: "",
+                symbol: "Please input NFT address",
+                name: "",
+                myBalance: "0",
+            };
+        }
+        const cpc = chainPublicClient(chainCode, factoryAddr);
+        // console.log("rpc:", cpc.rpcUrl);
+        console.log("factoryAddr in queryNftDetail:", chainCode, factoryAddr);
+        let symbol;
+        let name;
+        try {
+            symbol = await cpc.publicClient.readContract({
+                account: accountOnlyForRead,
+                address: nftAddress as `0x${string}`,
+                abi: abis.symbol,
+                functionName: "symbol",
+                args: [],
+            });
+        } catch (eee1) {
+            console.log("warn: query nft symbol error:", eee1);
+            symbol = "-";
+        }
+        try {
+            name = await cpc.publicClient.readContract({
+                account: accountOnlyForRead,
+                address: nftAddress as `0x${string}`,
+                abi: abis.name,
+                functionName: "name",
+                args: [],
+            });
+        } catch (eee2) {
+            console.log("warn: query nft name error:", eee2);
+            name = "-";
+        }
+
+        const myBalance = await cpc.publicClient.readContract({
+            account: accountOnlyForRead,
+            address: nftAddress as `0x${string}`,
+            abi: abis.balanceOf,
+            functionName: "balanceOf",
+            args: [userAddress],
+        });
+
+        const rtn = {
+            nftAddress: nftAddress,
+            symbol: symbol,
+            name: name,
+            myBalance: "" + myBalance,
+        };
+
+        console.log("queryNftDetail rtn:", rtn);
+        return rtn;
+    } catch (e) {
+        console.log(
+            "==================queryNftDetail error======================, nftAddress=" +
+                nftAddress,
+            e
+        );
+        return {
+            nftAddress: "",
+            symbol: "NftError",
+            name: "NftError!",
+            myBalance: "-1",
+        };
+    }
+}
+
+export async function queryNftsOwnerUri(
+    chainCode: string,
+    factoryAddr: string,
+    nftAddress: string,
+    nftId: bigint
+) {
+    try {
+        if (
+            nftAddress == undefined ||
+            nftAddress == null ||
+            nftAddress.trim() == ""
+        ) {
+            return { ownerAddr: "0x0000", tokenUri: "" };
+        }
+        const cpc = chainPublicClient(chainCode, factoryAddr);
+        // console.log("rpc:", cpc.rpcUrl);
+        console.log("factoryAddr in queryNftsOwner:", chainCode, factoryAddr);
+
+        const ownerAddr = await cpc.publicClient.readContract({
+            account: accountOnlyForRead,
+            address: nftAddress as `0x${string}`,
+            abi: abis.ownerOf,
+            functionName: "ownerOf",
+            args: [nftId],
+        });
+
+        let tokenUri;
+        try {
+            tokenUri = await cpc.publicClient.readContract({
+                account: accountOnlyForRead,
+                address: nftAddress as `0x${string}`,
+                abi: abis.tokenURI,
+                functionName: "tokenURI",
+                args: [nftId],
+            });
+        } catch (eee2) {
+            console.log("warn: query nft uri error:", eee2);
+            tokenUri = "";
+        }
+
+        console.log("queryNftsOwner rtn:", ownerAddr);
+        return { ownerAddr: ownerAddr, tokenUri: tokenUri };
+    } catch (e) {
+        console.log(
+            "==================queryNftsOwner error======================, nftAddress=" +
+                nftAddress,
+            e
+        );
+        return { ownerAddr: "0x0000", tokenUri: "" };
     }
 }
 
@@ -349,6 +651,9 @@ export async function queryTransactions(
     } else if (isScrollNet(chainCode)) {
         const res = await _queryScrollTransactions(chainCode, addr);
         return res;
+    } else if (isLineaNet(chainCode)) {
+        const res = await _queryLineaTransactions(chainCode, addr);
+        return res;
     } else {
         return [];
     }
@@ -373,6 +678,82 @@ export const formatTimestamp = (tm: number) => {
     s = s < 10 ? "0" + s : s;
     return year + "-" + month + "-" + day + " " + h + ":" + m + ":" + s;
 };
+
+async function _queryLineaTransactions(
+    chainCode: string,
+    addr: string
+): Promise<Transaction[]> {
+    const apiUrl = getChainObj(chainCode).blockExplorers.default.apiUrl;
+    const normalTransactionsUrl = `${apiUrl}?module=account&action=txlist&address=${addr}&startblock=3735000&endblock=99999999&page=1&offset=200&sort=asc&apikey=YourApiKeyToken`;
+    const internalTransactionsUrl = `${apiUrl}?module=account&action=txlistinternal&address=${addr}&startblock=3735000&endblock=99999999&page=1&offset=200&sort=asc&apikey=YourApiKeyToken`;
+
+    const resultData: Transaction[] = [];
+    try {
+        console.log(
+            "_queryLineaTransactions,77077,normalTransactionsUrl:",
+            normalTransactionsUrl
+        );
+        const response: AxiosResponse = await axios.get(normalTransactionsUrl);
+        response.data.result.forEach((e: any) => {
+            const aRow: Transaction = {
+                timestamp: formatTimestamp(e.timeStamp),
+                block_number: e.blockNumber,
+                result: e.isError == "0" ? "success" : "fail",
+                to: e.to,
+                hash: e.hash,
+                gas_price: formatEther(BigInt(e.gasPrice)),
+                gas_used: e.gasUsed,
+                gas_limit: e.gas,
+                l1_fee: 0, //
+                from: e.from,
+                value: formatEther(BigInt(e.value)),
+            };
+            resultData.push(aRow);
+        });
+    } catch (error) {
+        console.error(
+            `_queryLineaTransactions error1 url=${normalTransactionsUrl}:`,
+            error.toString().indexOf("status code 404") >= 0
+                ? "ERROR 404"
+                : error
+        );
+    }
+
+    try {
+        console.log(
+            "_queryLineaTransactions,77077,internalTransactionsUrl:",
+            internalTransactionsUrl
+        );
+        const response: AxiosResponse = await axios.get(
+            internalTransactionsUrl
+        );
+        response.data.result.forEach((e: any) => {
+            const aRow: Transaction = {
+                timestamp: formatTimestamp(e.timeStamp),
+                block_number: e.blockNumber,
+                result: e.isError == "0" ? "success" : "fail",
+                to: e.to,
+                hash: e.hash + "::" + "/" + "::" + "/",
+                gas_price: formatEther(BigInt("0")),
+                gas_used: e.gasUsed,
+                gas_limit: e.gas,
+                l1_fee: 0, //
+                from: e.from,
+                value: formatEther(BigInt(e.value)),
+            };
+            resultData.push(aRow);
+        });
+    } catch (error) {
+        console.error(
+            `_queryLineaTransactions error2 url=${internalTransactionsUrl}:`,
+            error.toString().indexOf("status code 404") >= 0
+                ? "ERROR 404"
+                : error
+        );
+    }
+
+    return resultData;
+}
 
 async function _queryScrollTransactions(
     chainCode: string,

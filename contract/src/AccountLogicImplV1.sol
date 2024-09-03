@@ -22,6 +22,32 @@ import "./W3EAPoint.sol";
 that must inherit ImplV1 if you written a ImplV2....
  */
 contract AccountLogicImplV1 is AccountEntity, IAccountLogic {
+    // Standard Signature Validation Method for Contracts
+    // https://eips.ethereum.org/EIPS/eip-1271
+    // https://docs.alchemy.com/docs/how-to-make-your-dapp-compatible-with-smart-contract-wallets
+    function isValidSignature(
+        bytes32 _hash,
+        bytes memory _signature
+    ) external view returns (bytes4) {
+        // Validate signatures
+
+        address myPasswdAddr = (
+            (bigBrotherAccount == address(0))
+                ? passwdAddr
+                : AccountEntity(payable(bigBrotherAccount)).passwdAddr()
+        );
+
+        bytes32 structHash = keccak256(abi.encode(PERMIT_TYPEHASH, _hash));
+        bytes32 hash = _hashTypedDataV4(structHash);
+        address signer = ECDSA.recover(hash, _signature);
+
+        if (signer == myPasswdAddr) {
+            return 0x1626ba7e; // 1271_MAGIC_VALUE
+        } else {
+            return 0xffffffff;
+        }
+    }
+
     //
     function initByFactory(
         address _entryEOA,
@@ -125,32 +151,32 @@ contract AccountLogicImplV1 is AccountEntity, IAccountLogic {
                 ? passwdAddr
                 : AccountEntity(payable(bigBrotherAccount)).passwdAddr()
         );
-        if (msg.sender != myPasswdAddr) {
-            if (msg.sender != entryEOA && msg.sender != factory) {
-                entryEOA = Factory(payable(factory)).entryEOA();
-                require(
-                    msg.sender == entryEOA || msg.sender == factory,
-                    "only entry"
-                );
-                emit SyncEntryEOA(entryEOA);
-            }
-
-            bytes32 structHash = keccak256(
-                abi.encode(
-                    PERMIT_TYPEHASH,
-                    _passwdAddr,
-                    _useNonce(),
-                    _argumentsHash
-                )
+        // if (msg.sender != myPasswdAddr) {
+        if (msg.sender != entryEOA && msg.sender != factory) {
+            entryEOA = Factory(payable(factory)).entryEOA();
+            require(
+                msg.sender == entryEOA || msg.sender == factory,
+                "only entry"
             );
-            bytes32 hash = _hashTypedDataV4(structHash);
-            address signer = ECDSA.recover(hash, _signature);
-            require(signer == myPasswdAddr, "privateInfo error");
-            //
-            _takeFee(estimatedFee);
-        } else {
-            _takeFee(estimatedFee / 100);
+            emit SyncEntryEOA(entryEOA);
         }
+
+        bytes32 structHash = keccak256(
+            abi.encode(
+                PERMIT_TYPEHASH,
+                _passwdAddr,
+                _useNonce(),
+                _argumentsHash
+            )
+        );
+        bytes32 hash = _hashTypedDataV4(structHash);
+        address signer = ECDSA.recover(hash, _signature);
+        require(signer == myPasswdAddr, "privateInfo error");
+        //
+        _takeFee(estimatedFee);
+        // } else {
+        //     _takeFee(estimatedFee / 100);
+        // }
 
         _;
     }

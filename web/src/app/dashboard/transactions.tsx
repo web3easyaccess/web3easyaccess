@@ -49,7 +49,8 @@ export default function App({
                 currentUserInfo.selectedAccountAddr != ""
             ) {
                 const jsonData = await thegraphQueryOpLog(
-                    currentUserInfo.selectedAccountAddr.toLowerCase()
+                    currentUserInfo.selectedAccountAddr.toLowerCase(),
+                    currentUserInfo.chainCode
                 );
                 console.log("fetch thegraphQueryOpLog:", jsonData);
                 setOpLogs(jsonData);

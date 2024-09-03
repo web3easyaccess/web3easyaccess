@@ -14,4 +14,9 @@ export const chains = [
         value: "SCROLL_TEST_CHAIN",
         description: "[Test]Scroll Sepolia Testnet",
     },
+    {
+        label: "[Test]Linea Testnet",
+        value: "LINEA_TEST_CHAIN",
+        description: "[Test]Linea Sepolia Testnet",
+    },
 ];

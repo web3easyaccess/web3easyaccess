@@ -151,20 +151,10 @@ export async function verifyEmail(
 
         md = myCookies.loadData();
 
-        if (
-            md.accountId == popularAddr.ZERO_ADDR ||
-            md.accountId == popularAddr.ZERO_ADDRError
-        ) {
-            console.log(
-                `verifyEmail-current owner ${email} havn't account, redirect to urlPrivateinfo.`
-            );
-            redirectTo.urlPrivateinfo();
-        } else {
-            console.log(
-                `verifyEmail-current owner ${email} have account ${md.accountId}, redirect to urlDashboard.`
-            );
-            redirectTo.urlDashboard();
-        }
+        console.log(
+            `verifyEmail-current owner ${email} have account ${md.accountId}, redirect to urlDashboard.`
+        );
+        redirectTo.urlDashboard();
         // return "";
     } else {
         console.log("verify failure!", email, code, "stored code:" + myCode);
@@ -177,12 +167,20 @@ export async function saveSelectedOrderNo(
     formData: FormData
 ) {
     const sNo = formData.get("selectedOrderNo");
-    myCookies.flushSelectedOrderNo(Number(sNo));
+    const selectedAccountAddr = formData.get("selectedAccountAddr");
+    myCookies.flushSelectedOrderNo(Number(sNo), selectedAccountAddr);
     console.log("cookie saveSelectedOrderNo:", sNo);
 }
 
-const THEGRAPH_API_KEY = "27078366ee0927aec4a68aae6d7ce9e6";
-export async function thegraphQueryOpLog(accountAddr) {
+// f77a钱包地址对应的thegraph账号, 不再进一步使用
+const THEGRAPH_API_KEY_f77a = "27078366ee0927aec4a68aae6d7ce9e6";
+
+const THEGRAPH_API_KEY = "45b51ce2c02aeacab0659ebfe9efc100";
+const THEGRAPH_URLS: { [key: string]: string } = {
+    SCROLL_TEST_CHAIN: `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY_f77a}/subgraphs/id/4pPyuX64mqazXXjL2xUCJESDbhHj9KPnzWudeZrfDs1R`,
+    LINEA_TEST_CHAIN: `https://gateway.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/5zap7aqMFgJkErfkhHrngaGs24x5h2YyrWLeni5TkVZL`,
+};
+export async function thegraphQueryOpLog(accountAddr, chainCode) {
     const query =
         "{" +
         // " createAccounts(first: 999) { id ownerId account blockNumber blockTimestamp transactionHash}" +
@@ -195,7 +193,9 @@ export async function thegraphQueryOpLog(accountAddr) {
         "}";
     console.log("xxx==============================:", accountAddr, query);
     const myData = await fetch(
-        `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/4pPyuX64mqazXXjL2xUCJESDbhHj9KPnzWudeZrfDs1R`,
+        // `https://api.studio.thegraph.com/query/87992/w3ealineasepolia/version/latest`,
+        // `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/4pPyuX64mqazXXjL2xUCJESDbhHj9KPnzWudeZrfDs1R`,
+        THEGRAPH_URLS[chainCode],
         {
             method: "POST",
             body: JSON.stringify({
@@ -206,6 +206,7 @@ export async function thegraphQueryOpLog(accountAddr) {
         }
     );
     const sss = await myData.json();
+    console.log("xxx,sss:", sss);
     const result: {
         operationType: string;
         description: string;
@@ -270,9 +271,9 @@ export async function thegraphQueryOpLog(accountAddr) {
 
     result.sort((a: any, b: any) => {
         if (a.timestamp < b.timestamp) {
-            return -1;
-        } else {
             return 1;
+        } else {
+            return -1;
         }
     });
 

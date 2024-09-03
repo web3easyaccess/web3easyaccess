@@ -20,9 +20,14 @@ import Assets from "./assets";
 import Transactions from "./transactions";
 import SendTransaction from "./newtransaction/sendtransaction";
 import SendChgPrivateInfo from "./newtransaction/sendchgprivateinfo";
+
 import { useRouter } from "next/navigation";
 
 import { Menu, UserInfo, uiToString } from "../lib/myTypes";
+
+// const SendChgPrivateInfo = () => {
+//     return <div></div>;
+// };
 
 export default function OpMenu({ selectedMenu }: { selectedMenu: Menu }) {
     console.log("selectedMenu ::::", selectedMenu);

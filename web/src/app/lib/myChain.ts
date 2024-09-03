@@ -1,6 +1,6 @@
 import { defineChain } from "viem";
 import myCookies from "../serverside/myCookies";
-import { scrollSepolia } from "viem/chains";
+import { scrollSepolia, lineaSepolia } from "viem/chains";
 
 // node_modules\viem\chains\definitions\scrollSepolia.ts
 
@@ -91,6 +91,8 @@ export const getChainObj = (chainCode) => {
         rtn = morphHoleskyTestnet;
     } else if (chainCode == "SCROLL_TEST_CHAIN") {
         rtn = scrollSepolia;
+    } else if (chainCode == "LINEA_TEST_CHAIN") {
+        rtn = lineaSepolia;
     } else {
         console.warn("not supprted:" + chainCode);
     }
@@ -107,5 +109,10 @@ export function isMorphNet(chainCode) {
 export function isScrollNet(chainCode) {
     console.log("chaincode in isScrollNet:", chainCode);
     return chainCode == "SCROLL_TEST_CHAIN";
+}
+
+export function isLineaNet(chainCode) {
+    console.log("chaincode in isLineaNet:", chainCode);
+    return chainCode == "LINEA_TEST_CHAIN";
 }
 // export const getChainObj = localChain;

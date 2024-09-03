@@ -495,7 +495,6 @@ function SendTransaction({
             setInputValueById("id_newtrans_receiver_addr", receiverAddr);
 
             let amountETH = getInputValueById("id_newtrans_amount_ui");
-            setInputValueById("id_newtrans_amount", amountETH);
 
             if (
                 receiverAddr == null ||

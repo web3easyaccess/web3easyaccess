@@ -10,6 +10,7 @@ export enum ChainCode {
     DEFAULT_ANVIL_CHAIN = "DEFAULT_ANVIL_CHAIN",
     MORPH_TEST_CHAIN = "MORPH_TEST_CHAIN",
     SCROLL_TEST_CHAIN = "SCROLL_TEST_CHAIN",
+    LINEA_TEST_CHAIN = "LINEA_TEST_CHAIN",
 }
 export const commonTokens = { MORPH_TEST_CHAIN: [{ addr: "", name: "USDT" }] };
 export const commonNfts = {};
