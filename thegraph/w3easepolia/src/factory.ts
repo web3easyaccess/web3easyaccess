@@ -1,32 +1,19 @@
-import {
-  AdminChanged as AdminChangedEvent,
-  Upgraded as UpgradedEvent
-} from "../generated/Factory/Factory"
-import { AdminChanged, Upgraded } from "../generated/schema"
+import { CreateAccount as CreateAccountEvent } from "../generated/Factory/Factory";
+import { CreateAccount } from "../generated/schema";
 
-export function handleAdminChanged(event: AdminChangedEvent): void {
-  let entity = new AdminChanged(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.previousAdmin = event.params.previousAdmin
-  entity.newAdmin = event.params.newAdmin
+import { Account as AccountDatasource } from "../generated/templates";
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+export function handleCreateAccount(event: CreateAccountEvent): void {
+    let entity = new CreateAccount(
+        event.transaction.hash.concatI32(event.logIndex.toI32())
+    );
+    entity.ownerId = event.params.ownerId;
+    entity.account = event.params.account;
 
-  entity.save()
-}
+    entity.blockNumber = event.block.number;
+    entity.blockTimestamp = event.block.timestamp;
+    entity.transactionHash = event.transaction.hash;
 
-export function handleUpgraded(event: UpgradedEvent): void {
-  let entity = new Upgraded(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.implementation = event.params.implementation
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
+    entity.save();
+    AccountDatasource.create(event.params.account);
 }
