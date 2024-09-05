@@ -29,6 +29,7 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
     const [morphl2testState, setMorphl2testState] = useState(myDefault);
     const [scrolltestState, setScrolltestState] = useState(myDefault);
     const [lineatestState, setLineatestState] = useState(myDefault);
+    const [sepoliaState, setSepoliaState] = useState(myDefault);
     const [defaultAnvilState, setDefaultAnvilState] = useState(myDefault);
     const [ethereumMainnetState, setEthereumMainnetState] = useState(myDefault);
 
@@ -38,6 +39,7 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
         setEthereumMainnetState(myDefault);
         setScrolltestState(myDefault);
         setLineatestState(myDefault);
+        setSepoliaState(myDefault);
         if (cc == "MORPH_TEST_CHAIN") {
             setMorphl2testState(myChecked);
         } else if (cc == "DEFAULT_ANVIL_CHAIN") {
@@ -48,6 +50,8 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
             setScrolltestState(myChecked);
         } else if (cc == "LINEA_TEST_CHAIN") {
             setLineatestState(myChecked);
+        } else if (cc == "SEPOLIA_CHAIN") {
+            setSepoliaState(myChecked);
         }
     };
 
@@ -94,6 +98,19 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
         <div className="flex gap-3 items-center" style={{ cursor: "pointer" }}>
             <SetChainForm />
             {/* <Badge content="" color="secondary"> */}
+
+            <Tooltip content="Sepolia testnet">
+                <Avatar
+                    src="/chain/sepolia.png"
+                    size={sepoliaState.size}
+                    isBordered={sepoliaState.bordered}
+                    onClick={() => {
+                        handleClick("SEPOLIA_CHAIN");
+                    }}
+                    color="primary"
+                    radius="sm"
+                />
+            </Tooltip>
 
             <Tooltip content="Linea Sepolia testnet">
                 <Avatar
@@ -219,6 +236,21 @@ export const SelectedChainIcon = ({ chainCodeState }) => {
                     <Tooltip content="linea sepolia testnet">
                         <Avatar
                             src="/chain/lineatest.png"
+                            size="sm"
+                            color="primary"
+                            radius="sm"
+                        />
+                    </Tooltip>
+                </Badge>
+            </div>
+        );
+    } else if (chainCodeState == "SEPOLIA_CHAIN") {
+        return (
+            <div className="flex gap-3 items-center">
+                <Badge content="" color="secondary">
+                    <Tooltip content="sepolia testnet">
+                        <Avatar
+                            src="/chain/sepolia.png"
                             size="sm"
                             color="primary"
                             radius="sm"

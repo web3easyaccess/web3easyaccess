@@ -16,6 +16,8 @@ export function getFactoryAddr(chainCode: string) {
         return process.env.CHAIN_FACTORY_ADDRESS_SCROLL_TEST;
     } else if (chainCode == "LINEA_TEST_CHAIN") {
         return process.env.CHAIN_FACTORY_ADDRESS_LINEA_TEST;
+    } else if (chainCode == "SEPOLIA_CHAIN") {
+        return process.env.CHAIN_FACTORY_ADDRESS_SEPOLIA;
     } else {
         var a = 1 / 0;
     }
@@ -56,6 +58,13 @@ export function chainClient() {
             process.env.INIT_FREE_FEE_AMOUNT_LINEA_TEST
         );
         _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_LINEA_TEST;
+        _l1GasPriceOracleContract = "0x0";
+        _l1DataFeeFunc = "";
+    } else if (chainCode == "SEPOLIA_CHAIN") {
+        _freeFeeAmountWhenCreated = Number(
+            process.env.INIT_FREE_FEE_AMOUNT_SEPOLIA
+        );
+        _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_SEPOLIA;
         _l1GasPriceOracleContract = "0x0";
         _l1DataFeeFunc = "";
     } else {

@@ -179,6 +179,7 @@ const THEGRAPH_API_KEY = "45b51ce2c02aeacab0659ebfe9efc100";
 const THEGRAPH_URLS: { [key: string]: string } = {
     SCROLL_TEST_CHAIN: `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY_f77a}/subgraphs/id/4pPyuX64mqazXXjL2xUCJESDbhHj9KPnzWudeZrfDs1R`,
     LINEA_TEST_CHAIN: `https://gateway.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/5zap7aqMFgJkErfkhHrngaGs24x5h2YyrWLeni5TkVZL`,
+    SEPOLIA_CHAIN: ``,
 };
 export async function thegraphQueryOpLog(accountAddr, chainCode) {
     const query =

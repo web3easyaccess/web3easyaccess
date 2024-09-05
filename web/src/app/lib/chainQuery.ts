@@ -645,6 +645,12 @@ export async function queryTransactions(
     chainCode: string,
     addr: string
 ): Promise<Transaction[]> {
+    if (chainCode == "SEPOLIA_CHAIN" || chainCode == "LINEA_TEST_CHAIN") {
+        const res = await _queryTransactions(chainCode, addr);
+        return res;
+    }
+    // //
+
     if (isMorphNet(chainCode)) {
         const res = await _queryMorphTransactions(chainCode, addr);
         return res;
@@ -652,8 +658,8 @@ export async function queryTransactions(
         const res = await _queryScrollTransactions(chainCode, addr);
         return res;
     } else if (isLineaNet(chainCode)) {
-        const res = await _queryLineaTransactions(chainCode, addr);
-        return res;
+        // const res = await _queryLineaTransactions(chainCode, addr);
+        // return res;
     } else {
         return [];
     }
@@ -684,26 +690,40 @@ export const formatTimestamp = (tm: number) => {
     return year + "-" + month + "-" + day + " " + h + ":" + m + ":" + s;
 };
 
-async function _queryLineaTransactions(
+const CHAIN_PROPS = {
+    SEPOLIA_CHAIN: {
+        scanApiKey: "4U7TMXB289TBXHT2WRT6MZN4QCGZA1E5R5",
+        startBlock: 6633000,
+    },
+    LINEA_TEST_CHAIN: {
+        scanApiKey: "Y3EURWY2JI96686J7G6G4I614IF48ZM6JF",
+        startBlock: 3735000,
+    },
+};
+
+async function _queryTransactions(
     chainCode: string,
     addr: string
 ): Promise<Transaction[]> {
     // have error here. client can't read env.
     //
-    const LINEASCAN_APIKEY = "Y3EURWY2JI96686J7G6G4I614IF48ZM6JF";
+    const LINEASCAN_APIKEY = CHAIN_PROPS[chainCode].scanApiKey;
+    const startBlock = CHAIN_PROPS[chainCode].startBlock;
 
     const apiUrl = getChainObj(chainCode).blockExplorers.default.apiUrl;
-    const normalTransactionsUrl = `${apiUrl}?module=account&action=txlist&address=${addr}&startblock=3735000&endblock=99999999&page=1&offset=200&sort=asc&apikey=${LINEASCAN_APIKEY}`;
-    const internalTransactionsUrl = `${apiUrl}?module=account&action=txlistinternal&address=${addr}&startblock=3735000&endblock=99999999&page=1&offset=200&sort=asc&apikey=${LINEASCAN_APIKEY}`;
+    const normalTransactionsUrl = `${apiUrl}?module=account&action=txlist&address=${addr}&startblock=${startBlock}&endblock=99999999&page=1&offset=200&sort=asc&apikey=${LINEASCAN_APIKEY}`;
+    const internalTransactionsUrl = `${apiUrl}?module=account&action=txlistinternal&address=${addr}&startblock=${startBlock}&endblock=99999999&page=1&offset=200&sort=asc&apikey=${LINEASCAN_APIKEY}`;
 
     const resultData: Transaction[] = [];
+    let data;
     try {
         console.log(
-            "_queryLineaTransactions,77077,normalTransactionsUrl:",
+            chainCode,
+            "query transactions,77077,normalTransactionsUrl:",
             normalTransactionsUrl
         );
         const response: AxiosResponse = await axios.get(normalTransactionsUrl);
-        let data;
+
         if (response.data != undefined) {
             data = response.data;
         } else {
@@ -727,8 +747,9 @@ async function _queryLineaTransactions(
             resultData.push(aRow);
         });
     } catch (error) {
+        console.log("data1:", data);
         console.error(
-            `_queryLineaTransactions error1 url=${normalTransactionsUrl}:`,
+            `${chainCode} query2 transactions error1 url=${normalTransactionsUrl}:`,
             error.toString().indexOf("status code 404") >= 0
                 ? "ERROR 404"
                 : error
@@ -737,7 +758,8 @@ async function _queryLineaTransactions(
 
     try {
         console.log(
-            "_queryLineaTransactions,77077,internalTransactionsUrl:",
+            chainCode,
+            "query transactions,77077,internalTransactionsUrl:",
             internalTransactionsUrl
         );
         const response: AxiosResponse = await axios.get(
@@ -767,8 +789,9 @@ async function _queryLineaTransactions(
             resultData.push(aRow);
         });
     } catch (error) {
+        console.log("data2:", data);
         console.error(
-            `_queryLineaTransactions error2 url=${internalTransactionsUrl}:`,
+            `${chainCode} query2 error2 url=${internalTransactionsUrl}:`,
             error.toString().indexOf("status code 404") >= 0
                 ? "ERROR 404"
                 : error

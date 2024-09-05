@@ -1,6 +1,6 @@
 import { defineChain } from "viem";
 import myCookies from "../serverside/myCookies";
-import { scrollSepolia, lineaSepolia } from "viem/chains";
+import { scrollSepolia, lineaSepolia, sepolia } from "viem/chains";
 
 // node_modules\viem\chains\definitions\scrollSepolia.ts
 
@@ -93,6 +93,8 @@ export const getChainObj = (chainCode) => {
         rtn = scrollSepolia;
     } else if (chainCode == "LINEA_TEST_CHAIN") {
         rtn = lineaSepolia;
+    } else if (chainCode == "SEPOLIA_CHAIN") {
+        rtn = sepolia;
     } else {
         console.warn("not supprted:" + chainCode);
     }
