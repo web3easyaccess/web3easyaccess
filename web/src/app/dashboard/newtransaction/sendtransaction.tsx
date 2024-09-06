@@ -432,7 +432,6 @@ export default function App({
         preparedGasPrice: undefined,
     });
     const [transactionFee, setTransactionFee] = useState("? ETH");
-    const feePerGasStoreRef = useRef(0);
 
     useEffect(() => {
         const refreshFee = async () => {
@@ -1072,7 +1071,7 @@ export default function App({
                     defaultValue={transactionFee}
                     value={transactionFee}
                     radius="sm"
-                    style={{ fontWeight: "bold", fontSize: "18px" }}
+                    style={{ fontWeight: "bold", fontSize: "16px" }}
                 />
             </div>
             <div
