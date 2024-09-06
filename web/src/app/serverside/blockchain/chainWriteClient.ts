@@ -24,8 +24,11 @@ export function getFactoryAddr(chainCode: string) {
 }
 
 // DEFAULT_ANVIL_CHAIN, MORPH_TEST_CHAIN
-export function chainClient() {
-    const chainCode = myCookies.getChainCode();
+export function chainClient(_chainCode: string) {
+    let chainCode = _chainCode;
+    if (chainCode == undefined || chainCode == "" || chainCode == null) {
+        chainCode = myCookies.getChainCode();
+    }
     const myClient = chainPublicClient(chainCode, getFactoryAddr(chainCode));
 
     let _l1GasPriceOracleContract = "0x0";

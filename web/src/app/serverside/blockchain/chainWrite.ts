@@ -11,6 +11,9 @@ import {
     encodePacked,
 } from "viem";
 
+import myCookies from "../myCookies";
+import { getChainObj } from "../../lib/myChain";
+
 import { chainClient } from "./chainWriteClient";
 import { queryAccount } from "../../lib/chainQuery";
 
@@ -22,7 +25,7 @@ function sleep(time) {
 }
 
 export async function getW3eapAddr() {
-    const myClient = chainClient();
+    const myClient = chainClient("");
     const addr = await myClient.publicClient.readContract({
         account: myClient.account,
         address: myClient.factoryAddr,
@@ -42,7 +45,7 @@ export async function newAccount(
     console.log(
         `newAccount called ... ownerId= ${ownerId}, passwdAddr=${passwdAddr}`
     );
-    const myClient = chainClient();
+    const myClient = chainClient("");
     let freeFeeAmount = 0;
     if (ownerId.endsWith("0000")) {
         freeFeeAmount = myClient.freeFeeWhen1stCreated;
@@ -127,7 +130,7 @@ export async function newAccountAndTransferETH(
     console.log(
         `newAccountAndTransferETH called ..onlyQueryFee=${onlyQueryFee}. ownerId= ${ownerId}, passwdAddr=${passwdAddr},detectEstimatedFee=${detectEstimatedFee}`
     );
-    const myClient = chainClient();
+    const myClient = chainClient("");
     let freeFeeAmount = 0;
     if (ownerId.endsWith("0000")) {
         freeFeeAmount = myClient.freeFeeWhen1stCreated;
@@ -291,7 +294,8 @@ export async function createTransaction(
     detectEstimatedFee: bigint,
     l1DataFee: bigint,
     preparedMaxFeePerGas: bigint,
-    preparedGasPrice: bigint
+    preparedGasPrice: bigint,
+    bridgeDirection: string
 ) {
     console.log(
         `createTransaction called ... ownerId= ${ownerId},accountAddr=${accountAddr}, amount=${amount},detectEstimatedFee=${detectEstimatedFee},onlyQueryFee=${onlyQueryFee},detectEstimatedFee=${detectEstimatedFee}`
@@ -299,7 +303,14 @@ export async function createTransaction(
     let dataSendToAccount = null;
     let request = null;
     let hash = "";
-    const myClient = chainClient();
+    let myClient;
+    if (bridgeDirection == "L1ToL2") {
+        myClient = chainClient(
+            getChainObj(myCookies.getChainCode()).l1ChainCode
+        );
+    } else {
+        myClient = chainClient("");
+    }
     try {
         dataSendToAccount = encodeFunctionData({
             abi: abis.sendTransaction,
@@ -449,7 +460,7 @@ export async function changePasswdAddr(
     let chgPasswdData = null;
     let request = null;
     let hash = "";
-    const myClient = chainClient();
+    const myClient = chainClient("");
     try {
         chgPasswdData = encodeFunctionData({
             abi: abis.chgPasswdAddr,
@@ -628,17 +639,19 @@ async function _execute(
 
     console.log(`_execute callAdminData= ${callAdminData}`);
 
-    const eGas = await chainClient().publicClient.estimateGas({
-        account: chainClient().account,
-        to: chainClient().factoryAddr,
+    const eGas = await chainClient("").publicClient.estimateGas({
+        account: chainClient("").account,
+        to: chainClient("").factoryAddr,
         value: BigInt(0), // parseEther("0.0"),
         data: callAdminData,
     });
 
     // estimate transaction fee.
-    const request = await chainClient().walletClient.prepareTransactionRequest({
-        account: chainClient().account,
-        to: chainClient().factoryAddr,
+    const request = await chainClient(
+        ""
+    ).walletClient.prepareTransactionRequest({
+        account: chainClient("").account,
+        to: chainClient("").factoryAddr,
         value: BigInt(0), // parseEther("0.0"),
         data: callAdminData,
     });
@@ -652,9 +665,9 @@ async function _execute(
         args: [ownerId, callAccountData, preGasFee],
     });
 
-    const hash = await chainClient().walletClient.sendTransaction({
-        account: chainClient().account,
-        to: chainClient().factoryAddr,
+    const hash = await chainClient("").walletClient.sendTransaction({
+        account: chainClient("").account,
+        to: chainClient("").factoryAddr,
         value: BigInt(0), // parseEther("0.0"),
         data: callAdminData,
     });

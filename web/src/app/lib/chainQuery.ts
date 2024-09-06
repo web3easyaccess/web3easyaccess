@@ -967,8 +967,8 @@ export async function queryQuestionIds(addr: string) {
     ) {
         return "00";
     }
-    const qids = await chainClient().publicClient.readContract({
-        account: chainClient().account,
+    const qids = await chainClient("").publicClient.readContract({
+        account: chainClient("").account,
         address: addr,
         abi: abis.questionNos,
         functionName: "questionNos",
