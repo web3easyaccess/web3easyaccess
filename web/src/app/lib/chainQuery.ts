@@ -671,11 +671,11 @@ export const formatTimestamp = (tm: number) => {
         tt = tt * 1000;
     }
     let tos_second = new Date().getTimezoneOffset() * 60;
-    console.log("tt-======1,", tt, tos_second);
+    // console.log("tt-======1,", tt, tos_second);
     // tt = tt + tos_second * 1000;
-    console.log("tt-======2,", tt, tos_second);
+    // console.log("tt-======2,", tt, tos_second);
     let date = new Date(tt);
-    console.log("tt-======3,", date);
+    // console.log("tt-======3,", date);
     let year = date.getFullYear();
     let month = date.getMonth() + 1;
     month = month < 10 ? "0" + month : month;

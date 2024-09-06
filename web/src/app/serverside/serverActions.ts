@@ -357,6 +357,7 @@ export async function createAccountAndSendTransaction(
             questionNos,
             receiverAddr, // to
             amount,
+            "",
             signature,
             onlyQueryFee
         );

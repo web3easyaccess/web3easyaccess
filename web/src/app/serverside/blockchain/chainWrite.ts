@@ -120,17 +120,27 @@ export async function newAccountAndTransferETH(
     questionNos: `0x${string}`,
     to: `0x${string}`,
     amount: BigInt,
+    data: `0x${string}`,
     signature: `0x${string}`,
     onlyQueryFee: boolean,
     detectEstimatedFee: bigint,
     l1DataFee: bigint,
     preparedMaxFeePerGas: bigint,
-    preparedGasPrice: bigint
+    preparedGasPrice: bigint,
+    bridgeDirection: string
 ) {
     console.log(
         `newAccountAndTransferETH called ..onlyQueryFee=${onlyQueryFee}. ownerId= ${ownerId}, passwdAddr=${passwdAddr},detectEstimatedFee=${detectEstimatedFee}`
     );
-    const myClient = chainClient("");
+    let myClient;
+    if (bridgeDirection == "L1ToL2") {
+        myClient = chainClient(
+            getChainObj(myCookies.getChainCode()).l1ChainCode
+        );
+    } else {
+        myClient = chainClient("");
+    }
+
     let freeFeeAmount = 0;
     if (ownerId.endsWith("0000")) {
         freeFeeAmount = myClient.freeFeeWhen1stCreated;
@@ -149,7 +159,7 @@ export async function newAccountAndTransferETH(
                 freeFeeAmount,
                 to,
                 amount,
-                "",
+                data,
                 detectEstimatedFee + l1DataFee, // L2fee+L1fee  on client side.
                 signature,
             ],
