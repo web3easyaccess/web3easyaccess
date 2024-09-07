@@ -1,0 +1,67 @@
+type CreateAccount @entity(immutable: true) {
+    id: Bytes!
+    ownerId: BigInt! # uint256
+    account: Bytes! # address
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type InitAccount @entity(immutable: true) {
+    id: Bytes!
+    account: Bytes! # address
+    passwdAddr: Bytes! # address
+    factory: Bytes! # address
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type ChgEntry @entity(immutable: true) {
+    id: Bytes!
+    account: Bytes! # address
+    newEntry: Bytes! # address
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type ChgPasswdAddr @entity(immutable: true) {
+    id: Bytes!
+    account: Bytes! # address
+    oldPasswdAddr: Bytes! # address
+    newPasswdAddr: Bytes! # address
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type SyncEntryEOA @entity(immutable: true) {
+    id: Bytes!
+    account: Bytes! # address
+    newEntryEOA: Bytes! # address
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type UpgradeImpl @entity(immutable: true) {
+    id: Bytes!
+    account: Bytes! # address
+    oldImpl: Bytes! # address
+    newImpl: Bytes! # address
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}
+
+type SendTransaction @entity(immutable: true) {
+    id: Bytes!
+    account: Bytes! # address
+    to: Bytes! # address
+    data: Bytes!
+    value: BigInt! # uint256
+    blockNumber: BigInt!
+    blockTimestamp: BigInt!
+    transactionHash: Bytes!
+}

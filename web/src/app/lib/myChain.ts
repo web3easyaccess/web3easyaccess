@@ -1,6 +1,6 @@
 import { defineChain } from "viem";
 import myCookies from "../serverside/myCookies";
-import { scrollSepolia, lineaSepolia } from "viem/chains";
+import { scrollSepolia, lineaSepolia, sepolia } from "viem/chains";
 
 // node_modules\viem\chains\definitions\scrollSepolia.ts
 
@@ -27,6 +27,7 @@ const defaultAnvil = defineChain({
             blockCreated: 1,
         },
     },
+    testnet: true,
 });
 
 const morphHoleskyTestnet = defineChain({
@@ -56,6 +57,7 @@ const morphHoleskyTestnet = defineChain({
         },
     },
     explorerApiUrl: "https://explorer-api-holesky.morphl2.io/api/v2",
+    testnet: true,
 });
 
 export const getChainObj = (chainCode) => {
@@ -83,6 +85,7 @@ export const getChainObj = (chainCode) => {
         },
         testnet: true,
         chainCode: "",
+        l1ChainCode: "", // when I am L2 chain, here store my corresponding L1 CHAIN
     };
 
     if (chainCode == "DEFAULT_ANVIL_CHAIN") {
@@ -91,8 +94,12 @@ export const getChainObj = (chainCode) => {
         rtn = morphHoleskyTestnet;
     } else if (chainCode == "SCROLL_TEST_CHAIN") {
         rtn = scrollSepolia;
+        rtn.l1ChainCode = "SEPOLIA_CHAIN";
     } else if (chainCode == "LINEA_TEST_CHAIN") {
         rtn = lineaSepolia;
+        rtn.l1ChainCode = "SEPOLIA_CHAIN";
+    } else if (chainCode == "SEPOLIA_CHAIN") {
+        rtn = sepolia;
     } else {
         console.warn("not supprted:" + chainCode);
     }

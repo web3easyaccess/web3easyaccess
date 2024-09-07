@@ -28,8 +28,6 @@ import { Logout } from "./logout";
 
 import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
 
-import { chains } from "./chains";
-
 import { SelectedChainIcon, ChainIcons } from "./chainIcons";
 import UserProfile from "./userProfile";
 

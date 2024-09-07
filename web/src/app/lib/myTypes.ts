@@ -11,6 +11,7 @@ export enum ChainCode {
     MORPH_TEST_CHAIN = "MORPH_TEST_CHAIN",
     SCROLL_TEST_CHAIN = "SCROLL_TEST_CHAIN",
     LINEA_TEST_CHAIN = "LINEA_TEST_CHAIN",
+    SEPOLIA = "SEPOLIA_CHAIN",
 }
 export const commonTokens = { MORPH_TEST_CHAIN: [{ addr: "", name: "USDT" }] };
 export const commonNfts = {};

@@ -31,6 +31,7 @@ import React, { useState, useEffect, useRef } from "react";
 
 import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/react";
+import { Switch } from "@nextui-org/react";
 import {
     Card,
     CardHeader,
@@ -57,6 +58,7 @@ import {
     queryNftsOwnerUri,
     formatUnits,
     parseUnits,
+    queryEthBalance,
 } from "../../lib/chainQuery";
 import { getInputValueById, setInputValueById } from "../../lib/elementById";
 import {
@@ -77,6 +79,9 @@ import { SelectedChainIcon } from "../../navbar/chainIcons";
 
 import { Menu, UserInfo, uiToString, Transaction } from "../../lib/myTypes";
 
+import lineaBridge from "./bridge/lineaBridge";
+import { factory } from "typescript";
+
 const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
     let questionNosEnc = qNo1 + qNo2 + generateRandomString();
     console.log("questionNosEnc1:", questionNosEnc);
@@ -96,6 +101,59 @@ export default function App({
     const chainObj = getChainObj(currentUserInfo.chainCode);
     const explorerUrl = chainObj.blockExplorers.default.url;
 
+    let l1Chain = null; // it will be not null if current chain is a L2 chain.
+    if (chainObj.l1ChainCode != "" && chainObj.l1ChainCode != undefined) {
+        l1Chain = getChainObj(chainObj.l1ChainCode);
+    }
+    // console.log("xxxx:l1Chain:", chainObj.l1ChainCode, l1Chain);
+    const bridgeProps = {
+        title: `Bridge between [${l1Chain?.name}] and [${chainObj.name}]`,
+        isShow: l1Chain != null,
+        l1ChainCode: l1Chain != null ? l1Chain.chainCode : "",
+        l2ChainCode: l1Chain != null ? chainObj.chainCode : "",
+    };
+    const [bridgeL1ToL2, setBridgeL1ToL2] = useState(true);
+    const [bridgeBalanceInfo, setBridgeBalanceInfo] = useState({
+        l1Balance: "-",
+        l2Balance: "-",
+    });
+
+    console.log(
+        "======++++++++++++000:",
+        bridgeProps.l1ChainCode,
+        currentUserInfo
+    );
+
+    useEffect(() => {
+        // l1Balance
+        const refreshBalance = async () => {
+            if (currentUserInfo.selectedAccountAddr != "") {
+                console.log(
+                    "======++++++++++++:",
+                    bridgeProps.l1ChainCode,
+                    currentUserInfo
+                );
+                const b1 = await queryEthBalance(
+                    bridgeProps.l1ChainCode,
+                    currentUserInfo.factoryAddr,
+                    currentUserInfo.selectedAccountAddr
+                );
+                const b2 = await queryEthBalance(
+                    bridgeProps.l2ChainCode,
+                    currentUserInfo.factoryAddr,
+                    currentUserInfo.selectedAccountAddr
+                );
+                setBridgeBalanceInfo({
+                    l1Balance: "" + b1,
+                    l2Balance: "" + b2,
+                });
+            }
+        };
+
+        //
+        refreshBalance();
+    }, [bridgeL1ToL2, setBridgeL1ToL2, currentUserInfo.selectedAccountAddr]);
+
     const currentTabTagRef = useRef("sendETH");
     const [currentTabShow, setCurrentTabShow] = useState(
         currentTabTagRef.current
@@ -114,6 +172,7 @@ export default function App({
         let tokenAddr = "";
         let amountDecimals = 18;
         let nftId = "";
+        let bridgeDirection = "";
         if (currentTabTagRef.current == "sendETH") {
             receiverAddr = getInputValueById("id_newtrans_receiver_addr_ui");
             amount = getInputValueById("id_newtrans_amount_ui");
@@ -137,6 +196,23 @@ export default function App({
             if (tokenAddr == "") {
                 tokenAddr = "NULL";
             }
+        } else if (currentTabTagRef.current == "bridgeL2AndL1") {
+            receiverAddr = currentUserInfo.selectedAccountAddr;
+            amount = getInputValueById("id_newtrans_amount_ui_bridge");
+            //
+            //
+            // tokenAddr == a contract which interact with it
+            if (bridgeL1ToL2) {
+                bridgeDirection = "L1ToL2";
+                tokenAddr = lineaBridge.getL1MessageServiceContract(
+                    bridgeProps.l1ChainCode
+                );
+            } else {
+                bridgeDirection = "L2ToL1";
+                tokenAddr = lineaBridge.getL2MessageServiceContract(
+                    bridgeProps.l2ChainCode
+                );
+            }
         }
 
         return {
@@ -145,6 +221,7 @@ export default function App({
             tokenAddr: tokenAddr, // it is nft address when sendNFT.
             amountDecimals: amountDecimals,
             nftId: nftId,
+            bridgeDirection: bridgeDirection,
         };
     };
 
@@ -179,6 +256,12 @@ export default function App({
             } else {
                 // todo it's different when create other account.
                 msg = "Create Account and Send NFT";
+            }
+        } else if (currentTabTagRef.current == "bridgeL2AndL1") {
+            if (bridgeL1ToL2) {
+                msg = "Bridge from L1 to L2";
+            } else {
+                msg = "Bridge from L2 to L1";
             }
         } else {
         }
@@ -362,6 +445,7 @@ export default function App({
                     tokenAddr,
                     amountDecimals,
                     nftId,
+                    bridgeDirection,
                 } = readReceiverInfo();
                 console.log(
                     `readReceiverInfo, tokenAddr=${tokenAddr}, nftId=${nftId}`
@@ -387,14 +471,35 @@ export default function App({
                     );
 
                     let eFee;
-
                     if (
                         tokenAddr != undefined &&
                         tokenAddr != null &&
                         tokenAddr.length > 2
                     ) {
+                        let amountETH = "0";
                         let transferTokenData;
-                        if (nftId != "") {
+                        let theAccountCreated = myAccountCreated;
+
+                        if (bridgeDirection != "") {
+                            // bridge between L1 and L2linea.
+                            const packedRes = lineaBridge.packDataOfBridgingETH(
+                                bridgeDirection,
+                                receiverAddr,
+                                amount
+                            );
+                            transferTokenData = packedRes.data;
+                            amountETH = packedRes.amountETH;
+
+                            if (bridgeDirection == "L1ToL2") {
+                                const acct = await queryAccount(
+                                    bridgeProps.l1ChainCode,
+                                    currentUserInfo.factoryAddr,
+                                    currentUserInfo.selectedOwnerId
+                                );
+                                theAccountCreated = acct.created;
+                            }
+                        } else if (nftId != "") {
+                            // transfer NFT
                             console.log("nft transer From ...");
                             transferTokenData = encodeFunctionData({
                                 abi: abis.transferFrom,
@@ -406,6 +511,7 @@ export default function App({
                                 ],
                             });
                         } else {
+                            // transfer ERC20
                             // to address, value uint256;
                             transferTokenData = encodeFunctionData({
                                 abi: abis.transfer,
@@ -421,15 +527,17 @@ export default function App({
                             currentUserInfo.selectedOwnerId,
                             currentUserInfo.selectedAccountAddr,
                             passwdAccount,
-                            tokenAddr,
-                            "0",
+                            tokenAddr, // it maybe a bridge message contract when bridging.
+                            amountETH,
                             transferTokenData,
                             chainObj,
-                            myAccountCreated,
+                            theAccountCreated,
                             questionNosEnc,
-                            preparedPriceRef
+                            preparedPriceRef,
+                            bridgeDirection
                         );
                     } else {
+                        // transfer ETH
                         eFee = await estimateTransFee(
                             currentUserInfo.selectedOwnerId,
                             currentUserInfo.selectedAccountAddr,
@@ -440,7 +548,8 @@ export default function App({
                             chainObj,
                             myAccountCreated,
                             questionNosEnc,
-                            preparedPriceRef
+                            preparedPriceRef,
+                            bridgeDirection
                         );
                     }
 
@@ -458,14 +567,46 @@ export default function App({
                             updateFillInOk();
                         }
                     }
-                    setTransactionFee(eFee.feeDisplay);
+
+                    let feePrice = "...";
+                    try {
+                        feePrice =
+                            "(gasPrice=" +
+                            Number(
+                                preparedPriceRef.current.preparedMaxFeePerGas >
+                                    0
+                                    ? preparedPriceRef.current
+                                          .preparedMaxFeePerGas
+                                    : preparedPriceRef.current.preparedGasPrice
+                            ) /
+                                1e9 +
+                            " Gwei)";
+                    } catch (e) {
+                        console.log("eee1:", e);
+                    }
+                    setTransactionFee(eFee.feeDisplay + feePrice);
                 } else {
                     setTransactionFee("? ETH.");
                 }
             } catch (e) {
+                let feePrice = "...";
+                try {
+                    feePrice =
+                        "(gasPrice=" +
+                        Number(
+                            preparedPriceRef.current.preparedMaxFeePerGas > 0
+                                ? preparedPriceRef.current.preparedMaxFeePerGas
+                                : preparedPriceRef.current.preparedGasPrice
+                        ) /
+                            1e9 +
+                        " Gwei)";
+                } catch (e) {
+                    console.log("eee:", e);
+                }
+
                 console.log("seek error:", e);
                 let kk = e.toString().indexOf(" ");
-                setTransactionFee(e.toString().substring(0, kk));
+                setTransactionFee(e.toString().substring(0, kk) + feePrice);
             }
         };
 
@@ -806,31 +947,84 @@ export default function App({
                     <p>Coming soon...</p>
                 </Tab>
                 <Tab
-                    key="bridgeL2AndMain"
-                    title="Bridge between L2 and Ethereum"
+                    key="bridgeL2AndL1"
+                    title={bridgeProps.title}
+                    style={
+                        bridgeProps.isShow
+                            ? { display: "block" }
+                            : { display: "none" }
+                    }
                 >
-                    <div>
-                        <div className="flex gap-4">
-                            <Chip color="secondary" radius="sm" size="lg">
-                                From
-                            </Chip>
-                            <SelectedChainIcon chainCodeState="ETHEREUM_MAIN_NET"></SelectedChainIcon>
-                        </div>
-                        <Divider
-                            style={{
-                                marginTop: "10px",
-                                width: "500px",
-                            }}
+                    <div style={{ display: "flex" }}>
+                        <Switch
+                            color="default"
+                            size="sm"
+                            isSelected={bridgeL1ToL2}
+                            onValueChange={setBridgeL1ToL2}
                         />
-                        <div
-                            className="flex gap-4"
-                            style={{ marginTop: "10px" }}
-                        >
-                            <Chip color="success" radius="sm" size="lg">
-                                To &nbsp;&nbsp;&nbsp;
-                            </Chip>
-                            <SelectedChainIcon chainCodeState="ETHEREUM_MAIN_NET"></SelectedChainIcon>
+                        <div>
+                            <div className="flex gap-4">
+                                <Chip color="secondary" radius="sm" size="lg">
+                                    From:
+                                </Chip>
+                                <SelectedChainIcon
+                                    chainCodeState={
+                                        bridgeL1ToL2
+                                            ? bridgeProps.l1ChainCode
+                                            : bridgeProps.l2ChainCode
+                                    }
+                                ></SelectedChainIcon>
+                                <p>{currentUserInfo.selectedAccountAddr}</p>
+                                <p>
+                                    {bridgeL1ToL2
+                                        ? bridgeBalanceInfo.l1Balance
+                                        : bridgeBalanceInfo.l2Balance}{" "}
+                                    ETH
+                                </p>
+                            </div>
+                            <Divider
+                                style={{
+                                    marginTop: "10px",
+                                    width: "600px",
+                                }}
+                            />
+                            <div
+                                className="flex gap-4"
+                                style={{ marginTop: "10px" }}
+                            >
+                                <Chip color="success" radius="sm" size="lg">
+                                    To: &nbsp;&nbsp;&nbsp;
+                                </Chip>
+                                <SelectedChainIcon
+                                    chainCodeState={
+                                        bridgeL1ToL2
+                                            ? bridgeProps.l2ChainCode
+                                            : bridgeProps.l1ChainCode
+                                    }
+                                ></SelectedChainIcon>
+                                <p>{currentUserInfo.selectedAccountAddr}</p>
+                                <p>
+                                    {bridgeL1ToL2
+                                        ? bridgeBalanceInfo.l2Balance
+                                        : bridgeBalanceInfo.l1Balance}{" "}
+                                    ETH
+                                </p>
+                            </div>
                         </div>
+                    </div>
+                    <div
+                        className="flex w-x-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
+                        style={{ width: "500px", marginTop: "30px" }}
+                    >
+                        <p>ETH:</p>
+                        <Input
+                            id="id_newtrans_amount_ui_bridge"
+                            type="text"
+                            variant={"bordered"}
+                            label="Amount"
+                            placeholder="Enter your Amount"
+                            onBlur={updateInputFillInChange}
+                        />
                     </div>
                 </Tab>
             </Tabs>
@@ -838,7 +1032,8 @@ export default function App({
                 style={
                     currentTabTagRef.current == "sendETH" ||
                     currentTabTagRef.current == "sendToken" ||
-                    currentTabTagRef.current == "sendNFT"
+                    currentTabTagRef.current == "sendNFT" ||
+                    currentTabTagRef.current == "bridgeL2AndL1"
                         ? { display: "block" }
                         : { display: "none" }
                 }
@@ -862,7 +1057,7 @@ export default function App({
                           }
                         : {
                               marginTop: "10px",
-                              width: "300px",
+                              width: "600px",
                               fontWeight: "bold",
                           }
                 }
@@ -876,7 +1071,7 @@ export default function App({
                     defaultValue={transactionFee}
                     value={transactionFee}
                     radius="sm"
-                    style={{ fontWeight: "bold", fontSize: "18px" }}
+                    style={{ fontWeight: "bold", fontSize: "16px" }}
                 />
             </div>
             <div
@@ -917,6 +1112,7 @@ export default function App({
                         preparedPriceRef={preparedPriceRef}
                         updateCurrentTx={updateCurrentTx}
                         readReceiverInfo={readReceiverInfo}
+                        factoryAddr={currentUserInfo.factoryAddr}
                     />
                 </div>
             </div>
@@ -939,6 +1135,7 @@ function SendTransaction({
     preparedPriceRef,
     updateCurrentTx,
     readReceiverInfo,
+    factoryAddr,
 }: {
     myOwnerId: string;
     verifyingContract: string;
@@ -950,6 +1147,7 @@ function SendTransaction({
     preparedPriceRef: any;
     updateCurrentTx: any;
     readReceiverInfo: any;
+    factoryAddr: string;
 }) {
     const router = useRouter();
     const { pending } = useFormStatus();
@@ -960,8 +1158,14 @@ function SendTransaction({
             return;
         }
 
-        const { receiverAddr, amount, tokenAddr, amountDecimals, nftId } =
-            readReceiverInfo();
+        const {
+            receiverAddr,
+            amount,
+            tokenAddr,
+            amountDecimals,
+            nftId,
+            bridgeDirection,
+        } = readReceiverInfo();
 
         if (
             receiverAddr == null ||
@@ -1012,8 +1216,27 @@ function SendTransaction({
             tokenAddr != null &&
             tokenAddr.length > 2
         ) {
+            let amountETH = "0";
             let transferTokenData;
-            if (nftId != "") {
+            let theAccountCreated = myAccountCreated;
+            if (bridgeDirection != "") {
+                // bridge between L1 and L2linea.
+                const packedRes = lineaBridge.packDataOfBridgingETH(
+                    bridgeDirection,
+                    receiverAddr,
+                    amount
+                );
+                transferTokenData = packedRes.data;
+                amountETH = packedRes.amountETH;
+                if (bridgeDirection == "L1ToL2") {
+                    const acct = await queryAccount(
+                        chainObj.l1ChainCode,
+                        factoryAddr, // if l1 and l2 's factoryAddr is different, it may be error.
+                        myOwnerId
+                    );
+                    theAccountCreated = acct.created;
+                }
+            } else if (nftId != "") {
                 console.log("nft transer From 2...");
                 transferTokenData = encodeFunctionData({
                     abi: abis.transferFrom,
@@ -1033,12 +1256,13 @@ function SendTransaction({
                 verifyingContract,
                 passwdAccount,
                 tokenAddr,
-                "0",
+                amountETH,
                 transferTokenData,
                 chainObj,
-                myAccountCreated,
+                theAccountCreated,
                 questionNosEnc,
-                preparedPriceRef
+                preparedPriceRef,
+                bridgeDirection
             );
         } else {
             tx = await executeTransaction(
@@ -1051,7 +1275,8 @@ function SendTransaction({
                 chainObj,
                 myAccountCreated,
                 questionNosEnc,
-                preparedPriceRef
+                preparedPriceRef,
+                ""
             );
         }
 
@@ -1103,7 +1328,8 @@ async function estimateTransFee(
     chainObj: any,
     myAccountCreated: boolean,
     questionNos: string,
-    preparedPriceRef: any
+    preparedPriceRef: any,
+    bridgeDirection: string
 ) {
     let myDetectEstimatedFee = BigInt(0);
     let myL1DataFee = BigInt(0);
@@ -1140,17 +1366,29 @@ async function estimateTransFee(
                 myDetectEstimatedFee + myL1DataFee,
             ]
         );
-        console.log("encodeAbiParameters2222:", argumentsHash);
         argumentsHash = keccak256(argumentsHash);
-        console.log("encodeAbiParameters3333:", argumentsHash);
+        console.log(
+            "encodeAbiParameters3333:",
+            bridgeDirection,
+            ":::",
+            argumentsHash,
+            "xx:",
+            chainObj
+        );
         let chainId = chainObj.id;
+        console.log("id-----------------:1:", chainId);
+        if (bridgeDirection == "L1ToL2") {
+            // L2 is selected, but it need to switch to L1
+            chainId = getChainObj(chainObj.l1ChainCode).id;
+        }
+        console.log("id-----------------:2:", chainId);
         let withZeroNonce = !myAccountCreated;
         const sign = await signAuth(
             passwdAccount,
             chainId,
             myContractAccount,
             chainObj,
-            argumentsHash, // "0xE249dfD432B37872C40c0511cC5A3aE13906F77A0511cC5A3aE13906F77AAA11" //
+            argumentsHash,
             withZeroNonce
         );
 
@@ -1174,7 +1412,8 @@ async function estimateTransFee(
                 myDetectEstimatedFee,
                 myL1DataFee,
                 BigInt(0),
-                BigInt(0)
+                BigInt(0),
+                bridgeDirection
             );
         } else {
             console.log(
@@ -1188,12 +1427,14 @@ async function estimateTransFee(
                 questionNos,
                 receiverAddr,
                 receiverAmt,
+                receiverData,
                 sign.signature,
                 onlyQueryFee,
                 myDetectEstimatedFee,
                 myL1DataFee,
                 BigInt(0),
-                BigInt(0)
+                BigInt(0),
+                bridgeDirection
             );
         }
 
@@ -1206,6 +1447,19 @@ async function estimateTransFee(
             "query estimatedFee detect,k=" + k + ",result:",
             detectRes
         );
+        console.log(
+            "let's see fee info:+++++++++++++++++++++++k=",
+            k,
+            detectRes
+        );
+
+        // store fei info for every "k";
+        preparedPriceRef.current = {
+            preparedMaxFeePerGas: detectRes.maxFeePerGas,
+            preparedGasPrice: detectRes.gasPrice,
+        };
+        //
+
         if (Number(myDetectEstimatedFee) > Number(detectRes.realEstimatedFee)) {
             preparedPriceRef.current = {
                 preparedMaxFeePerGas: detectRes.maxFeePerGas,
@@ -1247,7 +1501,8 @@ async function executeTransaction(
     chainObj: any,
     myAccountCreated: boolean,
     questionNos: string,
-    preparedPriceRef: any
+    preparedPriceRef: any,
+    bridgeDirection: string
 ) {
     let eFee = await estimateTransFee(
         myOwnerId,
@@ -1259,7 +1514,8 @@ async function executeTransaction(
         chainObj,
         myAccountCreated,
         questionNos,
-        preparedPriceRef
+        preparedPriceRef,
+        bridgeDirection
     );
     console.log("user realtime fee, when executeing:", eFee);
     if (eFee.feeWei == undefined || eFee.feeWei == 0) {
@@ -1287,13 +1543,17 @@ async function executeTransaction(
     argumentsHash = keccak256(argumentsHash);
     console.log("encodeAbiParameters3333bbb:", argumentsHash);
     let chainId = chainObj.id;
+    if (bridgeDirection == "L1ToL2") {
+        // L2 is selected, but it need to switch to L1
+        chainId = getChainObj(chainObj.l1ChainCode).id;
+    }
     let withZeroNonce = !myAccountCreated;
     const sign = await signAuth(
         passwdAccount,
         chainId,
         myContractAccount,
         chainObj,
-        argumentsHash, // "0xE249dfD432B37872C40c0511cC5A3aE13906F77A0511cC5A3aE13906F77AAA11" //
+        argumentsHash,
         withZeroNonce
     );
 
@@ -1327,7 +1587,8 @@ async function executeTransaction(
             eFee.feeWei,
             eFee.l1DataFeeWei,
             preparedPriceRef.current.preparedMaxFeePerGas,
-            preparedPriceRef.current.preparedGasPrice
+            preparedPriceRef.current.preparedGasPrice,
+            bridgeDirection
         );
     } else {
         console.log(
@@ -1341,12 +1602,14 @@ async function executeTransaction(
             questionNos,
             receiverAddr,
             receiverAmt,
+            receiverData,
             sign.signature,
             onlyQueryFee,
             eFee.feeWei,
             eFee.l1DataFeeWei,
             preparedPriceRef.current.preparedMaxFeePerGas,
-            preparedPriceRef.current.preparedGasPrice
+            preparedPriceRef.current.preparedGasPrice,
+            bridgeDirection
         );
     }
 
