@@ -1057,7 +1057,7 @@ export default function App({
                           }
                         : {
                               marginTop: "10px",
-                              width: "300px",
+                              width: "600px",
                               fontWeight: "bold",
                           }
                 }
