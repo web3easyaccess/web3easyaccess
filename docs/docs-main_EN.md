@@ -65,18 +65,18 @@ web3easyaccess is a project that I am deeply invested in. I will be dedicating a
 
 1. Enhancing gas fee estimation for layer2 transactions;
 2. Implementing ERC20 and ERC721 token transfers;
-3. Implementing asset bridging between Scroll and the Ethereum mainnet;
+3. Implementing asset bridging between L2(Linea or Scroll) and the Ethereum mainnet;
 4. Conducting performance benchmarks, optimizations, and hardware upgrades;
 5. Refining the interactive reward mechanism;
-6. User testing on the Scroll testnet;
-7. launch on Scroll mainnet(formal network);
+6. User testing on a testnet;
+7. launch on L2(Linea or Scroll) mainnet(formal network);
 8. Small scale promotion, the target is the number of transaction addresses on the chain is not less than 100.
 
 -   2024Q4:
 
-9. Synchronizing password changes across Scroll and the Ethereum mainnet;
+9. Synchronizing password changes across L2(Linea or Scroll) and the Ethereum mainnet;
 10. Providing customizable transaction parameters;
-11. Integrating with the top 3 DEXs on Scroll;
+11. Integrating with the top 3 DEXs on L2(Linea or Scroll);
 12. further promote, the goal is to have no less than 1000 transaction addresses on the chain..
 
 -   2025Q1:

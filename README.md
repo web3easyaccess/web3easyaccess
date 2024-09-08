@@ -2,6 +2,10 @@
 
 [web3easyaccess.link](https://www.web3easyaccess.link/)
 
+## [document](https://github.com/web3easyaccess/web3easyaccess/blob/main/docs/docs-main_EN.md)
+
+##
+
 ### local develope step by step
 
 1. start local evm chain by anvil, in a new terminal:
