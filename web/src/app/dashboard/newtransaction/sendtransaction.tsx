@@ -23,11 +23,23 @@ import {
     parseEther,
     formatEther,
     encodeFunctionData,
+    parseAbiItem,
 } from "viem";
+
+import { chainPublicClient } from "../../lib/chainQueryClient";
 
 import abis from "../../serverside/blockchain/abi/abis";
 
 import React, { useState, useEffect, useRef } from "react";
+
+import {
+    Table,
+    TableHeader,
+    TableColumn,
+    TableBody,
+    TableRow,
+    TableCell,
+} from "@nextui-org/react";
 
 import { Button } from "@nextui-org/button";
 import { Chip } from "@nextui-org/react";
@@ -108,7 +120,10 @@ export default function App({
     // console.log("xxxx:l1Chain:", chainObj.l1ChainCode, l1Chain);
     const bridgeProps = {
         title: `Bridge between [${l1Chain?.name}] and [${chainObj.name}]`,
-        isShow: l1Chain != null,
+        isShow:
+            l1Chain != null &&
+            // 下面这个临时限制为只支持 LINEA_TEST_CHAIN
+            currentUserInfo.chainCode == "LINEA_TEST_CHAIN",
         l1ChainCode: l1Chain != null ? l1Chain.chainCode : "",
         l2ChainCode: l1Chain != null ? chainObj.chainCode : "",
     };
@@ -123,6 +138,14 @@ export default function App({
         bridgeProps.l1ChainCode,
         currentUserInfo
     );
+
+    const currentTabTagRef = useRef("sendETH");
+    const [currentTabShow, setCurrentTabShow] = useState(
+        currentTabTagRef.current
+    );
+
+    const bridgeTxList = [];
+    let kk = 0;
 
     useEffect(() => {
         // l1Balance
@@ -150,14 +173,77 @@ export default function App({
             }
         };
 
+        console.log("xxxxxx110A");
+        if (bridgeL1ToL2 == false) {
+            alert("current not supported: bridging from L2 to L1!");
+            setBridgeL1ToL2(true);
+            return;
+        }
+        console.log("xxxxxx110B");
         //
         refreshBalance();
-    }, [bridgeL1ToL2, setBridgeL1ToL2, currentUserInfo.selectedAccountAddr]);
 
-    const currentTabTagRef = useRef("sendETH");
-    const [currentTabShow, setCurrentTabShow] = useState(
-        currentTabTagRef.current
-    );
+        console.log("xxxxxx110C:", bridgeL1ToL2, currentTabTagRef.current);
+        if (bridgeL1ToL2 && currentTabTagRef.current == "bridgeL2AndL1") {
+            console.log("xxxxxx111:");
+            setInterval(async () => {
+                const cpc = chainPublicClient(
+                    bridgeProps.l1ChainCode,
+                    currentUserInfo.factoryAddr
+                );
+                console.log(
+                    "xxxxxx112:",
+                    lineaBridge.getL1MessageServiceContract(
+                        bridgeProps.l1ChainCode
+                    ),
+                    cpc
+                );
+                const logs = await cpc.publicClient.getLogs({
+                    address: lineaBridge
+                        .getL1MessageServiceContract(bridgeProps.l1ChainCode)
+                        .toLowerCase(),
+                    // event: {
+                    //     name: "MessageSent",
+                    //     inputs: [
+                    //         { type: "address", indexed: true, name: "_from" },
+                    //         { type: "address", indexed: true, name: "_to" },
+                    //         { type: "uint256", indexed: false, name: "_fee" },
+                    //         { type: "uint256", indexed: false, name: "_value" },
+                    //         { type: "uint256", indexed: false, name: "_nonce" },
+                    //         {
+                    //             type: "bytes",
+                    //             indexed: false,
+                    //             name: "_calldata",
+                    //         },
+                    //         {
+                    //             type: "bytes32",
+                    //             indexed: true,
+                    //             name: "_messageHash",
+                    //         },
+                    //     ],
+                    // },
+                    event: parseAbiItem(
+                        "event MessageSent(address indexed _from,address indexed _to,uint256 _fee,uint256 _value,uint256 _nonce,bytes _calldata,bytes32 _messageHash)"
+                    ),
+                    // args: {
+                    //     _from: "0xed2d5c55883142A1a2f45f7a3379f6f349CF6561",
+                    //     _to: "0xed2d5c55883142A1a2f45f7a3379f6f349CF6561",
+                    // },
+                    fromBlock: BigInt(6646393),
+                    toBlock: BigInt(6646394),
+                });
+                // 这里args里需要同时输入 from、to、messagehash才行，不可行。transactionHash也不能作为参数。 只能事先根据自己的transactionHash找到所在的fromBlock，然后找出这里所有的event，然后后面根据from和to进行过滤.
+
+                console.log("xxxxxx113:", logs);
+            }, 1000 * 6);
+        }
+    }, [
+        bridgeL1ToL2,
+        setBridgeL1ToL2,
+        currentUserInfo.selectedAccountAddr,
+        setCurrentTabShow,
+        currentTabShow,
+    ]);
 
     const handleSelectionChage = (e: any) => {
         currentTabTagRef.current = e.toString();
@@ -1025,6 +1111,52 @@ export default function App({
                             placeholder="Enter your Amount"
                             onBlur={updateInputFillInChange}
                         />
+                    </div>
+                    <div style={{ width: "600px", marginTop: "30px" }}>
+                        <Table
+                            removeWrapper
+                            aria-label="Example static collection table"
+                        >
+                            <TableHeader>
+                                <TableColumn style={{ width: "50px" }}>
+                                    Send ETH Transaction on L1(Sepolia)
+                                </TableColumn>
+                                {/* <TableColumn style={{ width: "50px" }}>
+                                    Send Timestamp on L1(Sepolia)
+                                </TableColumn> */}
+                                <TableColumn style={{ width: "50px" }}>
+                                    Did L1 transaction exceeded about 21 minutes
+                                </TableColumn>
+                                <TableColumn style={{ width: "50px" }}>
+                                    <label title="Usually, we can only claim the bridged assets on L2 after the L1 transaction exceeds about 21 minutes">
+                                        Perform the CLAIM operation on L2
+                                    </label>
+                                </TableColumn>
+                                {/* <TableColumn style={{ width: "50px" }}>
+                                    Claim ETH Transaction on L2Linea Sepolia)
+                                </TableColumn>
+                                <TableColumn style={{ width: "50px" }}>
+                                    Transaction Hash on L2
+                                </TableColumn> */}
+                            </TableHeader>
+                            <TableBody>
+                                {bridgeTxList.map((tx) => (
+                                    <TableRow key={(++kk).toString()}>
+                                        <TableCell>
+                                            <Link
+                                                isExternal
+                                                href={""}
+                                                color={"danger"}
+                                            >
+                                                {123}
+                                            </Link>
+                                        </TableCell>
+                                        <TableCell>11 minutes</TableCell>
+                                        <TableCell>CLAIM</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
                     </div>
                 </Tab>
             </Tabs>
