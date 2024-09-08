@@ -59,7 +59,7 @@ export default function App({
                     newChainCode
                 );
                 location.reload();
-            }, 200);
+            }, 500);
         }
     };
     // max-w-[30ch]
