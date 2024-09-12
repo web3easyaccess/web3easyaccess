@@ -20,6 +20,7 @@ import Assets from "./assets";
 import Transactions from "./transactions";
 import SendTransaction from "./newtransaction/sendtransaction";
 import SendChgPrivateInfo from "./newtransaction/sendchgprivateinfo";
+import ExploreDapps from "./exploredapps";
 
 import { useRouter } from "next/navigation";
 
@@ -51,6 +52,8 @@ export default function OpMenu({ selectedMenu }: { selectedMenu: Menu }) {
             route.push("/dashboard/newtransaction");
         } else if (elementTextContent.indexOf("PrivateInfo") >= 0) {
             route.push("/dashboard/privateinfo");
+        } else if (elementTextContent.indexOf("Dapps") >= 0) {
+            route.push("/dashboard/exploredapps");
         }
     };
 
@@ -73,6 +76,8 @@ export default function OpMenu({ selectedMenu }: { selectedMenu: Menu }) {
             menuText = "Change PrivateInfo";
         } else if (menu == Menu.Guardian) {
             menuText = "Guardian(Not Yet)";
+        } else if (menu == Menu.ExploreDapps) {
+            menuText = "Explore Dapps";
         }
         return menuText;
     };
@@ -117,6 +122,10 @@ export default function OpMenu({ selectedMenu }: { selectedMenu: Menu }) {
                 </CardBody>
                 <Divider />
                 <CardBody>
+                    <MenuItem menu={Menu.ExploreDapps}></MenuItem>
+                </CardBody>
+                <Divider />
+                <CardBody>
                     <MenuItem menu={Menu.PrivateSetting}></MenuItem>
                 </CardBody>
                 <CardBody style={{ display: "none" }}>
@@ -140,6 +149,8 @@ export function ShowMain({ currentUserInfo }: { currentUserInfo: UserInfo }) {
     } else if (currentUserInfo.selectedMenu == Menu.SendTransaction) {
         console.log("selectedMenu11111111133:", currentUserInfo.selectedMenu);
         return <SendTransaction currentUserInfo={currentUserInfo} />;
+    } else if (currentUserInfo.selectedMenu == Menu.ExploreDapps) {
+        return <ExploreDapps currentUserInfo={currentUserInfo} />;
     } else if (currentUserInfo.selectedMenu == Menu.PrivateSetting) {
         console.log("selectedMenu11111111144:", currentUserInfo.selectedMenu);
         // alert("coming soon!");

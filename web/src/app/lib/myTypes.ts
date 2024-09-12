@@ -3,6 +3,7 @@ export enum Menu {
     Transactions,
     SendTransaction,
     PrivateSetting,
+    ExploreDapps,
     Guardian,
 }
 

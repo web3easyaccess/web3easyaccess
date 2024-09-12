@@ -43,6 +43,13 @@ import {
     ChainCode,
     formatNumber,
 } from "../lib/myTypes";
+import { getChainObj } from "../lib/myChain";
+
+import {
+    web3wallet,
+    createWeb3Wallet,
+    updateSignClientChainId,
+} from "../walletconnect/utils/WalletConnectUtil";
 
 export default function App({
     currentChainCode,
@@ -175,8 +182,16 @@ export default function App({
             setFreeGasFeeAmount(fa == "0" ? "0.0" : fa);
         };
 
+        const build4WalletConnect = async () => {
+            localStorage.setItem(
+                "W3EA_CURRENT_ADDRESS",
+                currentUserInfo.selectedAccountAddr
+            );
+        };
+
         //
         if (currentUserInfo.selectedAccountAddr != "") {
+            build4WalletConnect();
             fetchBalance();
             fetchW3eapBalance();
             if (

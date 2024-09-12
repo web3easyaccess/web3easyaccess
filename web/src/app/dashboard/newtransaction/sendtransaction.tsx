@@ -97,7 +97,6 @@ import { factory } from "typescript";
 const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
     let questionNosEnc = qNo1 + qNo2 + generateRandomString();
     console.log("questionNosEnc1:", questionNosEnc);
-
     questionNosEnc = aesEncrypt(questionNosEnc, pin);
     console.log("questionNosEnc2:", questionNosEnc);
     return questionNosEnc;
