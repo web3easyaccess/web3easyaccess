@@ -68,6 +68,13 @@ export default function App({
     const [w3eapBalance, setW3eapBalance] = useState("-");
     const [freeGasFeeAmount, setFreeGasFeeAmount] = useState("-");
 
+    const build4WalletConnect = () => {
+        localStorage.setItem(
+            "W3EA_CURRENT_ADDRESS",
+            currentUserInfo.selectedAccountAddr
+        );
+    };
+
     useEffect(() => {
         const fetchAcctList = async () => {
             //   const acctData = await fetch("/api/queryAccountList", {
@@ -180,13 +187,6 @@ export default function App({
                 currentUserInfo.selectedAccountAddr + ":" + fa
             );
             setFreeGasFeeAmount(fa == "0" ? "0.0" : fa);
-        };
-
-        const build4WalletConnect = async () => {
-            localStorage.setItem(
-                "W3EA_CURRENT_ADDRESS",
-                currentUserInfo.selectedAccountAddr
-            );
         };
 
         //
@@ -318,13 +318,13 @@ export default function App({
                     id="id_user_selectedOrderNo"
                     style={{ display: "none" }}
                     name="selectedOrderNo"
-                    value={currentUserInfo.selectedOrderNo}
+                    defaultValue={currentUserInfo.selectedOrderNo}
                 />
                 <input
                     id="id_user_selectedAccountAddr"
                     style={{ display: "none" }}
                     name="selectedAccountAddr"
-                    value={currentUserInfo.selectedAccountAddr}
+                    defaultValue={currentUserInfo.selectedAccountAddr}
                 />
 
                 <div>{resultMsg && <p>1:{resultMsg}</p>}</div>
@@ -380,6 +380,7 @@ export default function App({
                                     <option
                                         key={index}
                                         value={acctAddr}
+                                        defaultValue={acctAddr}
                                         style={
                                             index ==
                                             currentUserInfo.accountAddrList
