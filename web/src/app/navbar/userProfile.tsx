@@ -406,7 +406,11 @@ export default function App({
                             id="id_select_accountList"
                             value={userProp.state.selectedAccountAddr}
                             defaultValue={"-"}
-                            style={{ width: "170px", height: "32px" }}
+                            style={{
+                                width: "185px",
+                                height: "32px",
+                                backgroundColor: "white",
+                            }}
                             onChange={(e) => {
                                 updateUserProp({
                                     email: userProp.state.email,
@@ -434,7 +438,7 @@ export default function App({
                                               }
                                             : {
                                                   fontWeight: "bold",
-                                                  color: "Highlight",
+                                                  //   color: "Highlight",
                                               }
                                     }
                                 >

@@ -63,14 +63,22 @@ const pwdRegex = new RegExp(
 );
 
 export function PrivateInfo({
-    currentUserInfo,
+    userProp,
     forTransaction,
     currentPriInfoRef,
     oldPriInfoRef,
     updateFillInOk,
     privateinfoHidden,
 }: {
-    currentUserInfo: UserInfo;
+    userProp: {
+        ref: MutableRefObject<UserProperty>;
+        state: UserProperty;
+        serverSidePropState: {
+            w3eapAddr: string;
+            factoryAddr: string;
+            bigBrotherPasswdAddr: string;
+        };
+    };
     forTransaction: boolean;
     currentPriInfoRef: React.MutableRefObject<PrivateInfoType>;
     oldPriInfoRef: React.MutableRefObject<PrivateInfoType>;

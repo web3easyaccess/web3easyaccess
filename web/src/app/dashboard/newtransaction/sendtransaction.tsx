@@ -4,6 +4,7 @@ import { signAuth } from "../privateinfo/lib/signAuthTypedData";
 
 import {
     getOwnerIdBigBrother,
+    getOwnerIdLittleBrother,
     getPasswdAccount,
     PrivateInfoType,
 } from "../privateinfo/lib/keyTools";
@@ -30,7 +31,7 @@ import { chainPublicClient } from "../../lib/chainQueryClient";
 
 import abis from "../../serverside/blockchain/abi/abis";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, MutableRefObject } from "react";
 
 import {
     Table,
@@ -89,10 +90,17 @@ import { getChainObj } from "../../lib/myChain";
 
 import { SelectedChainIcon } from "../../navbar/chainIcons";
 
-import { Menu, UserInfo, uiToString, Transaction } from "../../lib/myTypes";
+import {
+    Menu,
+    UserInfo,
+    uiToString,
+    Transaction,
+    ChainCode,
+} from "../../lib/myTypes";
 
 import lineaBridge from "./bridge/lineaBridge";
 import { factory } from "typescript";
+import { UserProperty } from "@/app/storage/LocalStore";
 
 const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
     let questionNosEnc = qNo1 + qNo2 + generateRandomString();
@@ -103,17 +111,28 @@ const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
 };
 
 export default function App({
-    currentUserInfo,
+    userProp,
 }: {
-    currentUserInfo: UserInfo;
+    userProp: {
+        ref: MutableRefObject<UserProperty>;
+        state: UserProperty;
+        serverSidePropState: {
+            w3eapAddr: string;
+            factoryAddr: string;
+            bigBrotherPasswdAddr: string;
+        };
+    };
 }) {
     const router = useRouter();
 
-    const chainObj = getChainObj(currentUserInfo.chainCode);
+    const chainObj = getChainObj(userProp.state.selectedChainCode);
     const explorerUrl = chainObj.blockExplorers.default.url;
 
     let l1Chain = null; // it will be not null if current chain is a L2 chain.
-    if (chainObj.l1ChainCode != "" && chainObj.l1ChainCode != undefined) {
+    if (
+        chainObj.l1ChainCode != ChainCode.UNKNOW &&
+        chainObj.l1ChainCode != undefined
+    ) {
         l1Chain = getChainObj(chainObj.l1ChainCode);
     }
     // console.log("xxxx:l1Chain:", chainObj.l1ChainCode, l1Chain);
@@ -122,7 +141,7 @@ export default function App({
         isShow:
             l1Chain != null &&
             // 下面这个临时限制为只支持 LINEA_TEST_CHAIN
-            currentUserInfo.chainCode == "LINEA_TEST_CHAIN",
+            userProp.state.selectedChainCode == ChainCode.LINEA_TEST_CHAIN,
         l1ChainCode: l1Chain != null ? l1Chain.chainCode : "",
         l2ChainCode: l1Chain != null ? chainObj.chainCode : "",
     };
@@ -132,38 +151,34 @@ export default function App({
         l2Balance: "-",
     });
 
-    console.log(
-        "======++++++++++++000:",
-        bridgeProps.l1ChainCode,
-        currentUserInfo
-    );
+    console.log("======++++++++++++000:", bridgeProps.l1ChainCode, userProp);
 
     const currentTabTagRef = useRef("sendETH");
     const [currentTabShow, setCurrentTabShow] = useState(
         currentTabTagRef.current
     );
 
-    const bridgeTxList = [];
+    const bridgeTxList: any[] = [];
     let kk = 0;
 
     useEffect(() => {
         // l1Balance
         const refreshBalance = async () => {
-            if (currentUserInfo.selectedAccountAddr != "") {
+            if (userProp.state.selectedAccountAddr != "") {
                 console.log(
                     "======++++++++++++:",
                     bridgeProps.l1ChainCode,
-                    currentUserInfo
+                    userProp.state
                 );
                 const b1 = await queryEthBalance(
                     bridgeProps.l1ChainCode,
-                    currentUserInfo.factoryAddr,
-                    currentUserInfo.selectedAccountAddr
+                    userProp.serverSidePropState.factoryAddr,
+                    userProp.state.selectedAccountAddr
                 );
                 const b2 = await queryEthBalance(
                     bridgeProps.l2ChainCode,
-                    currentUserInfo.factoryAddr,
-                    currentUserInfo.selectedAccountAddr
+                    userProp.serverSidePropState.factoryAddr,
+                    userProp.state.selectedAccountAddr
                 );
                 setBridgeBalanceInfo({
                     l1Balance: "" + b1,
@@ -188,7 +203,7 @@ export default function App({
             setInterval(async () => {
                 const cpc = chainPublicClient(
                     bridgeProps.l1ChainCode,
-                    currentUserInfo.factoryAddr
+                    userProp.serverSidePropState.factoryAddr
                 );
                 console.log(
                     "xxxxxx112:",
@@ -239,7 +254,7 @@ export default function App({
     }, [
         bridgeL1ToL2,
         setBridgeL1ToL2,
-        currentUserInfo.selectedAccountAddr,
+        userProp.state.selectedAccountAddr,
         setCurrentTabShow,
         currentTabShow,
     ]);
@@ -282,7 +297,7 @@ export default function App({
                 tokenAddr = "NULL";
             }
         } else if (currentTabTagRef.current == "bridgeL2AndL1") {
-            receiverAddr = currentUserInfo.selectedAccountAddr;
+            receiverAddr = userProp.state.selectedAccountAddr;
             amount = getInputValueById("id_newtrans_amount_ui_bridge");
             //
             //
@@ -314,9 +329,6 @@ export default function App({
 
     const [buttonText, setButtonText] = useState("Send ETH");
 
-    const bigBrotherAccountCreated = () => {
-        return currentUserInfo.accountAddrList.length > 1;
-    };
     const [privateFillInOk, setPrivateFillInOk] = useState(0);
 
     const refreshButtonText = () => {
@@ -403,10 +415,10 @@ export default function App({
         });
 
         const detail = await queryTokenDetail(
-            currentUserInfo.chainCode,
-            currentUserInfo.factoryAddr,
+            userProp.state.selectedChainCode,
+            userProp.serverSidePropState.factoryAddr,
             addr,
-            currentUserInfo.selectedAccountAddr
+            userProp.state.selectedAccountAddr
         );
 
         console.log("tokenAddressBlur:", detail);
@@ -436,10 +448,10 @@ export default function App({
         });
 
         const detail = await queryNftDetail(
-            currentUserInfo.chainCode,
-            currentUserInfo.factoryAddr,
+            userProp.state.selectedChainCode,
+            userProp.serverSidePropState.factoryAddr,
             addr,
-            currentUserInfo.selectedAccountAddr
+            userProp.state.selectedAccountAddr
         );
 
         detail.tokenUri = "";
@@ -455,8 +467,8 @@ export default function App({
         const nftAddr = getInputValueById("id_newtrans_token_addr_ui_nft");
         const nftId = getInputValueById("id_newtrans_nftId_ui_nft");
         const { ownerAddr, tokenUri } = await queryNftsOwnerUri(
-            currentUserInfo.chainCode,
-            currentUserInfo.factoryAddr,
+            userProp.state.selectedChainCode,
+            userProp.serverSidePropState.factoryAddr,
             nftAddr,
             BigInt(nftId)
         );
@@ -464,7 +476,7 @@ export default function App({
         let tokenIdMsg = "";
         if (
             ownerAddr.toLowerCase() !=
-            currentUserInfo.selectedAccountAddr.toLowerCase()
+            userProp.state.selectedAccountAddr.toLowerCase()
         ) {
             tokenIdMsg = `ERROR: NFT ID[${nftId}] is not yours!`;
         } else {
@@ -517,6 +529,13 @@ export default function App({
         preparedGasPrice: undefined,
     });
     const [transactionFee, setTransactionFee] = useState("? ETH");
+
+    const getOwnerId = () => {
+        return getOwnerIdLittleBrother(
+            userProp.state.bigBrotherOwnerId,
+            userProp.state.selectedOrderNo
+        );
+    };
 
     useEffect(() => {
         const refreshFee = async () => {
@@ -578,8 +597,8 @@ export default function App({
                             if (bridgeDirection == "L1ToL2") {
                                 const acct = await queryAccount(
                                     bridgeProps.l1ChainCode,
-                                    currentUserInfo.factoryAddr,
-                                    currentUserInfo.selectedOwnerId
+                                    userProp.serverSidePropState.factoryAddr,
+                                    getOwnerId()
                                 );
                                 theAccountCreated = acct.created;
                             }
@@ -590,7 +609,7 @@ export default function App({
                                 abi: abis.transferFrom,
                                 functionName: "transferFrom",
                                 args: [
-                                    currentUserInfo.selectedAccountAddr,
+                                    userProp.state.selectedAccountAddr,
                                     receiverAddr,
                                     BigInt(nftId),
                                 ],
@@ -609,8 +628,8 @@ export default function App({
                         }
 
                         eFee = await estimateTransFee(
-                            currentUserInfo.selectedOwnerId,
-                            currentUserInfo.selectedAccountAddr,
+                            getOwnerId(),
+                            userProp.state.selectedAccountAddr,
                             passwdAccount,
                             tokenAddr, // it maybe a bridge message contract when bridging.
                             amountETH,
@@ -624,8 +643,8 @@ export default function App({
                     } else {
                         // transfer ETH
                         eFee = await estimateTransFee(
-                            currentUserInfo.selectedOwnerId,
-                            currentUserInfo.selectedAccountAddr,
+                            getOwnerId(),
+                            userProp.state.selectedAccountAddr,
                             passwdAccount,
                             receiverAddr,
                             amount,
@@ -732,36 +751,32 @@ export default function App({
         const fetchMyAccountStatus = async () => {
             // suffix with 0000
             const acct = await queryAccount(
-                currentUserInfo.chainCode,
-                currentUserInfo.factoryAddr,
-                currentUserInfo.selectedOwnerId
+                userProp.state.selectedChainCode,
+                userProp.serverSidePropState.factoryAddr,
+                getOwnerId()
             );
             console.log(
                 "my Account for new transaction:",
                 acct,
-                currentUserInfo.selectedOwnerId,
-                currentUserInfo.bigBrotherOwnerId
+                getOwnerId(),
+                userProp.state.bigBrotherOwnerId
             );
-            if (acct.accountAddr != currentUserInfo.selectedAccountAddr) {
+            if (acct.accountAddr != userProp.state.selectedAccountAddr) {
                 console.log(
                     "develop error!",
-                    currentUserInfo.bigBrotherOwnerId,
-                    currentUserInfo.selectedAccountAddr,
-                    currentUserInfo.selectedOwnerId,
+                    userProp.state.bigBrotherOwnerId,
+                    userProp.state.selectedAccountAddr,
+                    getOwnerId(),
                     acct.accountAddr
                 );
                 throw new Error("develop error2!");
             }
             setMyAccountCreated(acct?.created);
         };
-        if (currentUserInfo.selectedAccountAddr != "") {
+        if (userProp.state.selectedAccountAddr != "") {
             fetchMyAccountStatus();
         }
-    }, [
-        currentUserInfo,
-        currentUserInfo.selectedAccountAddr,
-        currentUserInfo.chainCode,
-    ]);
+    }, [userProp.state]);
 
     return (
         <>
@@ -1060,7 +1075,7 @@ export default function App({
                                             : bridgeProps.l2ChainCode
                                     }
                                 ></SelectedChainIcon>
-                                <p>{currentUserInfo.selectedAccountAddr}</p>
+                                <p>{userProp.state.selectedAccountAddr}</p>
                                 <p>
                                     {bridgeL1ToL2
                                         ? bridgeBalanceInfo.l1Balance
@@ -1088,7 +1103,7 @@ export default function App({
                                             : bridgeProps.l1ChainCode
                                     }
                                 ></SelectedChainIcon>
-                                <p>{currentUserInfo.selectedAccountAddr}</p>
+                                <p>{userProp.state.selectedAccountAddr}</p>
                                 <p>
                                     {bridgeL1ToL2
                                         ? bridgeBalanceInfo.l2Balance
@@ -1171,7 +1186,7 @@ export default function App({
                 }
             >
                 <PrivateInfo
-                    currentUserInfo={currentUserInfo}
+                    userProp={userProp}
                     forTransaction={true}
                     currentPriInfoRef={currentPriInfoRef}
                     oldPriInfoRef={oldPriInfoRef}
@@ -1234,9 +1249,9 @@ export default function App({
                     }
                 >
                     <SendTransaction
-                        myOwnerId={currentUserInfo.selectedOwnerId}
-                        verifyingContract={currentUserInfo.selectedAccountAddr}
-                        email={currentUserInfo.email}
+                        myOwnerId={getOwnerId()}
+                        verifyingContract={userProp.state.selectedAccountAddr}
+                        email={userProp.state.email}
                         chainObj={chainObj}
                         buttonText={buttonText}
                         myAccountCreated={myAccountCreated}
@@ -1244,7 +1259,7 @@ export default function App({
                         preparedPriceRef={preparedPriceRef}
                         updateCurrentTx={updateCurrentTx}
                         readReceiverInfo={readReceiverInfo}
-                        factoryAddr={currentUserInfo.factoryAddr}
+                        factoryAddr={userProp.serverSidePropState.factoryAddr}
                     />
                 </div>
             </div>

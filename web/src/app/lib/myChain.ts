@@ -1,6 +1,7 @@
 import { defineChain } from "viem";
 
 import { scrollSepolia, lineaSepolia, sepolia } from "viem/chains";
+import { ChainCode } from "./myTypes";
 
 // node_modules\viem\chains\definitions\scrollSepolia.ts
 
@@ -60,7 +61,7 @@ const morphHoleskyTestnet = defineChain({
     testnet: true,
 });
 
-export const getChainObj = (chainCode) => {
+export const getChainObj = (chainCode: ChainCode) => {
     var rtn = {
         id: 0,
         name: "",
@@ -84,21 +85,21 @@ export const getChainObj = (chainCode) => {
             },
         },
         testnet: true,
-        chainCode: "",
-        l1ChainCode: "", // when I am L2 chain, here store my corresponding L1 CHAIN
+        chainCode: ChainCode.UNKNOW,
+        l1ChainCode: ChainCode.UNKNOW, // when I am L2 chain, here store my corresponding L1 CHAIN
     };
 
-    if (chainCode == "DEFAULT_ANVIL_CHAIN") {
+    if (chainCode == ChainCode.DEFAULT_ANVIL_CHAIN) {
         rtn = defaultAnvil;
-    } else if (chainCode == "MORPH_TEST_CHAIN") {
+    } else if (chainCode == ChainCode.MORPH_TEST_CHAIN) {
         rtn = morphHoleskyTestnet;
-    } else if (chainCode == "SCROLL_TEST_CHAIN") {
+    } else if (chainCode == ChainCode.SCROLL_TEST_CHAIN) {
         rtn = scrollSepolia;
-        rtn.l1ChainCode = "SEPOLIA_CHAIN";
-    } else if (chainCode == "LINEA_TEST_CHAIN") {
+        rtn.l1ChainCode = ChainCode.SEPOLIA_CHAIN;
+    } else if (chainCode == ChainCode.LINEA_TEST_CHAIN) {
         rtn = lineaSepolia;
-        rtn.l1ChainCode = "SEPOLIA_CHAIN";
-    } else if (chainCode == "SEPOLIA_CHAIN") {
+        rtn.l1ChainCode = ChainCode.SEPOLIA_CHAIN;
+    } else if (chainCode == ChainCode.SEPOLIA_CHAIN) {
         rtn = sepolia;
     } else {
         console.warn("not supprted:" + chainCode);

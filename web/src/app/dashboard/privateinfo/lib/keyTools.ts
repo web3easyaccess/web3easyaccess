@@ -85,6 +85,7 @@ export function getOwnerIdSelfByBigBrother(
     ownerIdBigBrother: string,
     orderNo: number
 ) {
+    return;
     const myOwnerId =
         ownerIdBigBrother.substring(0, ownerIdBigBrother.length - 4) +
         orderNo.toString().padStart(4, "0"); // this is BigBrother
@@ -94,6 +95,9 @@ export function getOwnerIdSelfByBigBrother(
 export function getOwnerIdLittleBrother(ownerId: string, orderNo: number) {
     if (orderNo > 255) {
         throw new Error("orderNo too big!");
+    }
+    if (orderNo < 0) {
+        return "0x0000";
     }
     let orderS = numberToHex(orderNo, { size: 32 }).toString();
     return `${ownerId.substring(0, ownerId.length - 4)}${orderS.substring(

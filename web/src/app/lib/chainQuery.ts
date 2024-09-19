@@ -18,6 +18,7 @@ import { chainPublicClient } from "./chainQueryClient";
 import { getOwnerIdLittleBrother } from "../dashboard/privateinfo/lib/keyTools";
 
 import abis from "../serverside/blockchain/abi/abis";
+import LocalStore from "../storage/LocalStore";
 
 const accountOnlyForRead = privateKeyToAccount(
     "0x1000000000000000000000000000000000000000000000000000000000000000"
@@ -108,6 +109,10 @@ export function parseUnits(value: string, decimals: number) {
     return BigInt(`${negative ? "-" : ""}${integer}${fraction}`);
 }
 
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export async function queryAccountList(
     chainCode: string,
     factoryAddr: string,
@@ -119,7 +124,25 @@ export async function queryAccountList(
         console.log("getOwnerIdLittleBrother before:", baseOwnerId, k);
         const realOwnerId = getOwnerIdLittleBrother(baseOwnerId, k);
         console.log("getOwnerIdLittleBrother after:", realOwnerId);
-        const account = await queryAccount(chainCode, factoryAddr, realOwnerId);
+        let account = {
+            addr: "0x000",
+            created: true,
+        };
+
+        for (let mm = 0; mm < 5; mm++) {
+            try {
+                account = await queryAccount(
+                    chainCode,
+                    factoryAddr,
+                    realOwnerId
+                );
+                break;
+            } catch (eee) {
+                console.log("warn....:queryAccount error:k=", k, eee);
+                await sleep(3000);
+            }
+        }
+
         console.log(realOwnerId + "'s account: " + account);
         acctList.push({
             addr: account?.accountAddr,
@@ -148,6 +171,18 @@ export async function queryAccount(
         ownerId
     );
     try {
+        const cache = LocalStore.getCacheQueryAccount(
+            chainCode,
+            factoryAddr,
+            ownerId
+        );
+        if (
+            cache != null &&
+            cache.accountAddr != null &&
+            cache.accountAddr.length > 0
+        ) {
+            return cache;
+        }
         const cpc = chainPublicClient(chainCode, factoryAddr);
         // console.log("rpc:", cpc.rpcUrl);
         console.log(
@@ -181,11 +216,18 @@ export async function queryAccount(
                 functionName: "passwdAddr",
                 args: [],
             });
-            return {
+            const rtn = {
                 accountAddr: "" + accountAddr,
                 created: true,
                 passwdAddr: "" + passwdAddr,
             };
+            LocalStore.setCacheQueryAccount(
+                chainCode,
+                factoryAddr,
+                ownerId,
+                rtn
+            );
+            return rtn;
         }
     } catch (e) {
         console.log(

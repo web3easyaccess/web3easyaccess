@@ -85,6 +85,7 @@ export default function Home({
                 >
                     <CardBody>
                         <ShowMain
+                            selectedMenu={selectedMenu}
                             userProp={userProp}
                             updateUserProp={updateUserProp}
                         />

@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { MutableRefObject } from "react";
 
 import { Key } from "react";
 
@@ -25,6 +25,7 @@ import ExploreDapps from "./exploredapps";
 import { useRouter } from "next/navigation";
 
 import { ChainCode, Menu, UserInfo, uiToString } from "../lib/myTypes";
+import { UserProperty } from "../storage/LocalStore";
 
 // const SendChgPrivateInfo = () => {
 //     return <div></div>;
@@ -139,57 +140,57 @@ export default function OpMenu({ selectedMenu }: { selectedMenu: Menu }) {
 
 export function ShowMain({
     selectedMenu,
-    userPropState,
-    serverSidePropState,
+    userProp,
+    updateUserProp,
 }: {
     selectedMenu: Menu;
-    userPropState: {
-        bigBrotherOwnerId: string;
+    userProp: {
+        ref: MutableRefObject<UserProperty>;
+        state: UserProperty;
+        serverSidePropState: {
+            w3eapAddr: string;
+            factoryAddr: string;
+            bigBrotherPasswdAddr: string;
+        };
+    };
+    updateUserProp: ({
+        email,
+        selectedOrderNo,
+        selectedAccountAddr,
+        selectedChainCode,
+        testMode,
+    }: {
         email: string;
-        emailDisplay: string;
         selectedOrderNo: number;
         selectedAccountAddr: string;
         selectedChainCode: ChainCode;
         testMode: boolean;
-    };
-    serverSidePropState: {
-        w3eapAddr: string;
-        factoryAddr: string;
-        bigBrotherPasswdAddr: string;
-    };
+    }) => void;
 }) {
     // const chainObj = getChainObj(currentUserInfo.chainCode);
 
     if (selectedMenu == Menu.Asset) {
         console.log("selectedMenu11111111111:", selectedMenu);
+        return <Assets userProp={userProp} />;
+    } else if (selectedMenu == Menu.Transactions) {
+        console.log("selectedMenu11111111122:", selectedMenu);
+        return <Transactions userProp={userProp} />;
+    } else if (selectedMenu == Menu.SendTransaction) {
+        console.log("selectedMenu11111111133:", selectedMenu);
+        return <SendTransaction userProp={userProp} />;
+    } else if (selectedMenu == Menu.ExploreDapps) {
+        return <ExploreDapps userProp={userProp} />;
+    } else if (selectedMenu == Menu.PrivateSetting) {
+        console.log("selectedMenu11111111144:", selectedMenu);
+        // alert("coming soon!");
+        // return (
+        //     <div>
+        //         <h3 style={{ fontSize: "40px" }}>coming soon ... </h3>
+        //     </div>
+        // );
         return (
-            <Assets
-                userPropState={userPropState}
-                serverSidePropState={serverSidePropState}
-            />
+            <SendChgPrivateInfo userProp={userProp} forTransaction={false} />
         );
-        // } else if (selectedMenu == Menu.Transactions) {
-        //     console.log("selectedMenu11111111122:", selectedMenu);
-        //     return <Transactions currentUserInfo={currentUserInfo} />;
-        // } else if (selectedMenu == Menu.SendTransaction) {
-        //     console.log("selectedMenu11111111133:", selectedMenu);
-        //     return <SendTransaction currentUserInfo={currentUserInfo} />;
-        // } else if (selectedMenu == Menu.ExploreDapps) {
-        //     return <ExploreDapps currentUserInfo={currentUserInfo} />;
-        // } else if (selectedMenu == Menu.PrivateSetting) {
-        //     console.log("selectedMenu11111111144:", selectedMenu);
-        //     // alert("coming soon!");
-        //     // return (
-        //     //     <div>
-        //     //         <h3 style={{ fontSize: "40px" }}>coming soon ... </h3>
-        //     //     </div>
-        //     // );
-        //     return (
-        //         <SendChgPrivateInfo
-        //             currentUserInfo={currentUserInfo}
-        //             forTransaction={false}
-        //         />
-        //     );
     }
     console.log("selectedMenu11111111133000:", selectedMenu);
 }
