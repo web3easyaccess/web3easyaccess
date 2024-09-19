@@ -28,11 +28,13 @@ import { UserProperty } from "../storage/LocalStore";
 // }
 
 export default function Home({
-    selectedMenu,
+    // selectedMenu,
     userProp,
     updateUserProp,
+    accountAddrList,
+    updateAccountAddrList,
 }: {
-    selectedMenu: Menu;
+    // selectedMenu: Menu;
     userProp: {
         ref: MutableRefObject<UserProperty>;
         state: UserProperty;
@@ -55,14 +57,23 @@ export default function Home({
         selectedChainCode: ChainCode;
         testMode: boolean;
     }) => void;
+    accountAddrList: string[];
+    updateAccountAddrList: (acctList: string[]) => void;
 }) {
     console.log("dashborad,ui:", userProp.ref.current);
+
+    const [selectedMenu, setSelectedMenu] = useState(Menu.Asset);
+    const updateSelectedMenu = (menu: Menu) => {
+        setSelectedMenu(menu);
+    };
 
     return (
         <>
             <Navbar
                 userProp={userProp}
                 updateUserProp={updateUserProp}
+                accountAddrList={accountAddrList}
+                updateAccountAddrList={updateAccountAddrList}
             ></Navbar>
             <Divider
                 orientation="horizontal"
@@ -76,7 +87,11 @@ export default function Home({
                 }}
             >
                 <Card className="max-w-full">
-                    <OpMenu selectedMenu={selectedMenu} />
+                    <OpMenu
+                        email={userProp.ref.current.email}
+                        selectedMenu={selectedMenu}
+                        updateSelectedMenu={updateSelectedMenu}
+                    />
                 </Card>
 
                 <Card
@@ -88,6 +103,7 @@ export default function Home({
                             selectedMenu={selectedMenu}
                             userProp={userProp}
                             updateUserProp={updateUserProp}
+                            accountAddrList={accountAddrList}
                         />
                     </CardBody>
                 </Card>

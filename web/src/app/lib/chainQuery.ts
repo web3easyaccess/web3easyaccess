@@ -176,6 +176,7 @@ export async function queryAccount(
             factoryAddr,
             ownerId
         );
+        console.log("getCacheQueryAccount:", cache);
         if (
             cache != null &&
             cache.accountAddr != null &&

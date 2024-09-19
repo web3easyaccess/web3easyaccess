@@ -100,7 +100,11 @@ export const getChainObj = (chainCode: ChainCode) => {
         rtn = lineaSepolia;
         rtn.l1ChainCode = ChainCode.SEPOLIA_CHAIN;
     } else if (chainCode == ChainCode.SEPOLIA_CHAIN) {
-        rtn = sepolia;
+        // rtn = sepolia;
+        rtn = { ...sepolia };
+        rtn.rpcUrls.default.http.unshift(
+            "https://eth-sepolia.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW"
+        );
     } else {
         console.warn("not supprted:" + chainCode);
     }

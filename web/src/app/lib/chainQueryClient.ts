@@ -8,10 +8,10 @@ import { getChainObj } from "./myChain";
 export function chainPublicClient(chainCode, factoryAddr) {
     const chainObj = getChainObj(chainCode);
 
-    const currentRpcUrl = chainObj.rpcUrls.default.http[0]; //process.env.RPC_URL;
-    if (typeof currentRpcUrl === "undefined" || currentRpcUrl === undefined) {
-        throw new Error("RpcUrl NOT DEFINED!");
-    }
+    // const currentRpcUrl = chainObj.rpcUrls.default.http[0]; //process.env.RPC_URL;
+    // if (typeof currentRpcUrl === "undefined" || currentRpcUrl === undefined) {
+    //     throw new Error("RpcUrl NOT DEFINED!");
+    // }
 
     return {
         factoryAddr: `0x${factoryAddr.substring(2)}`,
@@ -20,12 +20,12 @@ export function chainPublicClient(chainCode, factoryAddr) {
                 multicall: true,
             },
             chain: chainObj,
-            transport: http(currentRpcUrl),
+            transport: http(),
         }),
         walletClient: createWalletClient({
             chain: chainObj,
-            transport: http(currentRpcUrl),
+            transport: http(),
         }),
-        rpcUrl: currentRpcUrl,
+        // rpcUrl: currentRpcUrl,
     };
 }

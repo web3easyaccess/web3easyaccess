@@ -37,6 +37,8 @@ import { UserProperty } from "../storage/LocalStore";
 export default function App({
     userProp,
     updateUserProp,
+    accountAddrList,
+    updateAccountAddrList,
 }: {
     userProp: {
         ref: MutableRefObject<UserProperty>;
@@ -60,6 +62,8 @@ export default function App({
         selectedChainCode: ChainCode;
         testMode: boolean;
     }) => void;
+    accountAddrList: string[];
+    updateAccountAddrList: (acctList: string[]) => void;
 }) {
     console.log("ui in navbar,ref:", userProp.ref.current);
     console.log("ui in navbar,state:", userProp.state);
@@ -90,6 +94,8 @@ export default function App({
                     <UserProfile
                         userProp={userProp}
                         updateUserProp={updateUserProp}
+                        accountAddrList={accountAddrList}
+                        updateAccountAddrList={updateAccountAddrList}
                     />
                 </NavbarItem>
                 {/* <NavbarItem className="hidden lg:flex">

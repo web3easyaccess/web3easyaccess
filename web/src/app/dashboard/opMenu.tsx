@@ -26,12 +26,21 @@ import { useRouter } from "next/navigation";
 
 import { ChainCode, Menu, UserInfo, uiToString } from "../lib/myTypes";
 import { UserProperty } from "../storage/LocalStore";
+import PageClient from "./pageClient";
 
 // const SendChgPrivateInfo = () => {
 //     return <div></div>;
 // };
 
-export default function OpMenu({ selectedMenu }: { selectedMenu: Menu }) {
+export default function OpMenu({
+    email,
+    selectedMenu,
+    updateSelectedMenu,
+}: {
+    email: string;
+    selectedMenu: Menu;
+    updateSelectedMenu: (menu: Menu) => void;
+}) {
     console.log("selectedMenu ::::", selectedMenu);
     const route = useRouter();
     const defaultContent = "";
@@ -46,15 +55,26 @@ export default function OpMenu({ selectedMenu }: { selectedMenu: Menu }) {
         console.log(`Clicked element text content: ${elementTextContent}`);
         if (elementTextContent.indexOf("Assets") >= 0) {
             console.log("assets...");
-            route.push("/dashboard/assets");
+            updateSelectedMenu(Menu.Asset);
+            // // route.push("/dashboard/assets");
+            // return (
+            //     <PageClient
+            //         email={email}
+            //         selectedMenu={selectedMenu}
+            //     ></PageClient>
+            // );
         } else if (elementTextContent.indexOf("Transactions") >= 0) {
-            route.push("/dashboard/transactions");
+            updateSelectedMenu(Menu.Transactions);
+            // route.push("/dashboard/transactions");
         } else if (elementTextContent.indexOf("Send Transaction") >= 0) {
-            route.push("/dashboard/newtransaction");
+            updateSelectedMenu(Menu.SendTransaction);
+            // route.push("/dashboard/newtransaction");
         } else if (elementTextContent.indexOf("PrivateInfo") >= 0) {
-            route.push("/dashboard/privateinfo");
+            updateSelectedMenu(Menu.PrivateSetting);
+            // route.push("/dashboard/privateinfo");
         } else if (elementTextContent.indexOf("Dapps") >= 0) {
-            route.push("/dashboard/exploredapps");
+            updateSelectedMenu(Menu.ExploreDapps);
+            // route.push("/dashboard/exploredapps");
         }
     };
 
@@ -142,6 +162,7 @@ export function ShowMain({
     selectedMenu,
     userProp,
     updateUserProp,
+    accountAddrList,
 }: {
     selectedMenu: Menu;
     userProp: {
@@ -166,6 +187,7 @@ export function ShowMain({
         selectedChainCode: ChainCode;
         testMode: boolean;
     }) => void;
+    accountAddrList: string[];
 }) {
     // const chainObj = getChainObj(currentUserInfo.chainCode);
 
@@ -177,7 +199,12 @@ export function ShowMain({
         return <Transactions userProp={userProp} />;
     } else if (selectedMenu == Menu.SendTransaction) {
         console.log("selectedMenu11111111133:", selectedMenu);
-        return <SendTransaction userProp={userProp} />;
+        return (
+            <SendTransaction
+                userProp={userProp}
+                accountAddrList={accountAddrList}
+            />
+        );
     } else if (selectedMenu == Menu.ExploreDapps) {
         return <ExploreDapps userProp={userProp} />;
     } else if (selectedMenu == Menu.PrivateSetting) {

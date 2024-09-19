@@ -112,6 +112,7 @@ const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
 
 export default function App({
     userProp,
+    accountAddrList,
 }: {
     userProp: {
         ref: MutableRefObject<UserProperty>;
@@ -122,6 +123,7 @@ export default function App({
             bigBrotherPasswdAddr: string;
         };
     };
+    accountAddrList: string[];
 }) {
     const router = useRouter();
 
@@ -1192,6 +1194,7 @@ export default function App({
                     oldPriInfoRef={oldPriInfoRef}
                     updateFillInOk={updateFillInOk}
                     privateinfoHidden={privateinfoHidden}
+                    accountAddrList={accountAddrList}
                 ></PrivateInfo>
             </div>
             <div

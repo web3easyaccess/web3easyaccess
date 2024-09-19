@@ -54,6 +54,8 @@ import { UserProperty } from "../storage/LocalStore";
 export default function App({
     userProp,
     updateUserProp,
+    accountAddrList,
+    updateAccountAddrList,
 }: {
     userProp: {
         ref: MutableRefObject<UserProperty>;
@@ -77,6 +79,8 @@ export default function App({
         selectedChainCode: ChainCode;
         testMode: boolean;
     }) => void;
+    accountAddrList: string[];
+    updateAccountAddrList: (addrList: string[]) => void;
 }) {
     console.log("userProfile, entry:", userProp.ref, "++++", userProp.state);
 
@@ -87,7 +91,6 @@ export default function App({
     const [freeGasFeeAmount, setFreeGasFeeAmount] = useState("-");
 
     const accountToOrderNoMap = useRef(new Map<string, number>());
-    const [accountAddrList, setAccountAddrList] = useState([""]);
 
     const build4WalletConnect = () => {
         localStorage.setItem(
@@ -158,7 +161,7 @@ export default function App({
                 selectedChainCode: userProp.ref.current.selectedChainCode,
                 testMode: false,
             });
-            setAccountAddrList(myAcctList);
+            updateAccountAddrList(myAcctList);
 
             // const cUserInfo = {
             //     ...currentUserInfo,
