@@ -869,6 +869,7 @@ async function estimateTransFee(
                 myContractAccount
             );
             detectRes = await createTransaction(
+                chainCode,
                 myOwnerId,
                 myContractAccount,
                 passwdAccount.address,
@@ -1005,6 +1006,7 @@ async function executeTransaction(
             myContractAccount
         );
         detectRes = await createTransaction(
+            chainCode,
             myOwnerId,
             myContractAccount,
             passwdAccount.address,

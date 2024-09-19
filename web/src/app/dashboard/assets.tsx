@@ -42,9 +42,20 @@ export default function App({
 
     useEffect(() => {
         const fetchAssets = async () => {
+            if (
+                userProp.state.selectedAccountAddr == "" ||
+                userProp.state.selectedAccountAddr == undefined ||
+                userProp.state.selectedChainCode == ChainCode.UNKNOW ||
+                userProp.serverSidePropState.factoryAddr == "" ||
+                userProp.serverSidePropState.factoryAddr == undefined
+            ) {
+                return;
+            }
             // suffix with 0000
             console.log(
                 "fetchAssets, account:",
+                userProp.state.selectedChainCode,
+                userProp.serverSidePropState.factoryAddr,
                 userProp.state.selectedAccountAddr,
                 userProp.state.selectedOrderNo
             );
@@ -58,7 +69,7 @@ export default function App({
         if (userProp.state.selectedAccountAddr != "") {
             fetchAssets();
         }
-    }, [userProp.serverSidePropState]);
+    }, [userProp.state, userProp.serverSidePropState]);
 
     let kk = 0;
     //   token_address: "-",

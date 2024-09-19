@@ -18,7 +18,7 @@ import {
     ChainCode,
     chainCodeFromString,
 } from "../lib/myTypes";
-import { UserProperty } from "../storage/LocalStore";
+import LocalStore, { UserProperty } from "../storage/LocalStore";
 
 // export function getSessionData(req) {
 //   const encryptedSessionData = cookies().get("session")?.value;
@@ -28,13 +28,11 @@ import { UserProperty } from "../storage/LocalStore";
 // }
 
 export default function Home({
-    // selectedMenu,
     userProp,
     updateUserProp,
     accountAddrList,
     updateAccountAddrList,
 }: {
-    // selectedMenu: Menu;
     userProp: {
         ref: MutableRefObject<UserProperty>;
         state: UserProperty;
@@ -62,10 +60,16 @@ export default function Home({
 }) {
     console.log("dashborad,ui:", userProp.ref.current);
 
-    const [selectedMenu, setSelectedMenu] = useState(Menu.Asset);
+    const [selectedMenu, setSelectedMenu] = useState(Menu.OOOO);
     const updateSelectedMenu = (menu: Menu) => {
         setSelectedMenu(menu);
+        LocalStore.setMenu(menu);
     };
+
+    useEffect(() => {
+        const oldMenu: Menu = LocalStore.getMenu();
+        setSelectedMenu(oldMenu);
+    }, []);
 
     return (
         <>

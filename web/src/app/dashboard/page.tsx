@@ -12,13 +12,11 @@ import { Menu, UserInfo, uiToString } from "../lib/myTypes";
 
 import PageClient from "./pageClient";
 
-export default async function Page({ selectedMenu }: { selectedMenu: Menu }) {
+export default async function Page() {
     redirectTo.urlLoggedInCheck();
-
-    selectedMenu = selectedMenu ? selectedMenu : Menu.Asset;
 
     const email = myCookies.getEmail();
 
     console.log("dashboard server,email:", email);
-    return <PageClient email={email} selectedMenu={selectedMenu}></PageClient>;
+    return <PageClient email={email}></PageClient>;
 }

@@ -40,6 +40,7 @@ import {
     TableBody,
     TableRow,
     TableCell,
+    Textarea,
 } from "@nextui-org/react";
 
 import { Button } from "@nextui-org/button";
@@ -127,15 +128,29 @@ export default function App({
 }) {
     const router = useRouter();
 
-    const chainObj = getChainObj(userProp.state.selectedChainCode);
+    const chainObj: {
+        id: number;
+        name: string;
+        nativeCurrency: {};
+        rpcUrls: {};
+        blockExplorers: {};
+        contracts: {};
+        testnet: boolean;
+        chainCode: ChainCode;
+        l1ChainCode: ChainCode;
+    } = getChainObj(userProp.state.selectedChainCode);
     const explorerUrl = chainObj.blockExplorers.default.url;
 
     let l1Chain = null; // it will be not null if current chain is a L2 chain.
     if (
         chainObj.l1ChainCode != ChainCode.UNKNOW &&
-        chainObj.l1ChainCode != undefined
+        chainObj.l1ChainCode != undefined &&
+        chainObj.l1ChainCode != ""
     ) {
         l1Chain = getChainObj(chainObj.l1ChainCode);
+        if (l1Chain == null || l1Chain.chainCode == ChainCode.UNKNOW) {
+            l1Chain = null;
+        }
     }
     // console.log("xxxx:l1Chain:", chainObj.l1ChainCode, l1Chain);
     const bridgeProps = {
@@ -144,8 +159,8 @@ export default function App({
             l1Chain != null &&
             // 下面这个临时限制为只支持 LINEA_TEST_CHAIN
             userProp.state.selectedChainCode == ChainCode.LINEA_TEST_CHAIN,
-        l1ChainCode: l1Chain != null ? l1Chain.chainCode : "",
-        l2ChainCode: l1Chain != null ? chainObj.chainCode : "",
+        l1ChainCode: l1Chain != null ? l1Chain.chainCode : ChainCode.UNKNOW,
+        l2ChainCode: l1Chain != null ? chainObj.chainCode : ChainCode.UNKNOW,
     };
     const [bridgeL1ToL2, setBridgeL1ToL2] = useState(true);
     const [bridgeBalanceInfo, setBridgeBalanceInfo] = useState({
@@ -153,7 +168,8 @@ export default function App({
         l2Balance: "-",
     });
 
-    console.log("======++++++++++++000:", bridgeProps.l1ChainCode, userProp);
+    console.log("======++++++++++++0001,bridgeProps:", bridgeProps);
+    // console.log("======++++++++++++0002,userProp:", userProp);
 
     const currentTabTagRef = useRef("sendETH");
     const [currentTabShow, setCurrentTabShow] = useState(
@@ -166,12 +182,13 @@ export default function App({
     useEffect(() => {
         // l1Balance
         const refreshBalance = async () => {
-            if (userProp.state.selectedAccountAddr != "") {
-                console.log(
-                    "======++++++++++++:",
-                    bridgeProps.l1ChainCode,
-                    userProp.state
-                );
+            console.log("======++++++++++++:000:bridgeProps:", bridgeProps);
+            if (
+                userProp.state.selectedAccountAddr != "" &&
+                bridgeProps != null &&
+                bridgeProps.l1ChainCode != ChainCode.UNKNOW &&
+                bridgeProps.l1ChainCode != ""
+            ) {
                 const b1 = await queryEthBalance(
                     bridgeProps.l1ChainCode,
                     userProp.serverSidePropState.factoryAddr,
@@ -523,7 +540,6 @@ export default function App({
     const [currentTx, setCurrentTx] = useState("");
     const updateCurrentTx = (tx: string) => {
         setCurrentTx(tx);
-        router.push("/dashboard/transactions");
     };
 
     const preparedPriceRef = useRef({
@@ -751,6 +767,21 @@ export default function App({
         //
 
         const fetchMyAccountStatus = async () => {
+            if (
+                userProp.state.selectedChainCode == ChainCode.UNKNOW ||
+                userProp.serverSidePropState.factoryAddr == "" ||
+                userProp.serverSidePropState.factoryAddr == undefined
+            ) {
+                return;
+            }
+            console.log(
+                "my Account for new transaction1:",
+                userProp.state.selectedChainCode,
+                "+",
+                userProp.serverSidePropState.factoryAddr,
+                "+",
+                getOwnerId()
+            );
             // suffix with 0000
             const acct = await queryAccount(
                 userProp.state.selectedChainCode,
@@ -758,7 +789,7 @@ export default function App({
                 getOwnerId()
             );
             console.log(
-                "my Account for new transaction:",
+                "my Account for new transaction2:",
                 acct,
                 getOwnerId(),
                 userProp.state.bigBrotherOwnerId
@@ -778,7 +809,7 @@ export default function App({
         if (userProp.state.selectedAccountAddr != "") {
             fetchMyAccountStatus();
         }
-    }, [userProp.state]);
+    }, [userProp.state, userProp.serverSidePropState]);
 
     return (
         <>
@@ -1231,14 +1262,28 @@ export default function App({
                         : { display: "none" }
                 }
             >
-                <p>Transaction:</p>
-                <Link isExternal href={`/${currentTx}`} showAnchorIcon>
-                    {currentTx}
-                </Link>
+                {currentTx.indexOf("ERROR") >= 0 ? (
+                    <div>
+                        <Textarea
+                            isReadOnly
+                            defaultValue={currentTx}
+                            className="max-w-xs"
+                        />
+                    </div>
+                ) : (
+                    <div>
+                        <p>Transaction:</p>
+                        <Link isExternal href={`/${currentTx}`} showAnchorIcon>
+                            {currentTx}
+                        </Link>
+                    </div>
+                )}
             </div>
             <div
                 style={
-                    currentTx == undefined || currentTx == ""
+                    currentTx == undefined ||
+                    currentTx == "" ||
+                    currentTx.indexOf("ERROR") >= 0
                         ? { display: "block" }
                         : { display: "none" }
                 }
@@ -1475,7 +1520,17 @@ async function estimateTransFee(
     receiverAddr: string,
     receiverAmountETH: string,
     receiverData: string,
-    chainObj: any,
+    chainObj: {
+        id: number;
+        name: string;
+        nativeCurrency: {};
+        rpcUrls: {};
+        blockExplorers: {};
+        contracts: {};
+        testnet: boolean;
+        chainCode: ChainCode;
+        l1ChainCode: ChainCode;
+    },
     myAccountCreated: boolean,
     questionNos: string,
     preparedPriceRef: any,
@@ -1551,6 +1606,7 @@ async function estimateTransFee(
                 myContractAccount
             );
             detectRes = await createTransaction(
+                chainObj.chainCode,
                 myOwnerId,
                 myContractAccount,
                 passwdAccount.address,
@@ -1572,6 +1628,7 @@ async function estimateTransFee(
                 myContractAccount
             );
             detectRes = await newAccountAndTransferETH(
+                chainObj.chainCode,
                 myOwnerId,
                 passwdAccount.address,
                 questionNos,
@@ -1648,7 +1705,17 @@ async function executeTransaction(
     receiverAddr: string,
     receiverAmountETH: string,
     receiverData: string,
-    chainObj: any,
+    chainObj: {
+        id: number;
+        name: string;
+        nativeCurrency: {};
+        rpcUrls: {};
+        blockExplorers: {};
+        contracts: {};
+        testnet: boolean;
+        chainCode: ChainCode;
+        l1ChainCode: ChainCode;
+    },
     myAccountCreated: boolean,
     questionNos: string,
     preparedPriceRef: any,
@@ -1726,6 +1793,7 @@ async function executeTransaction(
             myContractAccount
         );
         detectRes = await createTransaction(
+            chainObj.chainCode,
             myOwnerId,
             myContractAccount,
             passwdAccount.address,
@@ -1747,6 +1815,7 @@ async function executeTransaction(
             myContractAccount
         );
         detectRes = await newAccountAndTransferETH(
+            chainObj.chainCode,
             myOwnerId,
             passwdAccount.address,
             questionNos,

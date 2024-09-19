@@ -218,6 +218,12 @@ export function ShowMain({
         return (
             <SendChgPrivateInfo userProp={userProp} forTransaction={false} />
         );
+    } else {
+        return (
+            <div>
+                <p>Welcome!</p>
+            </div>
+        );
     }
     console.log("selectedMenu11111111133000:", selectedMenu);
 }

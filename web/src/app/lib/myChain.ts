@@ -61,7 +61,19 @@ const morphHoleskyTestnet = defineChain({
     testnet: true,
 });
 
-export const getChainObj = (chainCode: ChainCode) => {
+export const getChainObj = (
+    chainCode: ChainCode
+): {
+    id: number;
+    name: string;
+    nativeCurrency: {};
+    rpcUrls: {};
+    blockExplorers: {};
+    contracts: {};
+    testnet: boolean;
+    chainCode: ChainCode;
+    l1ChainCode: ChainCode;
+} => {
     var rtn = {
         id: 0,
         name: "",
