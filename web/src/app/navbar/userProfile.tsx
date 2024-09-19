@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { MutableRefObject, useEffect } from "react";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarGroup, AvatarIcon } from "@nextui-org/avatar";
@@ -7,7 +7,6 @@ import { Badge } from "@nextui-org/badge";
 import { Input } from "@nextui-org/input";
 import { User } from "@nextui-org/user";
 
-import myCookies from "../serverside/myCookies";
 import { Tooltip } from "@nextui-org/tooltip";
 import {
     Card,
@@ -50,17 +49,36 @@ import {
     createWeb3Wallet,
     updateSignClientChainId,
 } from "../walletconnect/utils/WalletConnectUtil";
+import { UserProperty } from "../storage/LocalStore";
 
 export default function App({
-    currentChainCode,
-    currentUserInfo,
-    updateCurrentUserInfo,
+    userProp,
+    updateUserProp,
 }: {
-    currentChainCode: ChainCode;
-    currentUserInfo: UserInfo;
-    updateCurrentUserInfo: any;
+    userProp: {
+        ref: MutableRefObject<UserProperty>;
+        state: UserProperty;
+        serverSidePropState: {
+            w3eapAddr: string;
+            factoryAddr: string;
+            bigBrotherPasswdAddr: string;
+        };
+    };
+    updateUserProp: ({
+        email,
+        selectedOrderNo,
+        selectedAccountAddr,
+        selectedChainCode,
+        testMode,
+    }: {
+        email: string;
+        selectedOrderNo: number;
+        selectedAccountAddr: string;
+        selectedChainCode: ChainCode;
+        testMode: boolean;
+    }) => void;
 }) {
-    const router = useRouter();
+    console.log("userProfile, entry:", userProp.ref, "++++", userProp.state);
 
     const [resultMsg, dispatch] = useFormState(saveSelectedOrderNo, undefined);
 
@@ -68,10 +86,13 @@ export default function App({
     const [w3eapBalance, setW3eapBalance] = useState("-");
     const [freeGasFeeAmount, setFreeGasFeeAmount] = useState("-");
 
+    const accountToOrderNoMap = useRef(new Map<string, number>());
+    const [accountAddrList, setAccountAddrList] = useState([""]);
+
     const build4WalletConnect = () => {
         localStorage.setItem(
             "W3EA_CURRENT_ADDRESS",
-            currentUserInfo.selectedAccountAddr
+            userProp.ref.current.selectedAccountAddr
         );
     };
 
@@ -83,7 +104,7 @@ export default function App({
             //   });
             //   const acctList = await acctData.json();
             //   console.log("server api:", acctList);
-            //   setAccountList(acctList);
+            //   setAccountAddrList(acctList);
 
             //   console.log(
             //     "client query, queryAccountList before:",
@@ -91,112 +112,141 @@ export default function App({
             //     factoryAddr,
             //     ownerId
             //   );
-            // console.log("fffxxx:currentUserInfo:", currentUserInfo);
+            console.log("fffxxx:currentUserInfo:", userProp.ref.current);
+            console.log(
+                "fffxxx:currentUserInfo22:",
+                userProp.serverSidePropState
+            );
+            if (
+                userProp.ref.current.email == "" ||
+                userProp.ref.current.email == undefined ||
+                userProp.serverSidePropState.factoryAddr == "" ||
+                userProp.serverSidePropState.factoryAddr == undefined
+            ) {
+                return;
+            }
+            console.log(
+                "fffxxx:currentUserInfo33:",
+                userProp.serverSidePropState
+            );
             const acctList = await queryAccountList(
-                currentUserInfo.chainCode,
-                currentUserInfo.factoryAddr,
-                currentUserInfo.bigBrotherOwnerId
+                userProp.ref.current.selectedChainCode,
+                userProp.serverSidePropState.factoryAddr,
+                userProp.ref.current.bigBrotherOwnerId
             );
             console.log(
-                currentUserInfo.chainCode,
+                userProp.ref.current.selectedChainCode,
                 "client query, queryAccountList:",
                 acctList
             );
 
-            const accountAddrList: string[] = [];
-            const accountToOwnerIdMap = new Map<string, string>();
-            const accountToOrderNoMap = new Map<string, number>();
+            const myAcctList: string[] = []; // setAccountAddrList
             acctList.forEach((a) => {
-                accountAddrList.push(a.addr);
-                accountToOwnerIdMap.set(
-                    a.addr,
-                    getOwnerIdSelfByBigBrother(
-                        currentUserInfo.bigBrotherOwnerId,
-                        a.orderNo
-                    )
-                );
-                accountToOrderNoMap.set(a.addr, a.orderNo);
+                myAcctList.push(a.addr);
+                accountToOrderNoMap.current.set(a.addr, a.orderNo);
             });
 
-            let mySelectedNo = currentUserInfo.selectedOrderNo;
-            if (mySelectedNo >= accountAddrList.length) {
+            let mySelectedNo = userProp.ref.current.selectedOrderNo;
+            if (mySelectedNo >= myAcctList.length) {
                 mySelectedNo = 0;
             }
 
-            const cUserInfo = {
-                ...currentUserInfo,
-                selectedOwnerId: getOwnerIdSelfByBigBrother(
-                    currentUserInfo.bigBrotherOwnerId,
-                    mySelectedNo
-                ),
+            updateUserProp({
+                email: userProp.ref.current.email,
                 selectedOrderNo: mySelectedNo,
-                selectedAccountAddr: accountAddrList[mySelectedNo],
-                accountAddrList: accountAddrList,
-                accountToOwnerIdMap: accountToOwnerIdMap,
-                accountToOrderNoMap: accountToOrderNoMap,
-            };
-            updateCurrentUserInfo(cUserInfo);
+                selectedAccountAddr: myAcctList[mySelectedNo],
+                selectedChainCode: userProp.ref.current.selectedChainCode,
+                testMode: false,
+            });
+            setAccountAddrList(myAcctList);
+
+            // const cUserInfo = {
+            //     ...currentUserInfo,
+            //     selectedOwnerId: getOwnerIdSelfByBigBrother(
+            //         currentUserInfo.bigBrotherOwnerId,
+            //         mySelectedNo
+            //     ),
+            //     selectedOrderNo: mySelectedNo,
+            //     selectedAccountAddr: accountAddrList[mySelectedNo],
+            //     accountAddrList: accountAddrList,
+            // };
+            // updateCurrentUserInfo(cUserInfo);
         };
         //
         fetchAcctList();
-    }, [currentChainCode]);
+    }, [userProp.serverSidePropState]);
 
     useEffect(() => {
         // This represents the currently selected account in the global scope
+        if (accountAddrList.length == 0) {
+            return;
+        }
+        if (userProp.serverSidePropState.factoryAddr == "") {
+            return;
+        }
         console.log(
             "do something ,for currentUserInfo changed...",
-            currentUserInfo.selectedAccountAddr
+            userProp.ref.current.selectedAccountAddr
         );
+
         const fetchBalance = async () => {
             let eb = await queryEthBalance(
-                currentUserInfo.chainCode,
-                currentUserInfo.factoryAddr,
-                currentUserInfo.selectedAccountAddr
+                userProp.ref.current.selectedChainCode,
+                userProp.serverSidePropState.factoryAddr,
+                userProp.ref.current.selectedAccountAddr
             );
             console.log(
-                currentUserInfo.chainCode,
+                userProp.ref.current.selectedChainCode,
                 "client query, queryEthBalance:",
-                currentUserInfo.selectedAccountAddr + ":" + eb
+                userProp.ref.current.selectedAccountAddr + ":" + eb
             );
             setEthBalance(eb == "0" ? "0.0" : eb);
         };
 
         const fetchW3eapBalance = async () => {
+            console.log(
+                "fetchW3eapBalance:",
+                userProp.ref.current.selectedChainCode,
+                "+",
+                userProp.serverSidePropState.factoryAddr,
+                "+",
+                userProp.ref.current.selectedAccountAddr
+            );
             let wb = await queryW3eapBalance(
-                currentUserInfo.chainCode,
-                currentUserInfo.factoryAddr,
-                currentUserInfo.selectedAccountAddr
+                userProp.ref.current.selectedChainCode,
+                userProp.serverSidePropState.factoryAddr,
+                userProp.ref.current.selectedAccountAddr
             );
             console.log(
-                currentUserInfo.chainCode,
+                userProp.ref.current.selectedChainCode,
                 "client query, queryW3eapBalance:",
-                currentUserInfo.selectedAccountAddr + ":" + wb
+                userProp.ref.current.selectedAccountAddr + ":" + wb
             );
             setW3eapBalance(wb == "0" ? "0.0" : wb);
         };
 
         const fetchfreeGasFeeAmount = async () => {
             let fa = await queryfreeGasFeeAmount(
-                currentUserInfo.chainCode,
-                currentUserInfo.factoryAddr,
-                currentUserInfo.selectedAccountAddr
+                userProp.ref.current.selectedChainCode,
+                userProp.serverSidePropState.factoryAddr,
+                userProp.ref.current.selectedAccountAddr
             );
             console.log(
-                currentUserInfo.chainCode,
+                userProp.ref.current.selectedChainCode,
                 "client query, freeGasFeeAmount:",
-                currentUserInfo.selectedAccountAddr + ":" + fa
+                userProp.ref.current.selectedAccountAddr + ":" + fa
             );
             setFreeGasFeeAmount(fa == "0" ? "0.0" : fa);
         };
 
         //
-        if (currentUserInfo.selectedAccountAddr != "") {
+        if (userProp.ref.current.selectedAccountAddr != "") {
             build4WalletConnect();
             fetchBalance();
             fetchW3eapBalance();
             if (
-                currentUserInfo.selectedOrderNo ==
-                currentUserInfo.accountAddrList.length - 1
+                userProp.ref.current.selectedOrderNo ==
+                accountAddrList.length - 1
             ) {
                 // the last one, has not created!
                 setFreeGasFeeAmount("0.00");
@@ -205,7 +255,7 @@ export default function App({
             }
             document.getElementById("id_user_selectedOrderNo_btn")?.click();
         }
-    }, [currentUserInfo]);
+    }, [userProp.serverSidePropState, accountAddrList]);
 
     const acctAddrDisplay = (fullAddr: string) => {
         if (fullAddr == undefined) {
@@ -288,62 +338,61 @@ export default function App({
     /////////////////////////
 
     function BtnselectedOrderNo() {
-        const { pending } = useFormStatus();
-        const handleClick = (event) => {
-            if (pending) {
-                event.preventDefault();
-            }
-            console.log("save selected Order....");
-        };
-        return (
-            // <button aria-disabled={pending} type="submit" onClick={handleClick}>
-            //   Login
-            // </button>
-
-            <Button
-                disabled={pending}
-                id="id_user_selectedOrderNo_btn"
-                type="submit"
-                onPress={handleClick}
-                color="primary"
-            >
-                save OrderNo
-            </Button>
-        );
+        // const { pending } = useFormStatus();
+        // const handleClick = (event) => {
+        //     if (pending) {
+        //         event.preventDefault();
+        //     }
+        //     console.log("save selected Order....");
+        // };
+        // return (
+        //     // <button aria-disabled={pending} type="submit" onClick={handleClick}>
+        //     //   Login
+        //     // </button>
+        //     <Button
+        //         disabled={pending}
+        //         id="id_user_selectedOrderNo_btn"
+        //         type="submit"
+        //         onPress={handleClick}
+        //         color="primary"
+        //     >
+        //         save OrderNo
+        //     </Button>
+        // );
     }
     return (
         <div style={{ display: "flex" }}>
-            <form action={dispatch} style={{ display: "none" }}>
+            {/* <form action={dispatch} style={{ display: "none" }}>
                 <input
                     id="id_user_selectedOrderNo"
                     style={{ display: "none" }}
                     name="selectedOrderNo"
-                    defaultValue={currentUserInfo.selectedOrderNo}
+                    defaultValue={userProp.state.selectedOrderNo}
                 />
                 <input
                     id="id_user_selectedAccountAddr"
                     style={{ display: "none" }}
                     name="selectedAccountAddr"
-                    defaultValue={currentUserInfo.selectedAccountAddr}
+                    defaultValue={userProp.state.selectedAccountAddr}
                 />
 
                 <div>{resultMsg && <p>1:{resultMsg}</p>}</div>
                 <BtnselectedOrderNo />
-            </form>
+            </form> */}
 
             <Card className="max-w-[480px]">
                 <CardHeader className="flex gap-3">
                     <AcctIcon
                         addr={acctAddrDisplay(
-                            currentUserInfo.selectedAccountAddr
+                            userProp.state.selectedAccountAddr
                         )}
                     ></AcctIcon>
                     <Snippet
                         hideSymbol={true}
                         codeString={
-                            currentUserInfo.chainCode +
+                            userProp.state.selectedChainCode +
                             ": " +
-                            currentUserInfo.selectedAccountAddr
+                            userProp.state.selectedAccountAddr
                         }
                         variant="bordered"
                         style={{
@@ -355,51 +404,43 @@ export default function App({
                         <select
                             name="accountList"
                             id="id_select_accountList"
-                            value={currentUserInfo.selectedAccountAddr}
+                            value={userProp.state.selectedAccountAddr}
                             defaultValue={"-"}
                             style={{ width: "170px", height: "32px" }}
                             onChange={(e) => {
-                                const cUserInfo = {
-                                    ...currentUserInfo,
-                                    selectedAccountAddr: e.target.value,
-
-                                    selectedOwnerId:
-                                        currentUserInfo.accountToOwnerIdMap.get(
-                                            e.target.value
-                                        ),
+                                updateUserProp({
+                                    email: userProp.state.email,
                                     selectedOrderNo:
-                                        currentUserInfo.accountToOrderNoMap.get(
+                                        accountToOrderNoMap.current.get(
                                             e.target.value
                                         ),
-                                };
-                                updateCurrentUserInfo(cUserInfo);
+                                    selectedAccountAddr: e.target.value,
+                                    selectedChainCode:
+                                        userProp.state.selectedChainCode,
+                                    testMode: false,
+                                });
                             }}
                         >
-                            {currentUserInfo.accountAddrList.map(
-                                (acctAddr, index) => (
-                                    <option
-                                        key={index}
-                                        value={acctAddr}
-                                        defaultValue={acctAddr}
-                                        style={
-                                            index ==
-                                            currentUserInfo.accountAddrList
-                                                .length -
-                                                1
-                                                ? {
-                                                      color: "grey",
-                                                      fontStyle: "italic",
-                                                  }
-                                                : {
-                                                      fontWeight: "bold",
-                                                      color: "Highlight",
-                                                  }
-                                        }
-                                    >
-                                        {acctAddrDisplay(acctAddr)}
-                                    </option>
-                                )
-                            )}
+                            {accountAddrList.map((acctAddr, index) => (
+                                <option
+                                    key={index}
+                                    value={acctAddr}
+                                    defaultValue={acctAddr}
+                                    style={
+                                        index == accountAddrList.length - 1
+                                            ? {
+                                                  color: "grey",
+                                                  fontStyle: "italic",
+                                              }
+                                            : {
+                                                  fontWeight: "bold",
+                                                  color: "Highlight",
+                                              }
+                                    }
+                                >
+                                    {acctAddrDisplay(acctAddr)}
+                                </option>
+                            ))}
                         </select>
                     </Snippet>
 

@@ -21,12 +21,26 @@ import {
 import { useFormState } from "react-dom";
 import { queryAssets } from "../lib/chainQuery";
 
-import { Menu, UserInfo, uiToString } from "../lib/myTypes";
+import { ChainCode, Menu, UserInfo, uiToString } from "../lib/myTypes";
 
 export default function App({
-    currentUserInfo,
+    userPropState,
+    serverSidePropState,
 }: {
-    currentUserInfo: UserInfo;
+    userPropState: {
+        bigBrotherOwnerId: string;
+        email: string;
+        emailDisplay: string;
+        selectedOrderNo: number;
+        selectedAccountAddr: string;
+        selectedChainCode: ChainCode;
+        testMode: boolean;
+    };
+    serverSidePropState: {
+        w3eapAddr: string;
+        factoryAddr: string;
+        bigBrotherPasswdAddr: string;
+    };
 }) {
     const [assets, setAssets] = useState([]);
 
@@ -35,20 +49,20 @@ export default function App({
             // suffix with 0000
             console.log(
                 "fetchAssets, account:",
-                currentUserInfo.selectedAccountAddr,
-                currentUserInfo.selectedOrderNo
+                userPropState.selectedAccountAddr,
+                userPropState.selectedOrderNo
             );
             const a = await queryAssets(
-                currentUserInfo.chainCode,
-                currentUserInfo.factoryAddr,
-                `0x${currentUserInfo.selectedAccountAddr.substring(2)}`
+                userPropState.selectedChainCode,
+                serverSidePropState.factoryAddr,
+                `0x${userPropState.selectedAccountAddr.substring(2)}`
             );
             setAssets(a as any);
         };
-        if (currentUserInfo.selectedAccountAddr != "") {
+        if (userPropState.selectedAccountAddr != "") {
             fetchAssets();
         }
-    }, [currentUserInfo]);
+    }, [serverSidePropState]);
 
     let kk = 0;
     //   token_address: "-",

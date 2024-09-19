@@ -1,5 +1,5 @@
 import { defineChain } from "viem";
-import myCookies from "../serverside/myCookies";
+
 import { scrollSepolia, lineaSepolia, sepolia } from "viem/chains";
 
 // node_modules\viem\chains\definitions\scrollSepolia.ts

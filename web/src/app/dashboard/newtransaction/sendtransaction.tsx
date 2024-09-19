@@ -1044,6 +1044,7 @@ export default function App({
                         <Switch
                             color="default"
                             size="sm"
+                            defaultSelected={bridgeL1ToL2}
                             isSelected={bridgeL1ToL2}
                             onValueChange={setBridgeL1ToL2}
                         />

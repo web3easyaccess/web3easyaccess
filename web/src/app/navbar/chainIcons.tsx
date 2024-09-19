@@ -5,17 +5,46 @@ import {
     Tooltip,
     Badge,
 } from "@nextui-org/react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, MutableRefObject } from "react";
 
 import { useFormState, useFormStatus } from "react-dom";
 
 import { saveChainCode } from "../serverside/serverActions";
-import CallServerByForm from "../lib/callServerByForm";
 
-export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
-    console.log("navbar, input param[chainCode]:", chainCodeState);
+import { ChainCode, chainCodeFromString } from "../lib/myTypes";
+import { UserProperty } from "../storage/LocalStore";
 
-    const initChainRef = useRef("[init]");
+export const ChainIcons = ({
+    userProp,
+    updateUserProp,
+}: {
+    userProp: {
+        ref: MutableRefObject<UserProperty>;
+        state: UserProperty;
+        serverSidePropState: {
+            w3eapAddr: string;
+            factoryAddr: string;
+            bigBrotherPasswdAddr: string;
+        };
+    };
+    updateUserProp: ({
+        email,
+        selectedOrderNo,
+        selectedAccountAddr,
+        selectedChainCode,
+        testMode,
+    }: {
+        email: string;
+        selectedOrderNo: number;
+        selectedAccountAddr: string;
+        selectedChainCode: ChainCode;
+        testMode: boolean;
+    }) => void;
+}) => {
+    console.log("chain icons, userPropref:", userProp.ref.current);
+    console.log("chain icons, userPropState:", userProp.state);
+
+    // const initChainRef = useRef("[init]");
 
     const myDefault = {
         size: "sm",
@@ -33,70 +62,86 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
     const [defaultAnvilState, setDefaultAnvilState] = useState(myDefault);
     const [ethereumMainnetState, setEthereumMainnetState] = useState(myDefault);
 
-    const setChainCodeHere = (cc) => {
+    const setChainCodeHere = (cc: ChainCode) => {
+        console.log("setChainCodeHere,2:", cc);
         setMorphl2testState(myDefault);
         setDefaultAnvilState(myDefault);
         setEthereumMainnetState(myDefault);
         setScrolltestState(myDefault);
         setLineatestState(myDefault);
         setSepoliaState(myDefault);
-        if (cc == "MORPH_TEST_CHAIN") {
+        if (cc == ChainCode.MORPH_TEST_CHAIN) {
             setMorphl2testState(myChecked);
-        } else if (cc == "DEFAULT_ANVIL_CHAIN") {
+        } else if (cc == ChainCode.DEFAULT_ANVIL_CHAIN) {
             setDefaultAnvilState(myChecked);
-        } else if (cc == "ETHEREUM_MAIN_NET") {
+        } else if (cc == ChainCode.ETHEREUM_MAIN_NET) {
             setEthereumMainnetState(myChecked);
-        } else if (cc == "SCROLL_TEST_CHAIN") {
+        } else if (cc == ChainCode.SCROLL_TEST_CHAIN) {
             setScrolltestState(myChecked);
-        } else if (cc == "LINEA_TEST_CHAIN") {
+        } else if (cc == ChainCode.LINEA_TEST_CHAIN) {
             setLineatestState(myChecked);
-        } else if (cc == "SEPOLIA_CHAIN") {
+        } else if (cc == ChainCode.SEPOLIA_CHAIN) {
             setSepoliaState(myChecked);
         }
     };
 
-    if (initChainRef.current == "[init]") {
-        setChainCodeHere(chainCodeState);
-        initChainRef.current = chainCodeState;
-    }
+    // if (initChainRef.current == "[init]") {
+    //     setChainCodeHere(userProp.ref.current.selectedChainCode);
+    //     initChainRef.current = userProp.ref.current.selectedChainCode;
+    // }
+    useEffect(() => {
+        console.log("setChainCodeHere,1:", userProp);
+        setChainCodeHere(userProp.state.selectedChainCode);
+    }, [userProp.state]);
     //
     // // // ////////////////////
 
-    const handleClick = (chainCode) => {
+    const handleClick = (chainCode: ChainCode) => {
         console.log(chainCode);
-        if ("ETHEREUM_MAIN_NET" == chainCode) {
-            alert("not supprted ...");
-            return;
+        if (ChainCode.ETHEREUM_MAIN_NET == chainCode) {
+            alert("not supprted ...33");
+            // return;
         }
-        handleNewChainCodeState(chainCode);
+        console.log(
+            "do a choice in chainIcons,userPropState:",
+            userProp.ref.current
+        );
+        updateUserProp({
+            email: userProp.ref.current.email,
+            selectedOrderNo: userProp.ref.current.selectedOrderNo,
+            selectedAccountAddr: userProp.ref.current.selectedAccountAddr,
+            selectedChainCode: chainCode,
+            testMode: false,
+        });
         // // //
         setChainCodeHere(chainCode);
-        console.log("id_setChainForm_button click before..");
-        document.getElementById("id_setChainForm_code").value = chainCode;
-        document.getElementById("id_setChainForm_button").click();
-        console.log("id_setChainForm_button click afetr!");
+        // console.log("id_setChainForm_button click before..");
+        // document.getElementById("id_setChainForm_code").value =
+        //     chainCode.toString();
+        // document.getElementById("id_setChainForm_button").click();
+        // console.log("id_setChainForm_button click afetr!");
     };
 
-    function SetChainForm({}) {
-        const [message, formAction] = useFormState(saveChainCode, null);
-        return (
-            <form action={formAction} style={{ display: "none" }}>
-                <input
-                    id="id_setChainForm_code"
-                    name="newChainCode"
-                    defaultValue={chainCodeState}
-                />
-                <button id="id_setChainForm_button" type="submit">
-                    Set Chain Code
-                </button>
-                {message}
-            </form>
-        );
-    }
+    // function SetChainForm({}) {
+    //     const [message, formAction] = useFormState(saveChainCode, null);
+    //     return (
+    //         <form action={formAction} style={{ display: "none" }}>
+    //             <input
+    //                 id="id_setChainForm_code"
+    //                 name="newChainCode"
+    //                 defaultValue={userPropState.selectedChainCode.toString()}
+    //             />
+    //             <button id="id_setChainForm_button" type="submit">
+    //                 Set Chain Code
+    //             </button>
+    //             {message}
+    //         </form>
+    //     );
+    // }
 
     return (
         <div className="flex gap-3 items-center" style={{ cursor: "pointer" }}>
-            <SetChainForm />
+            {/* <SetChainForm /> */}
             {/* <Badge content="" color="secondary"> */}
 
             <Tooltip content="Sepolia testnet">
@@ -105,7 +150,7 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
                     size={sepoliaState.size}
                     isBordered={sepoliaState.bordered}
                     onClick={() => {
-                        handleClick("SEPOLIA_CHAIN");
+                        handleClick(ChainCode.SEPOLIA_CHAIN);
                     }}
                     color="primary"
                     radius="sm"
@@ -118,7 +163,7 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
                     size={lineatestState.size}
                     isBordered={lineatestState.bordered}
                     onClick={() => {
-                        handleClick("LINEA_TEST_CHAIN");
+                        handleClick(ChainCode.LINEA_TEST_CHAIN);
                     }}
                     color="primary"
                     radius="sm"
@@ -131,7 +176,7 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
                     size={scrolltestState.size}
                     isBordered={scrolltestState.bordered}
                     onClick={() => {
-                        handleClick("SCROLL_TEST_CHAIN");
+                        handleClick(ChainCode.SCROLL_TEST_CHAIN);
                     }}
                     color="primary"
                     radius="sm"
@@ -145,7 +190,7 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
                     size={morphl2testState.size}
                     isBordered={morphl2testState.bordered}
                     onClick={() => {
-                        handleClick("MORPH_TEST_CHAIN");
+                        handleClick(ChainCode.MORPH_TEST_CHAIN);
                     }}
                     color="primary"
                     radius="sm"
@@ -159,7 +204,7 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
                         size={defaultAnvilState.size}
                         isBordered={defaultAnvilState.bordered}
                         onClick={() => {
-                            handleClick("DEFAULT_ANVIL_CHAIN");
+                            handleClick(ChainCode.DEFAULT_ANVIL_CHAIN);
                         }}
                         color="primary"
                         radius="sm"
@@ -172,7 +217,7 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
                     size={ethereumMainnetState.size}
                     isBordered={ethereumMainnetState.bordered}
                     onClick={() => {
-                        handleClick("ETHEREUM_MAIN_NET");
+                        handleClick(ChainCode.ETHEREUM_MAIN_NET);
                     }}
                     color="primary"
                     radius="sm"
@@ -182,9 +227,31 @@ export const ChainIcons = ({ chainCodeState, handleNewChainCodeState }) => {
     );
 };
 
-export const SelectedChainIcon = ({ chainCodeState }) => {
-    console.log("SelectedChainIcon,chainCode:", chainCodeState);
-    if (chainCodeState == "DEFAULT_ANVIL_CHAIN") {
+export const SelectedChainIcon = ({
+    userProp,
+}: {
+    userProp: {
+        ref: MutableRefObject<UserProperty>;
+        state: UserProperty;
+        serverSidePropState: {
+            w3eapAddr: string;
+            factoryAddr: string;
+            bigBrotherPasswdAddr: string;
+        };
+    };
+}) => {
+    if (typeof window !== "undefined") {
+        console.log("SelectedChainIcon, we are running on the client");
+    } else {
+        console.log("SelectedChainIcon, we are running on the server");
+    }
+    const [myChainCode, setMyChainCode] = useState(ChainCode.UNKNOW);
+    useEffect(() => {
+        console.log("setMyChainCode,chainCode:", userProp.state);
+        setMyChainCode(userProp.state.selectedChainCode);
+    }, [userProp.state]);
+    console.log("SelectedChainIcon,chainCode:", userProp.state);
+    if (myChainCode == ChainCode.DEFAULT_ANVIL_CHAIN) {
         return (
             <div className="flex gap-3 items-center">
                 <Badge content="" color="secondary">
@@ -199,7 +266,7 @@ export const SelectedChainIcon = ({ chainCodeState }) => {
                 </Badge>
             </div>
         );
-    } else if (chainCodeState == "MORPH_TEST_CHAIN") {
+    } else if (myChainCode == ChainCode.MORPH_TEST_CHAIN) {
         return (
             <div className="flex gap-3 items-center">
                 <Badge content="" color="secondary">
@@ -214,7 +281,7 @@ export const SelectedChainIcon = ({ chainCodeState }) => {
                 </Badge>
             </div>
         );
-    } else if (chainCodeState == "SCROLL_TEST_CHAIN") {
+    } else if (myChainCode == ChainCode.SCROLL_TEST_CHAIN) {
         return (
             <div className="flex gap-3 items-center">
                 <Badge content="" color="secondary">
@@ -229,7 +296,7 @@ export const SelectedChainIcon = ({ chainCodeState }) => {
                 </Badge>
             </div>
         );
-    } else if (chainCodeState == "LINEA_TEST_CHAIN") {
+    } else if (myChainCode == ChainCode.LINEA_TEST_CHAIN) {
         return (
             <div className="flex gap-3 items-center">
                 <Badge content="" color="secondary">
@@ -244,7 +311,7 @@ export const SelectedChainIcon = ({ chainCodeState }) => {
                 </Badge>
             </div>
         );
-    } else if (chainCodeState == "SEPOLIA_CHAIN") {
+    } else if (myChainCode == ChainCode.SEPOLIA_CHAIN) {
         return (
             <div className="flex gap-3 items-center">
                 <Badge content="" color="secondary">
@@ -259,7 +326,9 @@ export const SelectedChainIcon = ({ chainCodeState }) => {
                 </Badge>
             </div>
         );
-    } else if (chainCodeState == "ETHEREUM_MAIN_NET") {
+    } else if (
+        userProp.state.selectedChainCode == ChainCode.ETHEREUM_MAIN_NET
+    ) {
         return (
             <div className="flex gap-3 items-center">
                 <Badge content="" color="secondary">

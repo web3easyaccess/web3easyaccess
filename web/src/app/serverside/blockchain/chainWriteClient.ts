@@ -1,12 +1,13 @@
+"use server";
+
 import { createPublicClient, http } from "viem";
 import { sepolia, mainnet, localhost } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { createWalletClient, custom } from "viem";
 
 import { chainPublicClient } from "../../lib/chainQueryClient";
-import myCookies from "../myCookies";
 
-export function getFactoryAddr(chainCode: string) {
+export async function getFactoryAddr(chainCode: string) {
     console.log("getFactoryAddr, chainCode:", chainCode);
     if (chainCode == "DEFAULT_ANVIL_CHAIN") {
         return process.env.CHAIN_FACTORY_ADDRESS_LOCAL;
@@ -24,12 +25,16 @@ export function getFactoryAddr(chainCode: string) {
 }
 
 // DEFAULT_ANVIL_CHAIN, MORPH_TEST_CHAIN
-export function chainClient(_chainCode: string) {
+export async function chainClient(_chainCode: string) {
     let chainCode = _chainCode;
     if (chainCode == undefined || chainCode == "" || chainCode == null) {
-        chainCode = myCookies.getChainCode();
+        let x = 1 / 0;
+        // chainCode = myCookies.getChainCode();
     }
-    const myClient = chainPublicClient(chainCode, getFactoryAddr(chainCode));
+    const myClient = chainPublicClient(
+        chainCode,
+        await getFactoryAddr(chainCode)
+    );
 
     let _l1GasPriceOracleContract = "0x0";
     let _l1DataFeeFunc = "";

@@ -11,7 +11,6 @@ import {
     encodePacked,
 } from "viem";
 
-import myCookies from "../myCookies";
 import { getChainObj } from "../../lib/myChain";
 
 import { chainClient } from "./chainWriteClient";
@@ -24,8 +23,8 @@ function sleep(time) {
     return new Promise((resolve) => setTimeout(resolve, time));
 }
 
-export async function getW3eapAddr() {
-    const myClient = chainClient("");
+export async function getW3eapAddr(chainCode: string) {
+    const myClient = await chainClient(chainCode);
     const addr = await myClient.publicClient.readContract({
         account: myClient.account,
         address: myClient.factoryAddr,
@@ -34,10 +33,11 @@ export async function getW3eapAddr() {
         args: [],
     });
 
-    return addr;
+    return "" + addr;
 }
 
 export async function newAccount(
+    chainCode: string,
     ownerId: `0x${string}`,
     passwdAddr: `0x${string}`,
     questionNos: `0x${string}`
@@ -45,7 +45,7 @@ export async function newAccount(
     console.log(
         `newAccount called ... ownerId= ${ownerId}, passwdAddr=${passwdAddr}`
     );
-    const myClient = chainClient("");
+    const myClient = await chainClient(chainCode);
     let freeFeeAmount = 0;
     if (ownerId.endsWith("0000")) {
         freeFeeAmount = myClient.freeFeeWhen1stCreated;
@@ -115,6 +115,7 @@ async function getL1DataFee(cc: any, data: any) {
 }
 
 export async function newAccountAndTransferETH(
+    chainCode: string,
     ownerId: `0x${string}`,
     passwdAddr: `0x${string}`,
     questionNos: `0x${string}`,
@@ -134,11 +135,9 @@ export async function newAccountAndTransferETH(
     );
     let myClient;
     if (bridgeDirection == "L1ToL2") {
-        myClient = chainClient(
-            getChainObj(myCookies.getChainCode()).l1ChainCode
-        );
+        myClient = await chainClient(getChainObj(chainCode).l1ChainCode);
     } else {
-        myClient = chainClient("");
+        myClient = await chainClient(chainCode);
     }
 
     let freeFeeAmount = 0;
@@ -293,6 +292,7 @@ export async function newAccountAndTransferETH(
 }
 
 export async function createTransaction(
+    chainCode: string,
     ownerId: `0x${string}`,
     accountAddr: `0x${string}`,
     passwdAddr: `0x${string}`,
@@ -315,11 +315,9 @@ export async function createTransaction(
     let hash = "";
     let myClient;
     if (bridgeDirection == "L1ToL2") {
-        myClient = chainClient(
-            getChainObj(myCookies.getChainCode()).l1ChainCode
-        );
+        myClient = await chainClient(getChainObj(chainCode).l1ChainCode);
     } else {
-        myClient = chainClient("");
+        myClient = await chainClient(chainCode);
     }
     try {
         dataSendToAccount = encodeFunctionData({
@@ -453,6 +451,7 @@ export async function createTransaction(
 }
 
 export async function changePasswdAddr(
+    chainCode: string,
     bigBrotherOwnerId: `0x${string}`,
     bigBrotherAccountAddr: `0x${string}`,
     passwdAddr: `0x${string}`,
@@ -470,7 +469,7 @@ export async function changePasswdAddr(
     let chgPasswdData = null;
     let request = null;
     let hash = "";
-    const myClient = chainClient("");
+    const myClient = await chainClient(chainCode);
     try {
         chgPasswdData = encodeFunctionData({
             abi: abis.chgPasswdAddr,
@@ -635,6 +634,7 @@ export async function chgPasswdAddrXXXX(
 }
 
 async function _execute(
+    chainCode: string,
     ownerId: `0x${string}`,
     callAccountData: `0x${string}`
 ) {
@@ -649,19 +649,19 @@ async function _execute(
 
     console.log(`_execute callAdminData= ${callAdminData}`);
 
-    const eGas = await chainClient("").publicClient.estimateGas({
-        account: chainClient("").account,
-        to: chainClient("").factoryAddr,
+    const eGas = (await chainClient(chainCode)).publicClient.estimateGas({
+        account: (await chainClient(chainCode)).account,
+        to: (await chainClient(chainCode)).factoryAddr,
         value: BigInt(0), // parseEther("0.0"),
         data: callAdminData,
     });
 
     // estimate transaction fee.
-    const request = await chainClient(
-        ""
+    const request = (
+        await chainClient(chainCode)
     ).walletClient.prepareTransactionRequest({
-        account: chainClient("").account,
-        to: chainClient("").factoryAddr,
+        account: (await chainClient(chainCode)).account,
+        to: (await chainClient(chainCode)).factoryAddr,
         value: BigInt(0), // parseEther("0.0"),
         data: callAdminData,
     });
@@ -675,9 +675,9 @@ async function _execute(
         args: [ownerId, callAccountData, preGasFee],
     });
 
-    const hash = await chainClient("").walletClient.sendTransaction({
-        account: chainClient("").account,
-        to: chainClient("").factoryAddr,
+    const hash = (await chainClient(chainCode)).walletClient.sendTransaction({
+        account: (await chainClient(chainCode)).account,
+        to: (await chainClient(chainCode)).factoryAddr,
         value: BigInt(0), // parseEther("0.0"),
         data: callAdminData,
     });

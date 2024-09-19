@@ -8,12 +8,34 @@ export enum Menu {
 }
 
 export enum ChainCode {
+    UNKNOW = "UNKNOW",
+    ETHEREUM_MAIN_NET = "ETHEREUM_MAIN_NET",
     DEFAULT_ANVIL_CHAIN = "DEFAULT_ANVIL_CHAIN",
     MORPH_TEST_CHAIN = "MORPH_TEST_CHAIN",
     SCROLL_TEST_CHAIN = "SCROLL_TEST_CHAIN",
     LINEA_TEST_CHAIN = "LINEA_TEST_CHAIN",
-    SEPOLIA = "SEPOLIA_CHAIN",
+    SEPOLIA_CHAIN = "SEPOLIA_CHAIN",
 }
+
+export function chainCodeFromString(chainCode: string) {
+    if (chainCode == "ETHEREUM_MAIN_NET") {
+        return ChainCode.ETHEREUM_MAIN_NET;
+    } else if (chainCode == "DEFAULT_ANVIL_CHAIN") {
+        return ChainCode.DEFAULT_ANVIL_CHAIN;
+    } else if (chainCode == "MORPH_TEST_CHAIN") {
+        return ChainCode.MORPH_TEST_CHAIN;
+    } else if (chainCode == "SCROLL_TEST_CHAIN") {
+        return ChainCode.SCROLL_TEST_CHAIN;
+    } else if (chainCode == "LINEA_TEST_CHAIN") {
+        return ChainCode.LINEA_TEST_CHAIN;
+    } else if (chainCode == "SEPOLIA_CHAIN") {
+        return ChainCode.SEPOLIA_CHAIN;
+    } else {
+        console.log("ERROR.....chainCodeFromString..:", chainCode);
+        return ChainCode.UNKNOW;
+    }
+}
+
 export const commonTokens = { MORPH_TEST_CHAIN: [{ addr: "", name: "USDT" }] };
 export const commonNfts = {};
 

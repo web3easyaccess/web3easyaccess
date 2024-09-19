@@ -137,8 +137,16 @@ export async function queryAccountList(
 export async function queryAccount(
     chainCode: string,
     factoryAddr: string,
-    ownerId: `0x${string}`
+    ownerId: string
 ) {
+    console.log(
+        "queryAccount--888:",
+        chainCode,
+        "::",
+        factoryAddr,
+        "::",
+        ownerId
+    );
     try {
         const cpc = chainPublicClient(chainCode, factoryAddr);
         // console.log("rpc:", cpc.rpcUrl);
@@ -174,9 +182,9 @@ export async function queryAccount(
                 args: [],
             });
             return {
-                accountAddr: accountAddr,
+                accountAddr: "" + accountAddr,
                 created: true,
-                passwdAddr: passwdAddr,
+                passwdAddr: "" + passwdAddr,
             };
         }
     } catch (e) {
