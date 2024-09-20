@@ -141,6 +141,20 @@ export default function App({
     } = getChainObj(userProp.state.selectedChainCode);
     const explorerUrl = chainObj.blockExplorers.default.url;
 
+    const explorerTxUrl = (hash: string) => {
+        if (hash == undefined || hash == null) {
+            return "";
+        }
+        let idx = hash.indexOf("::");
+        let xx = hash;
+        if (idx > 0) {
+            xx = hash.substring(0, idx);
+            return `${explorerUrl}/tx/${xx}?tab=internal`;
+        } else {
+            return `${explorerUrl}/tx/${xx}`;
+        }
+    };
+
     let l1Chain = null; // it will be not null if current chain is a L2 chain.
     if (
         chainObj.l1ChainCode != ChainCode.UNKNOW &&
@@ -1274,7 +1288,11 @@ export default function App({
                 ) : (
                     <div>
                         <p>Transaction:</p>
-                        <Link isExternal href={`/${currentTx}`} showAnchorIcon>
+                        <Link
+                            isExternal
+                            href={`${explorerTxUrl(currentTx)}`}
+                            showAnchorIcon
+                        >
                             {currentTx}
                         </Link>
                     </div>
@@ -1556,6 +1574,8 @@ async function estimateTransFee(
         msg: string;
     } = {};
     for (let k = 0; k < 15; k++) {
+        const costFee = BigInt(myDetectEstimatedFee) + BigInt(myL1DataFee);
+
         let argumentsHash = encodeAbiParameters(
             [
                 { name: "funcId", type: "uint256" },
@@ -1564,23 +1584,10 @@ async function estimateTransFee(
                 { name: "data", type: "bytes" },
                 { name: "estimatedFee", type: "uint256" },
             ],
-            [
-                BigInt(3),
-                receiverAddr,
-                receiverAmt,
-                receiverData,
-                myDetectEstimatedFee + myL1DataFee,
-            ]
+            [BigInt(3), receiverAddr, receiverAmt, receiverData, costFee]
         );
         argumentsHash = keccak256(argumentsHash);
-        console.log(
-            "encodeAbiParameters3333:",
-            bridgeDirection,
-            ":::",
-            argumentsHash,
-            "xx:",
-            chainObj
-        );
+
         let chainId = chainObj.id;
         console.log("id-----------------:1:", chainId);
         if (bridgeDirection == "L1ToL2") {
@@ -1667,13 +1674,18 @@ async function estimateTransFee(
             preparedGasPrice: detectRes.gasPrice,
         };
         //
-
+        myL1DataFee = BigInt(detectRes.l1DataFee);
+        console.log(
+            "client, after detect k=",
+            k,
+            ",myL1DataFee=",
+            myL1DataFee,
+            ",myDetectEstimatedFee=",
+            myDetectEstimatedFee,
+            ",costAll = ",
+            BigInt(myDetectEstimatedFee) + myL1DataFee
+        );
         if (Number(myDetectEstimatedFee) > Number(detectRes.realEstimatedFee)) {
-            preparedPriceRef.current = {
-                preparedMaxFeePerGas: detectRes.maxFeePerGas,
-                preparedGasPrice: detectRes.gasPrice,
-            };
-            myL1DataFee = detectRes.l1DataFee;
             break;
         } else {
             myDetectEstimatedFee = BigInt(
@@ -1686,16 +1698,15 @@ async function estimateTransFee(
                     ) *
                         1000
             );
-            myL1DataFee = detectRes.l1DataFee;
         }
     }
     const feeDisplay =
-        formatEther(myDetectEstimatedFee + detectRes.l1DataFee) + " ETH";
+        formatEther(BigInt(myDetectEstimatedFee) + myL1DataFee) + " ETH";
     return {
         ...detectRes,
         feeDisplay,
-        feeWei: myDetectEstimatedFee,
-        l1DataFeeWei: detectRes.l1DataFee,
+        feeWei: BigInt(myDetectEstimatedFee),
+        l1DataFeeWei: myL1DataFee,
     };
 }
 
@@ -1735,11 +1746,22 @@ async function executeTransaction(
         preparedPriceRef,
         bridgeDirection
     );
-    console.log("user realtime fee, when executeing:", eFee);
+    console.log("executeTransaction,user realtime fee, when executeing:", eFee);
     if (eFee.feeWei == undefined || eFee.feeWei == 0) {
         throw Error("estimateTransFee realtime fee ERROR.");
     }
     const receiverAmt = parseEther(receiverAmountETH);
+
+    const execCost = BigInt(eFee.feeWei) + BigInt(eFee.l1DataFeeWei);
+
+    console.log(
+        "executeTransaction,user realtime fee, when executeing,costAll=",
+        execCost,
+        " <= ",
+        eFee.feeWei,
+        "+",
+        eFee.l1DataFeeWei
+    );
 
     let argumentsHash = encodeAbiParameters(
         [
@@ -1749,15 +1771,9 @@ async function executeTransaction(
             { name: "data", type: "bytes" },
             { name: "estimatedFee", type: "uint256" },
         ],
-        [
-            BigInt(3),
-            receiverAddr,
-            receiverAmt,
-            receiverData,
-            eFee.feeWei + eFee.l1DataFeeWei,
-        ]
+        [BigInt(3), receiverAddr, receiverAmt, receiverData, execCost]
     );
-    console.log("encodeAbiParameters2222aaa:", argumentsHash);
+
     argumentsHash = keccak256(argumentsHash);
     console.log("encodeAbiParameters3333bbb:", argumentsHash);
     let chainId = chainObj.id;

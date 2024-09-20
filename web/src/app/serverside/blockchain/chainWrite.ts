@@ -130,9 +130,25 @@ export async function newAccountAndTransferETH(
     preparedGasPrice: bigint,
     bridgeDirection: string
 ) {
+    detectEstimatedFee = BigInt(detectEstimatedFee);
+    l1DataFee = BigInt(l1DataFee);
+    if (preparedMaxFeePerGas != undefined) {
+        preparedMaxFeePerGas = BigInt(preparedMaxFeePerGas);
+    }
+    if (preparedGasPrice != undefined) {
+        preparedGasPrice = BigInt(preparedGasPrice);
+    }
     console.log(
         `newAccountAndTransferETH called ..onlyQueryFee=${onlyQueryFee}. ownerId= ${ownerId}, passwdAddr=${passwdAddr},detectEstimatedFee=${detectEstimatedFee}`
     );
+    const costFee = BigInt(detectEstimatedFee) + BigInt(l1DataFee);
+    console.log(
+        "newAccountAndTransferETH called, costFee:",
+        costFee,
+        ", data:",
+        data
+    );
+
     let myClient;
     if (bridgeDirection == "L1ToL2") {
         myClient = await chainClient(getChainObj(chainCode).l1ChainCode);
@@ -147,6 +163,7 @@ export async function newAccountAndTransferETH(
     let hash = "";
     let newAccountData;
     let request = null;
+
     try {
         newAccountData = encodeFunctionData({
             abi: abis.newAccountAndSendTrans,
@@ -159,7 +176,7 @@ export async function newAccountAndTransferETH(
                 to,
                 amount,
                 data,
-                detectEstimatedFee + l1DataFee, // L2fee+L1fee  on client side.
+                costFee, // L2fee+L1fee  on client side.
                 signature,
             ],
         });
@@ -307,9 +324,19 @@ export async function createTransaction(
     preparedGasPrice: bigint,
     bridgeDirection: string
 ) {
+    detectEstimatedFee = BigInt(detectEstimatedFee);
+    l1DataFee = BigInt(l1DataFee);
+    if (preparedMaxFeePerGas != undefined) {
+        preparedMaxFeePerGas = BigInt(preparedMaxFeePerGas);
+    }
+    if (preparedGasPrice != undefined) {
+        preparedGasPrice = BigInt(preparedGasPrice);
+    }
     console.log(
         `createTransaction called ... ownerId= ${ownerId},accountAddr=${accountAddr}, amount=${amount},onlyQueryFee=${onlyQueryFee},detectEstimatedFee=${detectEstimatedFee},bridgeDirection=${bridgeDirection},l1DataFee=${l1DataFee},preparedMaxFeePerGas=${preparedMaxFeePerGas},preparedGasPrice=${preparedGasPrice},`
     );
+    const costFee = BigInt(detectEstimatedFee) + BigInt(l1DataFee);
+    console.log("createTransaction called, CostFee:", costFee, ", data:", data);
     let dataSendToAccount = null;
     let request = null;
     let hash = "";
@@ -326,21 +353,16 @@ export async function createTransaction(
         dataSendToAccount = encodeFunctionData({
             abi: abis.sendTransaction,
             functionName: "sendTransaction",
-            args: [
-                to,
-                amount,
-                data,
-                detectEstimatedFee + l1DataFee,
-                passwdAddr,
-                signature,
-            ],
+            args: [to, BigInt(amount), data, costFee, passwdAddr, signature],
         });
 
         console.log(
             "22 total fee = txFee+L1DataFee =",
             detectEstimatedFee,
             "+",
-            l1DataFee
+            l1DataFee,
+            "==>",
+            costFee
         );
 
         // console.log("dataSendToAccount:", dataSendToAccount);
@@ -426,6 +448,10 @@ export async function createTransaction(
                 return { success: false, msg: "maxFeePerGas error!", tx: "" };
             }
 
+            console.log(
+                "create transaction, before prepareTransactionRequest.preparedMaxFeePerGas:",
+                preparedMaxFeePerGas
+            );
             // simulate again
             request = await myClient.walletClient.prepareTransactionRequest({
                 account: myClient.account,
@@ -435,15 +461,26 @@ export async function createTransaction(
                 maxFeePerGas: preparedMaxFeePerGas, //eip-1559
                 gasPrice: preparedGasPrice, // Legacy
             });
+            console.log(
+                "create transaction, after prepareTransactionRequest,request!:",
+                request
+            );
+            // hash = await myClient.walletClient.sendTransaction({
+            //     account: myClient.account,
+            //     to: accountAddr,
+            //     value: BigInt(0), // parseEther("0.0"),
+            //     data: dataSendToAccount,
+            //     maxFeePerGas: preparedMaxFeePerGas, //eip-1559
+            //     gasPrice: preparedGasPrice, // Legacy
+            //     maxPriorityFeePerGas:
+            // });
 
-            hash = await myClient.walletClient.sendTransaction({
-                account: myClient.account,
-                to: accountAddr,
-                value: BigInt(0), // parseEther("0.0"),
-                data: dataSendToAccount,
-                maxFeePerGas: preparedMaxFeePerGas, //eip-1559
-                gasPrice: preparedGasPrice, // Legacy
+            const serializedTransaction =
+                await myClient.walletClient.signTransaction(request);
+            hash = await myClient.walletClient.sendRawTransaction({
+                serializedTransaction,
             });
+
             console.log("createTransaction success:", hash);
             return { success: true, tx: hash, msg: "" };
         }
@@ -480,7 +517,7 @@ export async function changePasswdAddr(
             args: [
                 newPasswdAddr,
                 newQuestionNos,
-                detectEstimatedFee,
+                BigInt(detectEstimatedFee),
                 passwdAddr,
                 signature,
             ],
