@@ -20,6 +20,7 @@ import {
     Listbox,
     Snippet,
     Button,
+    Spinner,
 } from "@nextui-org/react";
 import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
 
@@ -89,6 +90,10 @@ export default function App({
     const [ethBalance, setEthBalance] = useState("-");
     const [w3eapBalance, setW3eapBalance] = useState("-");
     const [freeGasFeeAmount, setFreeGasFeeAmount] = useState("-");
+
+    const [ethBalanceOk, setEthBalanceOk] = useState(true);
+    const [w3eapBalanceOk, setW3eapBalanceOk] = useState(true);
+    const [freeGasFeeAmountOk, setFreeGasFeeAmountOk] = useState(true);
 
     const accountToOrderNoMap = useRef(new Map<string, number>());
 
@@ -179,6 +184,7 @@ export default function App({
         fetchAcctList();
     }, [userProp.serverSidePropState]);
 
+    const [refreshFlag, setRefreshFlag] = useState(1);
     useEffect(() => {
         // This represents the currently selected account in the global scope
         if (accountAddrList.length == 0) {
@@ -193,6 +199,10 @@ export default function App({
         );
 
         const fetchBalance = async () => {
+            if (!ethBalanceOk) {
+                return;
+            }
+            setEthBalanceOk(false);
             let eb = await queryEthBalance(
                 userProp.ref.current.selectedChainCode,
                 userProp.serverSidePropState.factoryAddr,
@@ -204,9 +214,14 @@ export default function App({
                 userProp.ref.current.selectedAccountAddr + ":" + eb
             );
             setEthBalance(eb == "0" ? "0.0" : eb);
+            setEthBalanceOk(true);
         };
 
         const fetchW3eapBalance = async () => {
+            if (!w3eapBalanceOk) {
+                return;
+            }
+            setW3eapBalanceOk(false);
             console.log(
                 "fetchW3eapBalance:",
                 userProp.ref.current.selectedChainCode,
@@ -226,9 +241,14 @@ export default function App({
                 userProp.ref.current.selectedAccountAddr + ":" + wb
             );
             setW3eapBalance(wb == "0" ? "0.0" : wb);
+            setW3eapBalanceOk(true);
         };
 
         const fetchfreeGasFeeAmount = async () => {
+            if (!freeGasFeeAmountOk) {
+                return;
+            }
+            setFreeGasFeeAmountOk(false);
             let fa = await queryfreeGasFeeAmount(
                 userProp.ref.current.selectedChainCode,
                 userProp.serverSidePropState.factoryAddr,
@@ -240,6 +260,7 @@ export default function App({
                 userProp.ref.current.selectedAccountAddr + ":" + fa
             );
             setFreeGasFeeAmount(fa == "0" ? "0.0" : fa);
+            setFreeGasFeeAmountOk(true);
         };
 
         //
@@ -251,14 +272,16 @@ export default function App({
                 userProp.ref.current.selectedOrderNo ==
                 accountAddrList.length - 1
             ) {
+                setFreeGasFeeAmountOk(false);
                 // the last one, has not created!
                 setFreeGasFeeAmount("0.00");
+                setFreeGasFeeAmountOk(true);
             } else {
                 fetchfreeGasFeeAmount();
             }
             document.getElementById("id_user_selectedOrderNo_btn")?.click();
         }
-    }, [userProp.serverSidePropState, accountAddrList]);
+    }, [userProp.serverSidePropState, accountAddrList, refreshFlag]);
 
     const acctAddrDisplay = (fullAddr: string) => {
         if (fullAddr == undefined) {
@@ -383,7 +406,7 @@ export default function App({
                 <BtnselectedOrderNo />
             </form> */}
 
-            <Card className="max-w-[480px]">
+            <Card style={{ width: "450px" }}>
                 <CardHeader className="flex gap-3">
                     <AcctIcon
                         addr={acctAddrDisplay(
@@ -451,20 +474,22 @@ export default function App({
                         </select>
                     </Snippet>
 
-                    <div>
-                        <p
-                            className="text-md"
-                            style={{
-                                fontWeight: "bold",
-                                fontSize: "18px",
-                                color: "green",
-                            }}
-                        >
+                    <div
+                        className="text-md"
+                        style={{
+                            fontWeight: "bold",
+                            fontSize: "18px",
+                            color: "green",
+                        }}
+                    >
+                        {ethBalanceOk ? (
                             <label title={ethBalance}>
                                 {formatNumber(ethBalance)}
                             </label>
-                            &nbsp; ETH
-                        </p>
+                        ) : (
+                            <Spinner size="sm" />
+                        )}{" "}
+                        ETH
                     </div>
                 </CardHeader>
             </Card>
@@ -472,9 +497,13 @@ export default function App({
             <Card>
                 <CardBody>
                     <h4 className="text-middle font-semibold leading-none text-default-600">
-                        <label title={w3eapBalance}>
-                            {formatNumber(w3eapBalance)}
-                        </label>
+                        {w3eapBalanceOk ? (
+                            <label title={w3eapBalance}>
+                                {formatNumber(w3eapBalance)}
+                            </label>
+                        ) : (
+                            <Spinner size="sm" />
+                        )}
                     </h4>
                     <Tooltip content="Balance of W3EAP which is a token about Web3EasyAccess's rewards">
                         <h5
@@ -489,9 +518,13 @@ export default function App({
             <Card>
                 <CardBody>
                     <h4 className="text-middle font-semibold leading-none text-default-600">
-                        <label title={freeGasFeeAmount}>
-                            {formatNumber(freeGasFeeAmount)}
-                        </label>
+                        {freeGasFeeAmountOk ? (
+                            <label title={freeGasFeeAmount}>
+                                {formatNumber(freeGasFeeAmount)}
+                            </label>
+                        ) : (
+                            <Spinner size="sm" />
+                        )}
                         &nbsp;ETH
                     </h4>
                     <Tooltip content="Free Amount of Gas Fee">
@@ -504,6 +537,18 @@ export default function App({
                     </Tooltip>
                 </CardBody>
             </Card>
+            <Image
+                style={{
+                    width: "30px",
+                    height: "30px",
+                    marginTop: "16px",
+                    cursor: "pointer",
+                }}
+                onClick={() => {
+                    setRefreshFlag(refreshFlag + 1);
+                }}
+                src="/refreshUser.png"
+            />
         </div>
     );
 }

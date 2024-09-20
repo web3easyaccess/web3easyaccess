@@ -184,20 +184,20 @@ export const ChainIcons = ({
             </Tooltip>
             {/* </Badge> */}
 
-            <Tooltip content="MorphL2 testnet">
-                <Avatar
-                    src="/chain/morphl2test.png"
-                    size={morphl2testState.size}
-                    isBordered={morphl2testState.bordered}
-                    onClick={() => {
-                        handleClick(ChainCode.MORPH_TEST_CHAIN);
-                    }}
-                    color="primary"
-                    radius="sm"
-                />
-            </Tooltip>
-
             <div style={{ display: "none" }}>
+                <Tooltip content="MorphL2 testnet">
+                    <Avatar
+                        src="/chain/morphl2test.png"
+                        size={morphl2testState.size}
+                        isBordered={morphl2testState.bordered}
+                        onClick={() => {
+                            handleClick(ChainCode.MORPH_TEST_CHAIN);
+                        }}
+                        color="primary"
+                        radius="sm"
+                    />
+                </Tooltip>
+
                 <Tooltip content="anvil testnet">
                     <Avatar
                         src="/chain/anvil.png"
@@ -210,19 +210,20 @@ export const ChainIcons = ({
                         radius="sm"
                     />
                 </Tooltip>
+
+                <Tooltip content="Ethereum">
+                    <Avatar
+                        src="/chain/ethereum.png"
+                        size={ethereumMainnetState.size}
+                        isBordered={ethereumMainnetState.bordered}
+                        onClick={() => {
+                            handleClick(ChainCode.ETHEREUM_MAIN_NET);
+                        }}
+                        color="primary"
+                        radius="sm"
+                    />
+                </Tooltip>
             </div>
-            <Tooltip content="Ethereum">
-                <Avatar
-                    src="/chain/ethereum.png"
-                    size={ethereumMainnetState.size}
-                    isBordered={ethereumMainnetState.bordered}
-                    onClick={() => {
-                        handleClick(ChainCode.ETHEREUM_MAIN_NET);
-                    }}
-                    color="primary"
-                    radius="sm"
-                />
-            </Tooltip>
         </div>
     );
 };
