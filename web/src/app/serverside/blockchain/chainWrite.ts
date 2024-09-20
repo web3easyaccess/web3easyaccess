@@ -308,17 +308,20 @@ export async function createTransaction(
     bridgeDirection: string
 ) {
     console.log(
-        `createTransaction called ... ownerId= ${ownerId},accountAddr=${accountAddr}, amount=${amount},detectEstimatedFee=${detectEstimatedFee},onlyQueryFee=${onlyQueryFee},detectEstimatedFee=${detectEstimatedFee}`
+        `createTransaction called ... ownerId= ${ownerId},accountAddr=${accountAddr}, amount=${amount},onlyQueryFee=${onlyQueryFee},detectEstimatedFee=${detectEstimatedFee},bridgeDirection=${bridgeDirection},l1DataFee=${l1DataFee},preparedMaxFeePerGas=${preparedMaxFeePerGas},preparedGasPrice=${preparedGasPrice},`
     );
     let dataSendToAccount = null;
     let request = null;
     let hash = "";
     let myClient;
     if (bridgeDirection == "L1ToL2") {
+        console.log("L1ToL2,here.");
         myClient = await chainClient(getChainObj(chainCode).l1ChainCode);
     } else {
+        console.log("L1ToL2,not here.");
         myClient = await chainClient(chainCode);
     }
+
     try {
         dataSendToAccount = encodeFunctionData({
             abi: abis.sendTransaction,

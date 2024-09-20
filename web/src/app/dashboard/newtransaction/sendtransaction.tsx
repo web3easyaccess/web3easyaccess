@@ -557,9 +557,10 @@ export default function App({
 
     useEffect(() => {
         const refreshFee = async () => {
-            console.log("please waiting ...1");
+            console.log("please waiting ...123.");
             setTransactionFee("Please Waiting ... ");
             setPrivateinfoHidden(false);
+            setCurrentTx("");
             try {
                 const {
                     receiverAddr,
