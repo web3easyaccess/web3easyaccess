@@ -95,6 +95,10 @@ export default function App({
     const [w3eapBalanceOk, setW3eapBalanceOk] = useState(true);
     const [freeGasFeeAmountOk, setFreeGasFeeAmountOk] = useState(true);
 
+    const asyncSleep = (ms: number) => {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    };
+
     const accountToOrderNoMap = useRef(new Map<string, number>());
 
     const build4WalletConnect = () => {
@@ -214,6 +218,7 @@ export default function App({
                 userProp.ref.current.selectedAccountAddr + ":" + eb
             );
             setEthBalance(eb == "0" ? "0.0" : eb);
+            await asyncSleep(1500);
             setEthBalanceOk(true);
         };
 
@@ -241,6 +246,7 @@ export default function App({
                 userProp.ref.current.selectedAccountAddr + ":" + wb
             );
             setW3eapBalance(wb == "0" ? "0.0" : wb);
+            await asyncSleep(1500);
             setW3eapBalanceOk(true);
         };
 
@@ -260,6 +266,7 @@ export default function App({
                 userProp.ref.current.selectedAccountAddr + ":" + fa
             );
             setFreeGasFeeAmount(fa == "0" ? "0.0" : fa);
+            await asyncSleep(1500);
             setFreeGasFeeAmountOk(true);
         };
 
@@ -275,6 +282,7 @@ export default function App({
                 setFreeGasFeeAmountOk(false);
                 // the last one, has not created!
                 setFreeGasFeeAmount("0.00");
+
                 setFreeGasFeeAmountOk(true);
             } else {
                 fetchfreeGasFeeAmount();
