@@ -75,17 +75,16 @@ import {
     queryEthBalance,
 } from "../../lib/chainQuery";
 import { getInputValueById, setInputValueById } from "../../lib/elementById";
-import {
-    newTransaction,
-    createAccountAndSendTransaction,
-} from "../../serverside/serverActions";
 
 import {
     newAccountAndTransferETH,
     createTransaction,
+    changePasswdAddr,
 } from "../../serverside/blockchain/chainWrite";
 
 import { PrivateInfo } from "./privateinfo";
+
+import { PrivateInfo as PrivateInfo4Chg } from "./privateinfo4chg";
 
 import { getChainObj } from "../../lib/myChain";
 
@@ -100,7 +99,7 @@ import {
 } from "../../lib/myTypes";
 
 import lineaBridge from "./bridge/lineaBridge";
-import { factory } from "typescript";
+
 import { UserProperty } from "@/app/storage/LocalStore";
 
 const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
@@ -111,9 +110,10 @@ const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
     return questionNosEnc;
 };
 
-export default function App({
+export default function SendTransaction({
     userProp,
     accountAddrList,
+    forChgPasswd,
 }: {
     userProp: {
         ref: MutableRefObject<UserProperty>;
@@ -125,9 +125,8 @@ export default function App({
         };
     };
     accountAddrList: string[];
+    forChgPasswd: boolean;
 }) {
-    const router = useRouter();
-
     const chainObj: {
         id: number;
         name: string;
@@ -628,6 +627,7 @@ export default function App({
                             amountETH = packedRes.amountETH;
 
                             if (bridgeDirection == "L1ToL2") {
+                                console.log("queryAccount...2");
                                 const acct = await queryAccount(
                                     bridgeProps.l1ChainCode,
                                     userProp.serverSidePropState.factoryAddr,
@@ -798,6 +798,7 @@ export default function App({
                 getOwnerId()
             );
             // suffix with 0000
+            console.log("queryAccount...3");
             const acct = await queryAccount(
                 userProp.state.selectedChainCode,
                 userProp.serverSidePropState.factoryAddr,
@@ -1315,7 +1316,7 @@ export default function App({
                             : { display: "none" }
                     }
                 >
-                    <SendTransaction
+                    <CreateTransaction
                         myOwnerId={getOwnerId()}
                         verifyingContract={userProp.state.selectedAccountAddr}
                         email={userProp.state.email}
@@ -1338,7 +1339,7 @@ function sleep(time) {
     return new Promise((resolve) => setTimeout(resolve, time));
 }
 
-function SendTransaction({
+function CreateTransaction({
     myOwnerId,
     verifyingContract,
     email,
@@ -1363,7 +1364,6 @@ function SendTransaction({
     readReceiverInfo: any;
     factoryAddr: string;
 }) {
-    const router = useRouter();
     const { pending } = useFormStatus();
 
     const handleClick = async (event) => {
@@ -1443,6 +1443,7 @@ function SendTransaction({
                 transferTokenData = packedRes.data;
                 amountETH = packedRes.amountETH;
                 if (bridgeDirection == "L1ToL2") {
+                    console.log("queryAccount...4");
                     const acct = await queryAccount(
                         chainObj.l1ChainCode,
                         factoryAddr, // if l1 and l2 's factoryAddr is different, it may be error.

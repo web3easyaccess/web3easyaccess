@@ -131,6 +131,7 @@ export async function queryAccountList(
 
         for (let mm = 0; mm < 5; mm++) {
             try {
+                console.log("queryAccount...777");
                 account = await queryAccount(
                     chainCode,
                     factoryAddr,

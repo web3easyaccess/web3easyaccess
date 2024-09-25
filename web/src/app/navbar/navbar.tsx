@@ -125,11 +125,11 @@ export function Navbar4Login({
     userProp: {
         ref: MutableRefObject<UserProperty>;
         state: UserProperty;
-        serverSidePropRef: MutableRefObject<{
+        serverSidePropState: {
             w3eapAddr: string;
             factoryAddr: string;
             bigBrotherPasswdAddr: string;
-        }>;
+        };
     };
     updateChainCode: ({
         email,

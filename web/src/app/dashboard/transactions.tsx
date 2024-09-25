@@ -25,7 +25,7 @@ import { getChainObj } from "../lib/myChain";
 import { thegraphQueryOpLog } from "../serverside/serverActions";
 import { UserProperty } from "../storage/LocalStore";
 
-export default function App({
+export default function Transactions({
     userProp,
 }: {
     userProp: {

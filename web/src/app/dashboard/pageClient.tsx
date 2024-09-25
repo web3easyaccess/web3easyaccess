@@ -133,12 +133,19 @@ export default function Page({ email }: { email: string }) {
             const factoryAddr = await getFactoryAddr(
                 userPropRef.current.selectedChainCode
             );
-
+            console.log(
+                "queryAccount...5,factoryAddr:",
+                factoryAddr,
+                ",",
+                userPropRef.current.bigBrotherOwnerId
+            );
             const acctData = await queryAccount(
                 userPropRef.current.selectedChainCode,
                 factoryAddr,
-                prop.bigBrotherOwnerId
+                userPropRef.current.bigBrotherOwnerId
             );
+
+            console.log("pageClient,effect:1:acctData:", acctData);
 
             setServerSidePropState({
                 w3eapAddr: w3eapAddr,
@@ -157,7 +164,7 @@ export default function Page({ email }: { email: string }) {
     //     email: prop.email,
     //     emailDisplay: prop.emailDisplay,
     //     bigBrotherOwnerId: prop.bigBrotherOwnerId,
-    //     bigBrotherPasswdAddr: serverSidePropState.bigBrotherPasswdAddr,
+    //     bigBrotherPasswdAddr: serverSidePropState..bigBrotherPasswdAddr,
     //     selectedOwnerId: "",
     //     selectedOrderNo: prop.selectedOrderNo,
     //     selectedAccountAddr: prop.selectedAccountAddr,

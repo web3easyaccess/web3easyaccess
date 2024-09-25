@@ -205,8 +205,8 @@ export function ShowMain({
                 accountAddrList={accountAddrList}
             />
         );
-    } else if (selectedMenu == Menu.ExploreDapps) {
-        return <ExploreDapps userProp={userProp} />;
+        // } else if (selectedMenu == Menu.ExploreDapps) {
+        //     return <ExploreDapps userProp={userProp} />;
     } else if (selectedMenu == Menu.PrivateSetting) {
         console.log("selectedMenu11111111144:", selectedMenu);
         // alert("coming soon!");
@@ -216,7 +216,11 @@ export function ShowMain({
         //     </div>
         // );
         return (
-            <SendChgPrivateInfo userProp={userProp} forTransaction={false} />
+            <SendChgPrivateInfo
+                userProp={userProp}
+                accountAddrList={accountAddrList}
+                forTransaction={false}
+            />
         );
     } else {
         return (

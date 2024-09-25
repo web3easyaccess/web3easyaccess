@@ -27,7 +27,7 @@ import LocalStore, { UserProperty } from "../storage/LocalStore";
 //     : null;
 // }
 
-export default function Home({
+export default function Dashboard({
     userProp,
     updateUserProp,
     accountAddrList,

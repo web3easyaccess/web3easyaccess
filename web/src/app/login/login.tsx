@@ -49,11 +49,11 @@ export default function Page() {
     const userProp: {
         ref: MutableRefObject<UserProperty>;
         state: UserProperty;
-        serverSidePropRef: MutableRefObject<{
+        serverSidePropState: {
             w3eapAddr: string;
             factoryAddr: string;
             bigBrotherPasswdAddr: string;
-        }>;
+        };
     } = {
         ref: userPropRef,
         state: userPropState,

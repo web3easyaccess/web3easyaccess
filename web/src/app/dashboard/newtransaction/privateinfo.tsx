@@ -29,7 +29,7 @@ import {
     parseEther,
 } from "viem";
 import { useRouter } from "next/navigation";
-import { queryAccount, queryQuestionIdsEnc } from "../../lib/chainQuery";
+import { queryQuestionIdsEnc } from "../../lib/chainQuery";
 
 import pq from "../privateinfo/passwdQuestion.json";
 

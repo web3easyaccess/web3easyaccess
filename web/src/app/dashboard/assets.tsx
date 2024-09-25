@@ -24,7 +24,7 @@ import { queryAssets } from "../lib/chainQuery";
 import { ChainCode, Menu, UserInfo, uiToString } from "../lib/myTypes";
 import { UserProperty } from "../storage/LocalStore";
 
-export default function App({
+export default function Assets({
     userProp,
 }: {
     userProp: {

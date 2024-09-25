@@ -289,7 +289,12 @@ export default function App({
             }
             document.getElementById("id_user_selectedOrderNo_btn")?.click();
         }
-    }, [userProp.serverSidePropState, accountAddrList, refreshFlag]);
+    }, [
+        userProp.serverSidePropState,
+        userProp.state,
+        accountAddrList,
+        refreshFlag,
+    ]);
 
     const acctAddrDisplay = (fullAddr: string) => {
         if (fullAddr == undefined) {

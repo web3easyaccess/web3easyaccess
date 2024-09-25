@@ -70,6 +70,7 @@ export async function newAccount(
 
         let acct = { accountAddr: null, created: false };
         for (let kk = 0; kk < 600; kk++) {
+            console.log("queryAccount...888");
             acct = await queryAccount(
                 myClient.chainCode,
                 myClient.factoryAddr,
@@ -503,6 +504,13 @@ export async function changePasswdAddr(
     preparedMaxFeePerGas: bigint,
     preparedGasPrice: bigint
 ) {
+    detectEstimatedFee = BigInt(detectEstimatedFee);
+    if (preparedMaxFeePerGas != undefined) {
+        preparedMaxFeePerGas = BigInt(preparedMaxFeePerGas);
+    }
+    if (preparedGasPrice != undefined) {
+        preparedGasPrice = BigInt(preparedGasPrice);
+    }
     console.log(
         `changePaswdAddr called ... bigBrotherOwnerId= ${bigBrotherOwnerId},bigBrotherAccountAddr=${bigBrotherAccountAddr}, newPasswdAddr=${newPasswdAddr},newQuestionNos=${newQuestionNos},detectEstimatedFee=${detectEstimatedFee},onlyQueryFee=${onlyQueryFee}`
     );

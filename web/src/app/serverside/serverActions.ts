@@ -270,6 +270,7 @@ export async function createAccount(
     console.log(
         `createAccount, input: ownerId=${ownerId}, passwdAddr=${passwdAddr}, questionNosEnc=${questionNosEnc}`
     );
+    console.log("queryAccount...a");
     var acct = await queryAccount(
         myCookies.getChainCode(),
         await getFactoryAddr(myCookies.getChainCode()),
@@ -288,6 +289,7 @@ export async function createAccount(
         }
     }
 
+    console.log("queryAccount...b");
     acct = await queryAccount(
         myCookies.getChainCode(),
         await getFactoryAddr(myCookies.getChainCode()),
