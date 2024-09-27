@@ -87,6 +87,7 @@ export default function App({
 
     const [resultMsg, dispatch] = useFormState(saveSelectedOrderNo, undefined);
 
+    const [nativeToken, setNativeToken] = useState("ETH");
     const [ethBalance, setEthBalance] = useState("-");
     const [w3eapBalance, setW3eapBalance] = useState("-");
     const [freeGasFeeAmount, setFreeGasFeeAmount] = useState("-");
@@ -185,11 +186,21 @@ export default function App({
             // updateCurrentUserInfo(cUserInfo);
         };
         //
+
         fetchAcctList();
-    }, [userProp.serverSidePropState]);
+    }, [userProp.serverSidePropState]); // solana的demo临时加 trigger4Demo
 
     const [refreshFlag, setRefreshFlag] = useState(1);
     useEffect(() => {
+        if (
+            userProp.ref.current.selectedChainCode ==
+            ChainCode.SOLANA_TEST_CHAIN
+        ) {
+            setNativeToken("SOL");
+        } else {
+            setNativeToken("ETH");
+        }
+
         // This represents the currently selected account in the global scope
         if (accountAddrList.length == 0) {
             return;
@@ -363,10 +374,14 @@ export default function App({
                 break;
         }
         // "success" | "default" | "primary" | "secondary" | "warning" | "danger" | undefined
+        let nameTitle = addr.substring(2, 5);
+        if (userProp.state.selectedChainCode == ChainCode.SOLANA_TEST_CHAIN) {
+            nameTitle = addr.substring(0, 3);
+        }
         return (
             <Avatar
                 isBordered={bd}
-                name={addr.substring(2, 5)}
+                name={nameTitle}
                 color={color}
                 style={{ fontSize: "18px" }}
             />
@@ -502,7 +517,7 @@ export default function App({
                         ) : (
                             <Spinner size="sm" />
                         )}{" "}
-                        ETH
+                        {nativeToken}
                     </div>
                 </CardHeader>
             </Card>
@@ -538,7 +553,7 @@ export default function App({
                         ) : (
                             <Spinner size="sm" />
                         )}
-                        &nbsp;ETH
+                        &nbsp;{nativeToken}
                     </h4>
                     <Tooltip content="Free Amount of Gas Fee">
                         <h5

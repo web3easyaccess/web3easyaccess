@@ -1227,6 +1227,13 @@ function MultiChainForModify() {
                             >
                                 Sepolia
                             </Checkbox>
+                            <Checkbox
+                                defaultSelected
+                                size="md"
+                                style={{ marginLeft: "20px" }}
+                            >
+                                Solana testnet
+                            </Checkbox>
                         </div>
                     </CardBody>
                 </Card>

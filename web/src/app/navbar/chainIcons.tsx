@@ -61,6 +61,7 @@ export const ChainIcons = ({
     const [sepoliaState, setSepoliaState] = useState(myDefault);
     const [defaultAnvilState, setDefaultAnvilState] = useState(myDefault);
     const [ethereumMainnetState, setEthereumMainnetState] = useState(myDefault);
+    const [solanatestnetState, setSolanatestnetState] = useState(myDefault);
 
     const setChainCodeHere = (cc: ChainCode) => {
         console.log("setChainCodeHere,2:", cc);
@@ -70,6 +71,7 @@ export const ChainIcons = ({
         setScrolltestState(myDefault);
         setLineatestState(myDefault);
         setSepoliaState(myDefault);
+        setSolanatestnetState(myDefault);
         if (cc == ChainCode.MORPH_TEST_CHAIN) {
             setMorphl2testState(myChecked);
         } else if (cc == ChainCode.DEFAULT_ANVIL_CHAIN) {
@@ -82,6 +84,8 @@ export const ChainIcons = ({
             setLineatestState(myChecked);
         } else if (cc == ChainCode.SEPOLIA_CHAIN) {
             setSepoliaState(myChecked);
+        } else if (cc == ChainCode.SOLANA_TEST_CHAIN) {
+            setSolanatestnetState(myChecked);
         }
     };
 
@@ -143,6 +147,19 @@ export const ChainIcons = ({
         <div className="flex gap-3 items-center" style={{ cursor: "pointer" }}>
             {/* <SetChainForm /> */}
             {/* <Badge content="" color="secondary"> */}
+
+            <Tooltip content="Solana testnet">
+                <Avatar
+                    src="/chain/solanatest.png"
+                    size={solanatestnetState.size}
+                    isBordered={solanatestnetState.bordered}
+                    onClick={() => {
+                        handleClick(ChainCode.SOLANA_TEST_CHAIN);
+                    }}
+                    color="primary"
+                    radius="sm"
+                />
+            </Tooltip>
 
             <Tooltip content="Sepolia testnet">
                 <Avatar
@@ -319,6 +336,21 @@ export const SelectedChainIcon = ({
                     <Tooltip content="sepolia testnet">
                         <Avatar
                             src="/chain/sepolia.png"
+                            size="sm"
+                            color="primary"
+                            radius="sm"
+                        />
+                    </Tooltip>
+                </Badge>
+            </div>
+        );
+    } else if (myChainCode == ChainCode.SOLANA_TEST_CHAIN) {
+        return (
+            <div className="flex gap-3 items-center">
+                <Badge content="" color="secondary">
+                    <Tooltip content="solana testnet">
+                        <Avatar
+                            src="/chain/solanatest.png"
                             size="sm"
                             color="primary"
                             radius="sm"

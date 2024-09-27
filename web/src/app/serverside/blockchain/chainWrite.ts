@@ -24,6 +24,10 @@ function sleep(time) {
 }
 
 export async function getW3eapAddr(chainCode: string) {
+    if (chainCode.indexOf("SOLANA") >= 0) {
+        return "";
+    }
+
     const myClient = await chainClient(chainCode);
     const addr = await myClient.publicClient.readContract({
         account: myClient.account,

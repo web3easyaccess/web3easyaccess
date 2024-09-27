@@ -1,6 +1,8 @@
 import { defineChain } from "viem";
 
 import { scrollSepolia, lineaSepolia, sepolia } from "viem/chains";
+import solana from "@solana/web3.js";
+
 import { ChainCode } from "./myTypes";
 
 // node_modules\viem\chains\definitions\scrollSepolia.ts
@@ -117,6 +119,8 @@ export const getChainObj = (
         rtn.rpcUrls.default.http.unshift(
             "https://eth-sepolia.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW"
         );
+    } else if (chainCode == ChainCode.SOLANA_CHAIN) {
+        rtn = solana;
     } else {
         console.warn("not supprted:" + chainCode);
     }

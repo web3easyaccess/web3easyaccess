@@ -1,5 +1,5 @@
 import { createPublicClient, http } from "viem";
-import { sepolia, mainnet, localhost } from "viem/chains";
+
 import { createWalletClient, custom } from "viem";
 
 import { getChainObj } from "./myChain";
@@ -12,6 +12,9 @@ export function chainPublicClient(chainCode, factoryAddr) {
     // if (typeof currentRpcUrl === "undefined" || currentRpcUrl === undefined) {
     //     throw new Error("RpcUrl NOT DEFINED!");
     // }
+    if (chainCode.toString().indexOf("SOLANA") >= 0) {
+        return {};
+    }
 
     return {
         factoryAddr: `0x${factoryAddr.substring(2)}`,
