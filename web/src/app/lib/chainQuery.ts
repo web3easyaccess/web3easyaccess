@@ -4,7 +4,7 @@ import axios from "axios";
 import { Axios, AxiosResponse, AxiosError } from "axios";
 
 import { isMorphNet, isScrollNet, isLineaNet } from "./myChain";
-import { Transaction } from "./myTypes";
+import { ChainCode, Transaction } from "./myTypes";
 import { getChainObj } from "./myChain";
 import {
     getContract,
@@ -18,6 +18,7 @@ import { chainPublicClient } from "./chainQueryClient";
 import { getOwnerIdLittleBrother } from "../dashboard/privateinfo/lib/keyTools";
 
 import abis from "../serverside/blockchain/abi/abis";
+import LocalStore from "../storage/LocalStore";
 
 const accountOnlyForRead = privateKeyToAccount(
     "0x1000000000000000000000000000000000000000000000000000000000000000"
@@ -108,18 +109,65 @@ export function parseUnits(value: string, decimals: number) {
     return BigInt(`${negative ? "-" : ""}${integer}${fraction}`);
 }
 
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const SOLANA_DEMO_ADDR_LIST = [
+    "GMpWTEeLYMuH2ZiFfdC8WkSHqQv7Ug6C68TJf6c7TSVH",
+    "2L3w87GRMTWPz61ZgzeHDSZa9py5smzgWRcFjfiQcVRi",
+    "CqDmiHZXSJG7Vzr4nNQmmLWMTosMGmRy9mKvb67264kU",
+];
+
 export async function queryAccountList(
     chainCode: string,
     factoryAddr: string,
     baseOwnerId: string
 ) {
     const acctList: { addr: string; created: boolean; orderNo: number }[] = [];
+    if (chainCode == ChainCode.SOLANA_TEST_CHAIN.toString()) {
+        acctList.push({
+            addr: SOLANA_DEMO_ADDR_LIST[0],
+            created: true,
+            orderNo: 0,
+        });
+        acctList.push({
+            addr: SOLANA_DEMO_ADDR_LIST[1],
+            created: true,
+            orderNo: 1,
+        });
+        acctList.push({
+            addr: SOLANA_DEMO_ADDR_LIST[2],
+            created: false,
+            orderNo: 2,
+        });
+        return acctList;
+    }
     // max count supported is 10.
     for (let k = 0; k < 10; k++) {
         console.log("getOwnerIdLittleBrother before:", baseOwnerId, k);
         const realOwnerId = getOwnerIdLittleBrother(baseOwnerId, k);
         console.log("getOwnerIdLittleBrother after:", realOwnerId);
-        const account = await queryAccount(chainCode, factoryAddr, realOwnerId);
+        let account = {
+            addr: "0x000",
+            created: true,
+        };
+
+        for (let mm = 0; mm < 5; mm++) {
+            try {
+                console.log("queryAccount...777");
+                account = await queryAccount(
+                    chainCode,
+                    factoryAddr,
+                    realOwnerId
+                );
+                break;
+            } catch (eee) {
+                console.log("warn....:queryAccount error:k=", k, eee);
+                await sleep(3000);
+            }
+        }
+
         console.log(realOwnerId + "'s account: " + account);
         acctList.push({
             addr: account?.accountAddr,
@@ -137,9 +185,34 @@ export async function queryAccountList(
 export async function queryAccount(
     chainCode: string,
     factoryAddr: string,
-    ownerId: `0x${string}`
+    ownerId: string
 ) {
+    if (chainCode.indexOf("SOLANA") >= 0) {
+        return SOLANA_DEMO_ADDR_LIST[0];
+    }
+
+    console.log(
+        "queryAccount--888:",
+        chainCode,
+        "::",
+        factoryAddr,
+        "::",
+        ownerId
+    );
     try {
+        const cache = LocalStore.getCacheQueryAccount(
+            chainCode,
+            factoryAddr,
+            ownerId
+        );
+        console.log("getCacheQueryAccount:", cache);
+        if (
+            cache != null &&
+            cache.accountAddr != null &&
+            cache.accountAddr.length > 0
+        ) {
+            return cache;
+        }
         const cpc = chainPublicClient(chainCode, factoryAddr);
         // console.log("rpc:", cpc.rpcUrl);
         console.log(
@@ -173,11 +246,18 @@ export async function queryAccount(
                 functionName: "passwdAddr",
                 args: [],
             });
-            return {
-                accountAddr: accountAddr,
+            const rtn = {
+                accountAddr: "" + accountAddr,
                 created: true,
-                passwdAddr: passwdAddr,
+                passwdAddr: "" + passwdAddr,
             };
+            LocalStore.setCacheQueryAccount(
+                chainCode,
+                factoryAddr,
+                ownerId,
+                rtn
+            );
+            return rtn;
         }
     } catch (e) {
         console.log(
@@ -185,7 +265,8 @@ export async function queryAccount(
                 ownerId,
             e
         );
-        throw new Error("queryAccount error!");
+        // 临时 注释
+        // throw new Error("queryAccount error!");
     }
 }
 
@@ -442,26 +523,38 @@ export async function queryEthBalance(
     factoryAddr: string,
     addr: string
 ) {
+    if (chainCode.indexOf("SOLANA") >= 0 || !addr.startsWith("0x")) {
+        return "1.2345";
+    }
+
     if (addr == undefined || addr == popularAddr.ZERO_ADDR) {
         return "0.0";
     }
-    // const blockNumber = await client.getBlockNumber();
-    var addrWithout0x = addr;
-    if (addr.substring(0, 2) == "0x" || addr.substring(0, 2) == "0X") {
-        addrWithout0x = addr.substring(2);
+    try {
+        // const blockNumber = await client.getBlockNumber();
+        var addrWithout0x = addr;
+        if (addr.substring(0, 2) == "0x" || addr.substring(0, 2) == "0X") {
+            addrWithout0x = addr.substring(2);
+        }
+        const cpc = chainPublicClient(chainCode, factoryAddr);
+
+        const balance = await cpc.publicClient.getBalance({
+            address: `0x${addrWithout0x}`,
+        });
+
+        const balanceAsEther = formatEther(balance);
+        return balanceAsEther;
+    } catch (ee) {
+        console.log("queryEthBalance error:", ee);
+        return "0";
     }
-    const cpc = chainPublicClient(chainCode, factoryAddr);
-
-    const balance = await cpc.publicClient.getBalance({
-        address: `0x${addrWithout0x}`,
-    });
-
-    const balanceAsEther = formatEther(balance);
-    return balanceAsEther;
 }
 
 const getW3eapAddr = async (cpc, chainCode: string, factoryAddr: string) => {
     console.log(`factoryAddr ${factoryAddr} called.`);
+    if (chainCode.indexOf("SOLANA") >= 0) {
+        return "";
+    }
     const addr = await cpc.publicClient.readContract({
         account: accountOnlyForRead,
         address: factoryAddr,
@@ -482,6 +575,9 @@ export async function queryW3eapBalance(
     factoryAddr: string,
     addr: string
 ) {
+    if (chainCode.indexOf("SOLANA") >= 0 || !addr.startsWith("0x")) {
+        return "0.0";
+    }
     if (addr == undefined || addr == popularAddr.ZERO_ADDR) {
         return "0.0";
     }
@@ -508,11 +604,18 @@ export async function queryW3eapBalance(
         return bb;
     } catch (e) {
         console.log(
-            "==================queryW3eapBalance error======================, accountAddr=" +
+            "==================queryW3eapBalance error======================2, accountAddr=" +
                 addr,
             e
         );
-        throw new Error("queryW3eapBalance error!");
+        if (
+            e != null &&
+            e != undefined &&
+            e.toString().indexOf("returned no data") >= 0
+        ) {
+            return "0";
+        }
+        throw new Error("queryW3eapBalance error2!");
     }
 }
 
@@ -521,6 +624,9 @@ export async function queryfreeGasFeeAmount(
     factoryAddr: string,
     addr: string
 ) {
+    if (chainCode.indexOf("SOLANA") >= 0 || !addr.startsWith("0x")) {
+        return "0.0";
+    }
     if (addr == undefined || addr == popularAddr.ZERO_ADDR) {
         return "0.0";
     }
@@ -543,11 +649,18 @@ export async function queryfreeGasFeeAmount(
         return bb;
     } catch (e) {
         console.log(
-            "==================queryW3eapBalance error======================, accountAddr=" +
+            "==================queryW3eapBalance error======================1, accountAddr=" +
                 addr,
             e
         );
-        throw new Error("queryW3eapBalance error!");
+        if (
+            e != null &&
+            e != undefined &&
+            e.toString().indexOf("returned no data") >= 0
+        ) {
+            return "0";
+        }
+        throw new Error("queryW3eapBalance error1!");
     }
 }
 
@@ -556,7 +669,22 @@ export async function queryAssets(
     factoryAddr: string,
     addr: string
 ) {
+    if (
+        chainCode.indexOf("SOLANA") >= 0 ||
+        !addr.startsWith("0x") ||
+        factoryAddr.length < 20
+    ) {
+        return [
+            {
+                token_address: "",
+                token_symbol: "SOL",
+                balance: "1.234",
+            },
+        ];
+    }
+
     let tokenList = [];
+    const result = [];
     try {
         const cpc = chainPublicClient(chainCode, factoryAddr);
         // console.log("rpc:", cpc.rpcUrl);
@@ -571,8 +699,6 @@ export async function queryAssets(
             token_symbol: "ETH",
             balance: ethBalance,
         };
-
-        const result = [];
 
         if (isMorphNet(chainCode)) {
             const w3eapIncluded = { addr: w3eapAddr, included: false };
@@ -637,7 +763,8 @@ export async function queryAssets(
                 addr,
             e
         );
-        throw new Error("queryAssets error!");
+        // throw new Error("queryAssets error!");
+        return result;
     }
 }
 
@@ -650,6 +777,9 @@ export async function queryTransactions(
         return res;
     }
     // //
+    if (chainCode.indexOf("SOLANA") >= 0) {
+        return [];
+    }
 
     if (isMorphNet(chainCode)) {
         const res = await _queryMorphTransactions(chainCode, addr);

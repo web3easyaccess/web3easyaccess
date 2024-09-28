@@ -33,12 +33,9 @@ function urlError() {
 }
 
 function urlLoggedInCheck() {
-    const dd = myCookies.loadData(); // || "abc@def.com";
-    if (!dd || !dd.ownerId || dd.ownerId == "") {
-        console.log("urlLoggedInCheck, redirect to login");
-        redirect("/login");
-    }
-    if (myCookies.getChainCode() == "") {
+    const email = myCookies.getEmail(); // || "abc@def.com";
+
+    if (email == "" || email == undefined || email == null) {
         console.log("urlLoggedInCheck2, redirect to login");
         redirect("/login");
     }

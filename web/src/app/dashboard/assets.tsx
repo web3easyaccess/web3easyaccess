@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { MutableRefObject } from "react";
 import { useEffect, useState } from "react";
 import { Tabs, Tab, Card, CardBody } from "@nextui-org/react";
 import {
@@ -21,34 +21,55 @@ import {
 import { useFormState } from "react-dom";
 import { queryAssets } from "../lib/chainQuery";
 
-import { Menu, UserInfo, uiToString } from "../lib/myTypes";
+import { ChainCode, Menu, UserInfo, uiToString } from "../lib/myTypes";
+import { UserProperty } from "../storage/LocalStore";
 
-export default function App({
-    currentUserInfo,
+export default function Assets({
+    userProp,
 }: {
-    currentUserInfo: UserInfo;
+    userProp: {
+        ref: MutableRefObject<UserProperty>;
+        state: UserProperty;
+        serverSidePropState: {
+            w3eapAddr: string;
+            factoryAddr: string;
+            bigBrotherPasswdAddr: string;
+        };
+    };
 }) {
     const [assets, setAssets] = useState([]);
+    console.log("assets:");
 
     useEffect(() => {
         const fetchAssets = async () => {
+            if (
+                userProp.state.selectedAccountAddr == "" ||
+                userProp.state.selectedAccountAddr == undefined ||
+                userProp.state.selectedChainCode == ChainCode.UNKNOW ||
+                userProp.serverSidePropState.factoryAddr == "" ||
+                userProp.serverSidePropState.factoryAddr == undefined
+            ) {
+                return;
+            }
             // suffix with 0000
             console.log(
                 "fetchAssets, account:",
-                currentUserInfo.selectedAccountAddr,
-                currentUserInfo.selectedOrderNo
+                userProp.state.selectedChainCode,
+                userProp.serverSidePropState.factoryAddr,
+                userProp.state.selectedAccountAddr,
+                userProp.state.selectedOrderNo
             );
             const a = await queryAssets(
-                currentUserInfo.chainCode,
-                currentUserInfo.factoryAddr,
-                `0x${currentUserInfo.selectedAccountAddr.substring(2)}`
+                userProp.state.selectedChainCode,
+                userProp.serverSidePropState.factoryAddr,
+                `0x${userProp.state.selectedAccountAddr.substring(2)}`
             );
             setAssets(a as any);
         };
-        if (currentUserInfo.selectedAccountAddr != "") {
+        if (userProp.state.selectedAccountAddr != "") {
             fetchAssets();
         }
-    }, [currentUserInfo]);
+    }, [userProp.state, userProp.serverSidePropState]);
 
     let kk = 0;
     //   token_address: "-",

@@ -4,6 +4,7 @@ import { signAuth } from "../privateinfo/lib/signAuthTypedData";
 
 import {
     getOwnerIdBigBrother,
+    getOwnerIdLittleBrother,
     getPasswdAccount,
     PrivateInfoType,
 } from "../privateinfo/lib/keyTools";
@@ -22,11 +23,28 @@ import {
     parseAbiParameters,
     parseEther,
     formatEther,
+    encodeFunctionData,
+    parseAbiItem,
 } from "viem";
+import { chainPublicClient } from "../../lib/chainQueryClient";
 
-import React, { useState, useEffect, useRef } from "react";
+import abis from "../../serverside/blockchain/abi/abis";
+
+import React, { useState, useEffect, useRef, MutableRefObject } from "react";
+
+import {
+    Table,
+    TableHeader,
+    TableColumn,
+    TableBody,
+    TableRow,
+    TableCell,
+    Textarea,
+} from "@nextui-org/react";
 
 import { Button } from "@nextui-org/button";
+import { Chip } from "@nextui-org/react";
+import { Switch } from "@nextui-org/react";
 import {
     Card,
     CardHeader,
@@ -43,14 +61,18 @@ import {
 
 import { useFormState, useFormStatus } from "react-dom";
 
-import { useRouter } from "next/navigation";
 import { getOwnerIdSelfByBigBrother } from "../privateinfo/lib/keyTools";
-import { queryAccount, queryQuestionIdsEnc } from "../../lib/chainQuery";
-import { getInputValueById, setInputValueById } from "../../lib/elementById";
 import {
-    newTransaction,
-    createAccountAndSendTransaction,
-} from "../../serverside/serverActions";
+    queryAccount,
+    queryQuestionIdsEnc,
+    queryTokenDetail,
+    queryNftDetail,
+    queryNftsOwnerUri,
+    formatUnits,
+    parseUnits,
+    queryEthBalance,
+} from "../../lib/chainQuery";
+import { getInputValueById, setInputValueById } from "../../lib/elementById";
 
 import {
     newAccountAndTransferETH,
@@ -58,27 +80,65 @@ import {
     changePasswdAddr,
 } from "../../serverside/blockchain/chainWrite";
 
-import { PrivateInfo } from "./privateinfo4chg";
+import { PrivateInfo as PrivateInfo4Chg } from "./privateinfo4chg";
 
 import { getChainObj } from "../../lib/myChain";
 
-import { Menu, UserInfo, uiToString, Transaction } from "../../lib/myTypes";
+import { SelectedChainIcon } from "../../navbar/chainIcons";
+
+import {
+    Menu,
+    UserInfo,
+    uiToString,
+    Transaction,
+    ChainCode,
+} from "../../lib/myTypes";
+
+import lineaBridge from "./bridge/lineaBridge";
+import { UserProperty } from "@/app/storage/LocalStore";
 
 const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
     let questionNosEnc = qNo1 + qNo2 + generateRandomString();
     console.log("questionNosEnc1:", questionNosEnc);
-
     questionNosEnc = aesEncrypt(questionNosEnc, pin);
     console.log("questionNosEnc2:", questionNosEnc);
     return questionNosEnc;
 };
 
-export default function App({
-    currentUserInfo,
+export default function SendChgPrivateInfo({
+    userProp,
+    accountAddrList,
+    forTransaction,
 }: {
-    currentUserInfo: UserInfo;
+    userProp: {
+        ref: MutableRefObject<UserProperty>;
+        state: UserProperty;
+        serverSidePropState: {
+            w3eapAddr: string;
+            factoryAddr: string;
+            bigBrotherPasswdAddr: string;
+        };
+    };
+    accountAddrList: string[];
+    forTransaction: boolean;
 }) {
-    const router = useRouter();
+    const chainObj = getChainObj(userProp.state.selectedChainCode);
+
+    const explorerUrl = chainObj.blockExplorers.default.url;
+
+    const explorerTxUrl = (hash: string) => {
+        if (hash == undefined || hash == null) {
+            return "";
+        }
+        let idx = hash.indexOf("::");
+        let xx = hash;
+        if (idx > 0) {
+            xx = hash.substring(0, idx);
+            return `${explorerUrl}/tx/${xx}?tab=internal`;
+        } else {
+            return `${explorerUrl}/tx/${xx}`;
+        }
+    };
 
     const [currentTabTag, setCurrentTabTag] = useState("chgPrivate");
 
@@ -91,7 +151,7 @@ export default function App({
     const [buttonText, setButtonText] = useState("Send ETH");
 
     const bigBrotherAccountCreated = () => {
-        return currentUserInfo.accountAddrList.length > 1;
+        return accountAddrList.length > 1;
     };
     const [privateFillInOk, setPrivateFillInOk] = useState(0);
 
@@ -139,19 +199,23 @@ export default function App({
     const currentPriInfoRef = useRef(piInit);
     const oldPriInfoRef = useRef(piInit);
 
-    const chainObj = getChainObj(currentUserInfo.chainCode);
-
     const [currentTx, setCurrentTx] = useState("");
     const updateCurrentTx = (tx: string) => {
         setCurrentTx(tx);
-        router.push("/dashboard/transactions");
     };
 
     const preparedPriceRef = useRef({
         preparedMaxFeePerGas: undefined,
         preparedGasPrice: undefined,
     });
-    const [transactionFee, setTransactionFee] = useState("? ETH");
+    const [transactionFee, setTransactionFee] = useState("? SOL");
+
+    const getOwnerId = () => {
+        return getOwnerIdLittleBrother(
+            userProp.state.bigBrotherOwnerId,
+            userProp.state.selectedOrderNo
+        );
+    };
 
     useEffect(() => {
         const refreshFee = async () => {
@@ -185,8 +249,8 @@ export default function App({
                         );
 
                         eFee = await estimateChgPasswdFee(
-                            currentUserInfo.bigBrotherOwnerId,
-                            currentUserInfo.accountAddrList[0],
+                            userProp.state.bigBrotherOwnerId,
+                            accountAddrList[0],
                             oldPasswdAccount,
                             passwdAccount.address,
                             chainObj,
@@ -197,8 +261,8 @@ export default function App({
                     } else {
                         if (receiverAddr != "" && amountETH != "") {
                             eFee = await estimateTransFee(
-                                currentUserInfo.selectedOwnerId,
-                                currentUserInfo.selectedAccountAddr,
+                                getOwnerId(),
+                                userProp.state.selectedAccountAddr,
                                 passwdAccount,
                                 receiverAddr,
                                 amountETH,
@@ -240,7 +304,7 @@ export default function App({
                     }
                     setTransactionFee(eFee.feeDisplay);
                 } else {
-                    setTransactionFee("? ETH.");
+                    setTransactionFee("? SOL.");
                 }
             } catch (e) {
                 console.log("seek error:", e);
@@ -280,37 +344,51 @@ export default function App({
 
         const fetchMyAccountStatus = async () => {
             // suffix with 0000
+            console.log(
+                "queryAccount...1,sendchgprivateinfo:",
+                userProp.state.selectedChainCode,
+                ",",
+                userProp.serverSidePropState.factoryAddr,
+                ",",
+                getOwnerId()
+            );
+
+            if (
+                userProp.state.selectedChainCode == ChainCode.UNKNOW ||
+                userProp.serverSidePropState.factoryAddr == "" ||
+                userProp.serverSidePropState.factoryAddr == undefined
+            ) {
+                return;
+            }
+
             const acct = await queryAccount(
-                currentUserInfo.chainCode,
-                currentUserInfo.factoryAddr,
-                currentUserInfo.selectedOwnerId
+                userProp.state.selectedChainCode,
+                userProp.serverSidePropState.factoryAddr,
+                getOwnerId()
             );
             console.log(
                 "my Account for new transaction:",
                 acct,
-                currentUserInfo.selectedOwnerId,
-                currentUserInfo.bigBrotherOwnerId
+                getOwnerId(),
+                userProp.state.bigBrotherOwnerId
             );
-            if (acct.accountAddr != currentUserInfo.selectedAccountAddr) {
+            if (acct.accountAddr != userProp.state.selectedAccountAddr) {
                 console.log(
                     "develop error!",
-                    currentUserInfo.bigBrotherOwnerId,
-                    currentUserInfo.selectedAccountAddr,
-                    currentUserInfo.selectedOwnerId,
+                    userProp.state.bigBrotherOwnerId,
+                    userProp.state.selectedAccountAddr,
+                    getOwnerId(),
                     acct.accountAddr
                 );
-                throw new Error("develop error2!");
+                // demo 临时注释
+                // throw new Error("develop error2!");
             }
             setMyAccountCreated(acct?.created);
         };
-        if (currentUserInfo.selectedAccountAddr != "") {
+        if (userProp.state.selectedAccountAddr != "") {
             fetchMyAccountStatus();
         }
-    }, [
-        currentUserInfo,
-        currentUserInfo.selectedAccountAddr,
-        currentUserInfo.chainCode,
-    ]);
+    }, [userProp.state, userProp.serverSidePropState]);
 
     return (
         <>
@@ -322,14 +400,15 @@ export default function App({
             </div>
 
             <div>
-                <PrivateInfo
-                    currentUserInfo={currentUserInfo}
+                <PrivateInfo4Chg
+                    userProp={userProp}
+                    accountAddrList={accountAddrList}
                     forTransaction={false}
                     currentPriInfoRef={currentPriInfoRef}
                     oldPriInfoRef={oldPriInfoRef}
                     updateFillInOk={updateFillInOk}
                     privateinfoHidden={privateinfoHidden}
-                ></PrivateInfo>
+                ></PrivateInfo4Chg>
             </div>
             <div
                 style={
@@ -366,7 +445,11 @@ export default function App({
                 }
             >
                 <p>Transaction:</p>
-                <Link isExternal href={`/${currentTx}`} showAnchorIcon>
+                <Link
+                    isExternal
+                    href={`${explorerTxUrl(currentTx)}`}
+                    showAnchorIcon
+                >
                     {currentTx}
                 </Link>
             </div>
@@ -385,10 +468,10 @@ export default function App({
                             : { display: "none" }
                     }
                 >
-                    <SendTransaction
-                        myOwnerId={currentUserInfo.selectedOwnerId}
-                        verifyingContract={currentUserInfo.selectedAccountAddr}
-                        email={currentUserInfo.email}
+                    <CreateTransaction
+                        myOwnerId={getOwnerId()}
+                        verifyingContract={userProp.state.selectedAccountAddr}
+                        email={userProp.state.email}
                         chainObj={chainObj}
                         buttonText={buttonText}
                         myAccountCreated={myAccountCreated}
@@ -408,7 +491,7 @@ function sleep(time) {
     return new Promise((resolve) => setTimeout(resolve, time));
 }
 
-function SendTransaction({
+function CreateTransaction({
     myOwnerId,
     verifyingContract,
     email,
@@ -424,7 +507,17 @@ function SendTransaction({
     myOwnerId: string;
     verifyingContract: string;
     email: string;
-    chainObj: any;
+    chainObj: {
+        id: number;
+        name: string;
+        nativeCurrency: {};
+        rpcUrls: {};
+        blockExplorers: {};
+        contracts: {};
+        testnet: boolean;
+        chainCode: ChainCode;
+        l1ChainCode: ChainCode;
+    };
     buttonText: string;
     myAccountCreated: boolean;
     oldPriInfoRef: React.MutableRefObject<PrivateInfoType>;
@@ -433,7 +526,6 @@ function SendTransaction({
     updateCurrentTx: any;
     currentTabTag: string;
 }) {
-    const router = useRouter();
     const { pending } = useFormStatus();
 
     const handleClick = async (event) => {
@@ -591,7 +683,17 @@ async function estimateChgPasswdFee(
     bigBrotherAccountAddr: string,
     passwdAccount: any,
     newPasswdAddr: string,
-    chainObj: any,
+    chainObj: {
+        id: number;
+        name: string;
+        nativeCurrency: {};
+        rpcUrls: {};
+        blockExplorers: {};
+        contracts: {};
+        testnet: boolean;
+        chainCode: ChainCode;
+        l1ChainCode: ChainCode;
+    },
     bigBrotherAccountCreated: boolean,
     questionNos: string,
     preparedPriceRef: any
@@ -632,7 +734,7 @@ async function estimateChgPasswdFee(
         let chainId = chainObj.id;
         if (!bigBrotherAccountCreated) {
             alert("No account is currently created in email. not supported.");
-            return;
+            return {};
         }
         let withZeroNonce = !bigBrotherAccountCreated;
         const sign = await signAuth(
@@ -653,6 +755,7 @@ async function estimateChgPasswdFee(
                 bigBrotherAccountAddr
             );
             detectRes = await changePasswdAddr(
+                chainObj.chainCode,
                 bigBrotherOwnerId,
                 bigBrotherAccountAddr,
                 passwdAccount.address,
@@ -666,7 +769,7 @@ async function estimateChgPasswdFee(
             );
         } else {
             console.log("error...not supported...");
-            return;
+            return {};
         }
 
         if (!detectRes.success) {
@@ -705,7 +808,17 @@ async function executeChgPasswd(
     bigBrotherAccountAddr: string,
     passwdAccount: any,
     newPasswdAddr: string,
-    chainObj: any,
+    chainObj: {
+        id: number;
+        name: string;
+        nativeCurrency: {};
+        rpcUrls: {};
+        blockExplorers: {};
+        contracts: {};
+        testnet: boolean;
+        chainCode: ChainCode;
+        l1ChainCode: ChainCode;
+    },
     bigBrotherAccountCreated: boolean,
     newQuestionNos: string,
     preparedPriceRef: any
@@ -772,6 +885,7 @@ async function executeChgPasswd(
             bigBrotherAccountAddr
         );
         detectRes = await changePasswdAddr(
+            chainObj.chainCode,
             bigBrotherOwnerId,
             bigBrotherAccountAddr,
             passwdAccount.address,
@@ -808,7 +922,17 @@ async function estimateTransFee(
     receiverAddr: string,
     receiverAmountETH: string,
     receiverData: string,
-    chainObj: any,
+    chainObj: {
+        id: number;
+        name: string;
+        nativeCurrency: {};
+        rpcUrls: {};
+        blockExplorers: {};
+        contracts: {};
+        testnet: boolean;
+        chainCode: ChainCode;
+        l1ChainCode: ChainCode;
+    },
     myAccountCreated: boolean,
     questionNos: string,
     preparedPriceRef: any
@@ -869,6 +993,7 @@ async function estimateTransFee(
                 myContractAccount
             );
             detectRes = await createTransaction(
+                chainCode,
                 myOwnerId,
                 myContractAccount,
                 passwdAccount.address,
@@ -940,7 +1065,17 @@ async function executeTransaction(
     receiverAddr: string,
     receiverAmountETH: string,
     receiverData: string,
-    chainObj: any,
+    chainObj: {
+        id: number;
+        name: string;
+        nativeCurrency: {};
+        rpcUrls: {};
+        blockExplorers: {};
+        contracts: {};
+        testnet: boolean;
+        chainCode: ChainCode;
+        l1ChainCode: ChainCode;
+    },
     myAccountCreated: boolean,
     questionNos: string,
     preparedPriceRef: any
@@ -1005,6 +1140,7 @@ async function executeTransaction(
             myContractAccount
         );
         detectRes = await createTransaction(
+            chainCode,
             myOwnerId,
             myContractAccount,
             passwdAccount.address,

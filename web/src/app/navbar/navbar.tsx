@@ -1,4 +1,4 @@
-import React from "react";
+import React, { MutableRefObject } from "react";
 import {
     Autocomplete,
     AutocompleteItem,
@@ -32,36 +32,42 @@ import { SelectedChainIcon, ChainIcons } from "./chainIcons";
 import UserProfile from "./userProfile";
 
 import { Menu, UserInfo, uiToString, ChainCode } from "../lib/myTypes";
+import { UserProperty } from "../storage/LocalStore";
 
 export default function App({
-    currentUserInfo,
-    updateCurrentUserInfo,
+    userProp,
+    updateUserProp,
+    accountAddrList,
+    updateAccountAddrList,
 }: {
-    currentUserInfo: UserInfo;
-    updateCurrentUserInfo: any;
-}) {
-    console.log("ui in navbar:", uiToString(currentUserInfo));
-
-    const [selectedChainCode, setSelectedChainCode] = useState(
-        currentUserInfo.chainCode
-    );
-
-    const handleNewChainCodeState = (newChainCode: ChainCode) => {
-        const oldChainCode = selectedChainCode;
-        console.log("chainCode now set to be0,old:" + oldChainCode);
-        if (oldChainCode != newChainCode) {
-            console.log("chainCode now set to be1:" + newChainCode);
-            setSelectedChainCode(newChainCode);
-            const iii = setTimeout(() => {
-                console.log(
-                    "page reload...00..",
-                    selectedChainCode,
-                    newChainCode
-                );
-                location.reload();
-            }, 500);
-        }
+    userProp: {
+        ref: MutableRefObject<UserProperty>;
+        state: UserProperty;
+        serverSidePropState: {
+            w3eapAddr: string;
+            factoryAddr: string;
+            bigBrotherPasswdAddr: string;
+        };
     };
+    updateUserProp: ({
+        email,
+        selectedOrderNo,
+        selectedAccountAddr,
+        selectedChainCode,
+        testMode,
+    }: {
+        email: string;
+        selectedOrderNo: number;
+        selectedAccountAddr: string;
+        selectedChainCode: ChainCode;
+        testMode: boolean;
+    }) => void;
+    accountAddrList: string[];
+    updateAccountAddrList: (acctList: string[]) => void;
+}) {
+    console.log("ui in navbar,ref:", userProp.ref.current);
+    console.log("ui in navbar,state:", userProp.state);
+
     // max-w-[30ch]
     return (
         <Navbar isBordered isBlurred={false} maxWidth="full">
@@ -69,18 +75,16 @@ export default function App({
                 <p
                     className="text-md"
                     style={{ color: "black" }}
-                    title={currentUserInfo.email}
+                    title={userProp.state.emailDisplay}
                 >
-                    {currentUserInfo.emailDisplay}
+                    {userProp.state.emailDisplay}
                 </p>
                 <Divider
                     orientation="vertical"
                     style={{ marginLeft: "20px" }}
                 />
                 <NavbarItem>
-                    <SelectedChainIcon
-                        chainCodeState={currentUserInfo.chainCode}
-                    ></SelectedChainIcon>
+                    <SelectedChainIcon userProp={userProp}></SelectedChainIcon>
                 </NavbarItem>
                 <Divider
                     orientation="vertical"
@@ -88,9 +92,10 @@ export default function App({
                 />
                 <NavbarItem>
                     <UserProfile
-                        currentChainCode={selectedChainCode}
-                        currentUserInfo={currentUserInfo}
-                        updateCurrentUserInfo={updateCurrentUserInfo}
+                        userProp={userProp}
+                        updateUserProp={updateUserProp}
+                        accountAddrList={accountAddrList}
+                        updateAccountAddrList={updateAccountAddrList}
                     />
                 </NavbarItem>
                 {/* <NavbarItem className="hidden lg:flex">
@@ -100,16 +105,10 @@ export default function App({
                 <NavbarItem></NavbarItem>
             </NavbarBrand>
 
-            <NavbarContent className="hidden sm:flex gap-4" justify="center">
-                <NavbarItem isActive></NavbarItem>
-                <NavbarItem>
-                    <Link color="foreground" href="#"></Link>
-                </NavbarItem>
-            </NavbarContent>
             <NavbarContent justify="end">
                 <ChainIcons
-                    chainCodeState={currentUserInfo.chainCode}
-                    handleNewChainCodeState={handleNewChainCodeState}
+                    userProp={userProp}
+                    updateUserProp={updateUserProp}
                 />
                 <NavbarItem className="hidden lg:flex">
                     <Logout></Logout>
@@ -119,27 +118,29 @@ export default function App({
     );
 }
 
-export function Navbar4Login({ chainCode }: { chainCode: string }) {
-    const [chainCodeState, setCurrentChainCode] = useState(chainCode);
-    const handleNewChainCodeState = (newChainCode: string) => {
-        // console.log("chainCode now set to be1:" + newChainCode);
-        // setCurrentChainCode(newChainCode);
-
-        const oldChainCode = chainCodeState;
-        console.log("chainCode now set to be0,old login:" + oldChainCode);
-        if (oldChainCode != newChainCode) {
-            console.log("chainCode now set to be1 login:" + newChainCode);
-            setCurrentChainCode(newChainCode);
-            const iii = setTimeout(() => {
-                console.log(
-                    "page reload...00.111.",
-                    chainCodeState,
-                    newChainCode
-                );
-                location.reload();
-            }, 1000);
-        }
+export function Navbar4Login({
+    userProp,
+    updateChainCode,
+}: {
+    userProp: {
+        ref: MutableRefObject<UserProperty>;
+        state: UserProperty;
+        serverSidePropState: {
+            w3eapAddr: string;
+            factoryAddr: string;
+            bigBrotherPasswdAddr: string;
+        };
     };
+    updateChainCode: ({
+        email,
+        selectedChainCode,
+    }: {
+        email: string;
+        selectedChainCode: ChainCode;
+    }) => void;
+}) {
+    console.log("navbar 4 login, userPropref:", userProp.ref.current);
+    console.log("navbar 4 login, userPropstate:", userProp.state);
     // max-w-[30ch]
     return (
         <Navbar isBordered isBlurred={false} maxWidth="full">
@@ -149,9 +150,7 @@ export function Navbar4Login({ chainCode }: { chainCode: string }) {
                     style={{ marginLeft: "20px" }}
                 />
                 <NavbarItem>
-                    <SelectedChainIcon
-                        chainCodeState={chainCodeState}
-                    ></SelectedChainIcon>
+                    <SelectedChainIcon userProp={userProp}></SelectedChainIcon>
                 </NavbarItem>
                 <Divider
                     orientation="vertical"
@@ -166,8 +165,8 @@ export function Navbar4Login({ chainCode }: { chainCode: string }) {
 
             <NavbarContent justify="end">
                 <ChainIcons
-                    chainCodeState={chainCodeState}
-                    handleNewChainCodeState={handleNewChainCodeState}
+                    userProp={userProp}
+                    updateUserProp={updateChainCode}
                 />
                 <NavbarItem className="hidden lg:flex"></NavbarItem>
             </NavbarContent>

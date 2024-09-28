@@ -1,5 +1,5 @@
 import { createPublicClient, http } from "viem";
-import { sepolia, mainnet, localhost } from "viem/chains";
+
 import { createWalletClient, custom } from "viem";
 
 import { getChainObj } from "./myChain";
@@ -8,9 +8,12 @@ import { getChainObj } from "./myChain";
 export function chainPublicClient(chainCode, factoryAddr) {
     const chainObj = getChainObj(chainCode);
 
-    const currentRpcUrl = chainObj.rpcUrls.default.http[0]; //process.env.RPC_URL;
-    if (typeof currentRpcUrl === "undefined" || currentRpcUrl === undefined) {
-        throw new Error("RpcUrl NOT DEFINED!");
+    // const currentRpcUrl = chainObj.rpcUrls.default.http[0]; //process.env.RPC_URL;
+    // if (typeof currentRpcUrl === "undefined" || currentRpcUrl === undefined) {
+    //     throw new Error("RpcUrl NOT DEFINED!");
+    // }
+    if (chainCode.toString().indexOf("SOLANA") >= 0) {
+        return {};
     }
 
     return {
@@ -20,12 +23,12 @@ export function chainPublicClient(chainCode, factoryAddr) {
                 multicall: true,
             },
             chain: chainObj,
-            transport: http(currentRpcUrl),
+            transport: http(),
         }),
         walletClient: createWalletClient({
             chain: chainObj,
-            transport: http(currentRpcUrl),
+            transport: http(),
         }),
-        rpcUrl: currentRpcUrl,
+        // rpcUrl: currentRpcUrl,
     };
 }
