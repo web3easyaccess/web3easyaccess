@@ -67,14 +67,18 @@ describe("easyaccess", () => {
     const provider = anchor.AnchorProvider.env()
     anchor.setProvider(provider)
   
+    let walletAddr = provider.wallet.publicKey.toBase58();
+      console.log("walletAddr:",walletAddr);
+    
     // console.log("passwdAddr:xxxxxxx223:",anchor.workspace.Easyaccess );
     const program = anchor.workspace.Easyaccess as Program<Easyaccess>
     console.log("passwdAddr:xxxxxxx224");
     // 4mkgCymBNuDYnjdPrdjaQVifSfn4JkdZ2R3nb8CwjJkr
-    const passwdAddr1 = "0x61bd43feE0AaE9443cA238DE1056c52402c8dc91".substring(2);
-    const passwdAddr2 = "0x55b3448D38724997747083323992C88dB4AccE55".substring(2);
+    const passwdAddr1 = "47DkNqiKdH7XwpkNQm9u6seByzcHb1rztXYrF7Egfkbg";
+    const passwdAddr2 = "47DkNqiKdH7XwpkNQm9u6seByzcHb1rztXYrF7Egfkbg";
     const ownerId0 = "0xAAAAA55b3448D38724997747083323992C88dB4AccE55ABC";
-    const ownerId = ownerId0.substring(ownerId0.length-32) ;//anchor.utils.bytes.hex.decode(passwdAddr01);
+    const ownerId = "6664946da20a041b6541d931d9f40001"; //
+    // ownerId0.substring(ownerId0.length-32) ;//anchor.utils.bytes.hex.decode(passwdAddr01);
 
     console.log("ownerId:",ownerId);
   
@@ -90,11 +94,12 @@ describe("easyaccess", () => {
       // 8p2szsPqFErA4m3kxYvSG1f7xEiuvZ9iXqwdSkLzjpuQ
       // 8p2szsPqFErA4m3kxYvSG1f7xEiuvZ9iXqwdSkLzjpuQ
       console.log("passwdAddr:xxxxxxx224b,acctPDA in client:",acctPDA);
+      await airdropTransfer (acctPDA, 1);
 
       await program.methods.createAcct(ownerId, passwdAddr1)
         .accounts({
-          walletAcct: provider.wallet.publicKey,
-          acct: acctPDA,
+          payerAcct: provider.wallet.publicKey,
+          userAcct: acctPDA,
         })
         .rpc()
   
@@ -106,20 +111,20 @@ describe("easyaccess", () => {
       )
   
       let passwdAddrSign:string = passwdAddr1;
-      let walletAddr = provider.wallet.publicKey.toBase58();
-      console.log("walletAddr:",walletAddr);
+      
       await program.methods
-        .changeAcctPasswdAddr(ownerId, passwdAddrSign, walletAddr.substring(walletAddr.length-32))
+        .changeAcctPasswdAddr(ownerId, passwdAddr2)
         .accounts({
-          walletAcct: provider.wallet.publicKey,
-          acct: acctPDA,
+          payerAcct: provider.wallet.publicKey,
+          userPasswdAcct: provider.wallet.publicKey,
+          useracct: acctPDA,
         })
         .rpc()
   
         const addrOnChain2 = (await program.account.acctEntity.fetch(acctPDA)).passwdAddr;
         console.log("passwdAddr on chain2:",addrOnChain2);
     //   expect(addrOnChain2).to.equal(
-    //       passwdAddr2
+    //       passwdAddr2  // 4mkgCymBNuDYnjdPrdjaQVifSfn4JkdZ2R3nb8CwjJkr
     //   )
 
       console.log("1sol=", LAMPORTS_PER_SOL);
@@ -151,10 +156,6 @@ describe("easyaccess", () => {
           .rpc();
     console.log("transferAcctLamports, signature");
     await connection.confirmTransaction(signature, { commitment: 'confirmed' });
-
-
-
-    
     
     await new Promise(r => setTimeout(r, 1000));
 
