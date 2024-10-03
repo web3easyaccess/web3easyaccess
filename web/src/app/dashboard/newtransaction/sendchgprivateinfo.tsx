@@ -1,13 +1,12 @@
 "use client";
 
-import { signAuth } from "../privateinfo/lib/signAuthTypedData";
+import { signAuth } from "../../lib/client/signAuthTypedData";
 
 import {
-    getOwnerIdBigBrother,
     getOwnerIdLittleBrother,
     getPasswdAccount,
     PrivateInfoType,
-} from "../privateinfo/lib/keyTools";
+} from "../../lib/client/keyTools";
 
 import {
     generateRandomDigitInteger,
@@ -61,7 +60,7 @@ import {
 
 import { useFormState, useFormStatus } from "react-dom";
 
-import { getOwnerIdSelfByBigBrother } from "../privateinfo/lib/keyTools";
+import { getOwnerIdSelfByBigBrother } from "../../lib/client/keyTools";
 import {
     queryAccount,
     queryQuestionIdsEnc,
@@ -233,7 +232,8 @@ export default function SendChgPrivateInfo({
                     currentPriInfoRef.current.confirmedSecondary == true
                 ) {
                     const passwdAccount = getPasswdAccount(
-                        currentPriInfoRef.current
+                        currentPriInfoRef.current,
+                        chainObj.chainCode
                     );
 
                     const questionNosEnc = questionNosEncode(
@@ -245,7 +245,8 @@ export default function SendChgPrivateInfo({
                     let eFee = {};
                     if (currentTabTag == "chgPrivate") {
                         const oldPasswdAccount = getPasswdAccount(
-                            oldPriInfoRef.current
+                            oldPriInfoRef.current,
+                            chainObj.chainCode
                         );
 
                         eFee = await estimateChgPasswdFee(
@@ -555,9 +556,13 @@ function CreateTransaction({
                 return;
             }
 
-            const oldPasswdAccount = getPasswdAccount(oldPriInfoRef.current);
+            const oldPasswdAccount = getPasswdAccount(
+                oldPriInfoRef.current,
+                chainObj.chainCode
+            );
             const newPasswdAccount = getPasswdAccount(
-                currentPriInfoRef.current
+                currentPriInfoRef.current,
+                chainObj.chainCode
             );
 
             let myDetectEstimatedFee = BigInt(0);
@@ -610,7 +615,10 @@ function CreateTransaction({
             // );
 
             // myOwnerId
-            const passwdAccount = getPasswdAccount(currentPriInfoRef.current);
+            const passwdAccount = getPasswdAccount(
+                currentPriInfoRef.current,
+                chainObj.chainCode
+            );
 
             // keccak256(abi.encode(...));
             console.log(

@@ -34,14 +34,10 @@ import { queryQuestionIdsEnc } from "../../lib/chainQuery";
 import pq from "../privateinfo/passwdQuestion.json";
 
 import Passwd from "../privateinfo/passwd2";
-import {
-    getOwnerIdBigBrother,
-    getPasswdAccount,
-    PrivateInfoType,
-} from "../privateinfo/lib/keyTools";
-import { signAuth } from "../privateinfo/lib/signAuthTypedData";
+import { getPasswdAccount, PrivateInfoType } from "../../lib/client/keyTools";
+import { signAuth } from "../../lib/client/signAuthTypedData";
 
-import popularAddr from "../privateinfo/lib/popularAddr";
+import popularAddr from "../../lib/client/popularAddr";
 import { useRef, useState, useEffect, MutableRefObject } from "react";
 
 import { Menu, UserInfo, uiToString, Transaction } from "../../lib/myTypes";
@@ -1083,7 +1079,10 @@ function SubmitMessage({
         );
 
         if (forModification) {
-            let oldPasswdAccount = getPasswdAccount(oldPriInfoRef.current);
+            let oldPasswdAccount = getPasswdAccount(
+                oldPriInfoRef.current,
+                chainObj.chainCode
+            );
             console.log(
                 "for modification.... old passwdAddr 1,2:",
                 oldPasswdAccount.address,
@@ -1099,9 +1098,10 @@ function SubmitMessage({
             }
         }
 
-        let ownerId = getOwnerIdBigBrother(email);
-
-        let passwdAccount = getPasswdAccount(currentPriInfoRef.current);
+        let passwdAccount = getPasswdAccount(
+            currentPriInfoRef.current,
+            chainObj.chainCode
+        );
 
         // // //
         if (

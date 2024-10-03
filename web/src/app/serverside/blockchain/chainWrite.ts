@@ -1,6 +1,6 @@
 "use server";
 
-import popularAddr from "../../dashboard/privateinfo/lib/popularAddr";
+import popularAddr from "../..//lib/client/popularAddr";
 
 import {
     getContract,
@@ -27,7 +27,7 @@ export async function getW3eapAddr(chainCode: string) {
     if (chainCode.indexOf("SOLANA") >= 0) {
         return "";
     }
-
+    console.log("xxxxxyyyy:", chainCode);
     const myClient = await chainClient(chainCode);
     const addr = await myClient.publicClient.readContract({
         account: myClient.account,
@@ -135,6 +135,8 @@ export async function newAccountAndTransferETH(
     preparedGasPrice: bigint,
     bridgeDirection: string
 ) {
+    if (chainCode.indexOf("SOL") >= 0) {
+    }
     detectEstimatedFee = BigInt(detectEstimatedFee);
     l1DataFee = BigInt(l1DataFee);
     if (preparedMaxFeePerGas != undefined) {

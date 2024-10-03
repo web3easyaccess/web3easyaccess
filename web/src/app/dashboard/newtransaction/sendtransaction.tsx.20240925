@@ -1,13 +1,13 @@
 "use client";
 
-import { signAuth } from "../privateinfo/lib/signAuthTypedData";
+import { signAuth } from "../../lib/client/signAuthTypedData";
 
 import {
     getOwnerIdBigBrother,
     getOwnerIdLittleBrother,
     getPasswdAccount,
     PrivateInfoType,
-} from "../privateinfo/lib/keyTools";
+} from "../../lib/client/keyTools";
 
 import {
     generateRandomDigitInteger,
@@ -63,7 +63,7 @@ import {
 import { useFormState, useFormStatus } from "react-dom";
 
 import { useRouter } from "next/navigation";
-import { getOwnerIdSelfByBigBrother } from "../privateinfo/lib/keyTools";
+import { getOwnerIdSelfByBigBrother } from "../../lib/client/keyTools";
 import {
     queryAccount,
     queryQuestionIdsEnc,

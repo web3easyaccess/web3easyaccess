@@ -1,4 +1,6 @@
-import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
+"use client";
+
+import popularAddr from "../lib/client/popularAddr";
 import { privateKeyToAccount } from "viem/accounts";
 import axios from "axios";
 import { Axios, AxiosResponse, AxiosError } from "axios";
@@ -14,8 +16,10 @@ import {
     encodeFunctionData,
 } from "viem";
 
+import * as libsolana from "./client/solana/libsolana";
+
 import { chainPublicClient } from "./chainQueryClient";
-import { getOwnerIdLittleBrother } from "../dashboard/privateinfo/lib/keyTools";
+import { getOwnerIdLittleBrother } from "../lib/client/keyTools";
 
 import abis from "../serverside/blockchain/abi/abis";
 import LocalStore from "../storage/LocalStore";
@@ -113,36 +117,13 @@ function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const SOLANA_DEMO_ADDR_LIST = [
-    "GMpWTEeLYMuH2ZiFfdC8WkSHqQv7Ug6C68TJf6c7TSVH",
-    "2L3w87GRMTWPz61ZgzeHDSZa9py5smzgWRcFjfiQcVRi",
-    "CqDmiHZXSJG7Vzr4nNQmmLWMTosMGmRy9mKvb67264kU",
-];
-
 export async function queryAccountList(
     chainCode: string,
     factoryAddr: string,
     baseOwnerId: string
 ) {
     const acctList: { addr: string; created: boolean; orderNo: number }[] = [];
-    if (chainCode == ChainCode.SOLANA_TEST_CHAIN.toString()) {
-        acctList.push({
-            addr: SOLANA_DEMO_ADDR_LIST[0],
-            created: true,
-            orderNo: 0,
-        });
-        acctList.push({
-            addr: SOLANA_DEMO_ADDR_LIST[1],
-            created: true,
-            orderNo: 1,
-        });
-        acctList.push({
-            addr: SOLANA_DEMO_ADDR_LIST[2],
-            created: false,
-            orderNo: 2,
-        });
-        return acctList;
-    }
+
     // max count supported is 10.
     for (let k = 0; k < 10; k++) {
         console.log("getOwnerIdLittleBrother before:", baseOwnerId, k);
@@ -187,10 +168,6 @@ export async function queryAccount(
     factoryAddr: string,
     ownerId: string
 ) {
-    if (chainCode.indexOf("SOLANA") >= 0) {
-        return SOLANA_DEMO_ADDR_LIST[0];
-    }
-
     console.log(
         "queryAccount--888:",
         chainCode,
@@ -199,6 +176,17 @@ export async function queryAccount(
         "::",
         ownerId
     );
+
+    if (chainCode.toString().indexOf("SOLANA") >= 0) {
+        const acct = libsolana.queryAccount(chainCode, ownerId);
+        const rtn = {
+            accountAddr: "" + acct,
+            created: true,
+            passwdAddr: "",
+        };
+        return rtn;
+    }
+
     try {
         const cache = LocalStore.getCacheQueryAccount(
             chainCode,
@@ -524,7 +512,7 @@ export async function queryEthBalance(
     addr: string
 ) {
     if (chainCode.indexOf("SOLANA") >= 0 || !addr.startsWith("0x")) {
-        return "1.2345";
+        return libsolana.querySolBalance(chainCode, addr);
     }
 
     if (addr == undefined || addr == popularAddr.ZERO_ADDR) {

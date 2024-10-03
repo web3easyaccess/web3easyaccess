@@ -4,9 +4,9 @@ import { clusterApiUrl, Connection } from "@solana/web3.js";
 
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
-import { getPasswdAccount } from "@/app/dashboard/privateinfo/lib/keyTools";
+import { getPasswdAccount } from "@/app/lib/client/keyTools";
 
-import { PrivateInfoType } from "@/app/dashboard/privateinfo/lib/keyTools";
+import { PrivateInfoType } from "@/app/lib/client/keyTools";
 
 import { readFileSync } from "fs";
 

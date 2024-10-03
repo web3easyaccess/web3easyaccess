@@ -1,18 +1,19 @@
 "use client";
 
-import { signAuth } from "../privateinfo/lib/signAuthTypedData";
+import { signAuth } from "../../lib/client/signAuthTypedData";
 
 import {
-    getOwnerIdBigBrother,
     getOwnerIdLittleBrother,
     getPasswdAccount,
     PrivateInfoType,
-} from "../privateinfo/lib/keyTools";
+} from "../../lib/client/keyTools";
 
 import {
     generateRandomDigitInteger,
     generateRandomString,
 } from "../../lib/myRandom";
+
+import * as libsolana from "../../lib/client/solana/libsolana";
 
 import { aesEncrypt, aesDecrypt } from "../../lib/crypto.mjs";
 
@@ -63,7 +64,7 @@ import {
 import { useFormState, useFormStatus } from "react-dom";
 
 import { useRouter } from "next/navigation";
-import { getOwnerIdSelfByBigBrother } from "../privateinfo/lib/keyTools";
+import { getOwnerIdSelfByBigBrother } from "../../lib/client/keyTools";
 import {
     queryAccount,
     queryQuestionIdsEnc,
@@ -605,7 +606,8 @@ export default function SendTransaction({
                     currentPriInfoRef.current.confirmedSecondary == true
                 ) {
                     const passwdAccount = getPasswdAccount(
-                        currentPriInfoRef.current
+                        currentPriInfoRef.current,
+                        chainObj.chainCode
                     );
 
                     const questionNosEnc = questionNosEncode(
@@ -679,7 +681,8 @@ export default function SendTransaction({
                             theAccountCreated,
                             questionNosEnc,
                             preparedPriceRef,
-                            bridgeDirection
+                            bridgeDirection,
+                            currentPriInfoRef
                         );
                     } else {
                         // transfer ETH
@@ -694,7 +697,8 @@ export default function SendTransaction({
                             myAccountCreated,
                             questionNosEnc,
                             preparedPriceRef,
-                            bridgeDirection
+                            bridgeDirection,
+                            currentPriInfoRef
                         );
                     }
 
@@ -1420,7 +1424,10 @@ function CreateTransaction({
             return;
         }
         // myOwnerId
-        const passwdAccount = getPasswdAccount(currentPriInfoRef.current);
+        const passwdAccount = getPasswdAccount(
+            currentPriInfoRef.current,
+            chainObj.chainCode
+        );
 
         // keccak256(abi.encode(...));
         console.log("encodeAbiParameters1111zzzz:", receiverAddr, amount);
@@ -1563,7 +1570,8 @@ async function estimateTransFee(
     myAccountCreated: boolean,
     questionNos: string,
     preparedPriceRef: any,
-    bridgeDirection: string
+    bridgeDirection: string,
+    currentPriInfoRef: React.MutableRefObject<PrivateInfoType>
 ) {
     let myDetectEstimatedFee = BigInt(0);
     let myL1DataFee = BigInt(0);
@@ -1583,6 +1591,26 @@ async function estimateTransFee(
         success: boolean;
         msg: string;
     } = {};
+
+    if (chainObj.chainCode.toString().indexOf("SOLANA") >= 0) {
+        console.log("esti,solana");
+        await libsolana.newAccountAndTransferSol_onClient(
+            chainObj.chainCode,
+            myOwnerId,
+            currentPriInfoRef.current,
+            questionNos,
+            receiverAddr,
+            0,
+            "",
+            "",
+            false,
+            0n
+        );
+        return detectRes;
+    } else {
+        console.log("esti,not solana");
+    }
+
     for (let k = 0; k < 15; k++) {
         const costFee = BigInt(myDetectEstimatedFee) + BigInt(myL1DataFee);
 
@@ -1741,7 +1769,8 @@ async function executeTransaction(
     myAccountCreated: boolean,
     questionNos: string,
     preparedPriceRef: any,
-    bridgeDirection: string
+    bridgeDirection: string,
+    currentPriInfoRef: React.MutableRefObject<PrivateInfoType>
 ) {
     let eFee = await estimateTransFee(
         myOwnerId,
@@ -1754,7 +1783,8 @@ async function executeTransaction(
         myAccountCreated,
         questionNos,
         preparedPriceRef,
-        bridgeDirection
+        bridgeDirection,
+        currentPriInfoRef
     );
     console.log("executeTransaction,user realtime fee, when executeing:", eFee);
     if (eFee.feeWei == undefined || eFee.feeWei == 0) {

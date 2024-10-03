@@ -1,8 +1,8 @@
-import { getOwnerIdBigBrother as getBigBrotherOwnerId } from "../dashboard/privateinfo/lib/keyTools";
+import { getOwnerIdBigBrother as getBigBrotherOwnerId } from "../lib/client/keyTools";
 
 import { ChainCode, Menu, chainCodeFromString } from "../lib/myTypes";
 
-const KEY_PREFIX = "W3EA_PROFILE:";
+const KEY_PREFIX = "W3EA_PROFILE2:";
 
 export type UserProperty = {
     bigBrotherOwnerId: string;
@@ -57,7 +57,7 @@ function getUserProperty(email: string): {
         console.log("xxxxx:defaultChain", defaultChain);
     }
 
-    const iBigBrotherOwnerId = getBigBrotherOwnerId(email);
+    const iBigBrotherOwnerId = getBigBrotherOwnerId(email, defaultChain);
     const propJson = localStorage.getItem(KEY_PREFIX + email);
     console.log("propJson:::", email, "+", propJson, defaultChain);
     if (propJson == undefined || propJson == null || propJson == "") {
