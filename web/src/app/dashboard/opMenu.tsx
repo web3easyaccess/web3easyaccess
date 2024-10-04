@@ -225,7 +225,7 @@ export function ShowMain({
     } else {
         return (
             <div>
-                <p>Welcome!</p>
+                <p>Coming soon!</p>
             </div>
         );
     }

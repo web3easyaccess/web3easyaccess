@@ -108,9 +108,12 @@ export const ChainIcons = ({
 
     const handleClick = (chainCode: ChainCode) => {
         console.log(chainCode);
-        if (ChainCode.ETHEREUM_MAIN_NET == chainCode) {
-            alert("not supprted ...33");
-            // return;
+        if (
+            ChainCode.ETHEREUM_MAIN_NET == chainCode ||
+            ChainCode.SOLANA_TEST_CHAIN == chainCode
+        ) {
+            alert("not supprted " + chainCode + " this time.");
+            chainCode = userProp.state.selectedChainCode;
         }
         console.log(
             "do a choice in chainIcons,userPropState:",

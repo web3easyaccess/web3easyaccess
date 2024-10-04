@@ -2,7 +2,7 @@ import { getOwnerIdBigBrother as getBigBrotherOwnerId } from "../lib/client/keyT
 
 import { ChainCode, Menu, chainCodeFromString } from "../lib/myTypes";
 
-const KEY_PREFIX = "W3EA_PROFILE_V2:";
+const KEY_PREFIX = "W3EA_PROFILE_V4:";
 
 export type UserProperty = {
     bigBrotherOwnerId: string;
@@ -72,7 +72,7 @@ function getUserProperty(email: string): UserProperty {
     let loginChainCode: ChainCode;
     const loginJson = localStorage.getItem(KEY_PREFIX + EMAIL_LOGIN_PAGE);
     if (loginJson == undefined || loginJson == null || loginJson == "") {
-        loginChainCode = ChainCode.ETHEREUM_MAIN_NET;
+        loginChainCode = ChainCode.SEPOLIA_CHAIN;
     } else {
         const p: UserProperty = JSON.parse(loginJson);
         loginChainCode = p.selectedChainCode;

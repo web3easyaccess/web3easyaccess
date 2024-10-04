@@ -222,7 +222,7 @@ export default function App({
                 userProp.ref.current.selectedAccountAddr + ":" + eb
             );
             setEthBalance(eb == "0" ? "0.0" : eb);
-            await asyncSleep(1500);
+            await asyncSleep(3000);
             setEthBalanceOk(true);
         };
 
@@ -250,7 +250,7 @@ export default function App({
                 userProp.ref.current.selectedAccountAddr + ":" + wb
             );
             setW3eapBalance(wb == "0" ? "0.0" : wb);
-            await asyncSleep(1500);
+            await asyncSleep(3000);
             setW3eapBalanceOk(true);
         };
 
@@ -270,7 +270,7 @@ export default function App({
                 userProp.ref.current.selectedAccountAddr + ":" + fa
             );
             setFreeGasFeeAmount(fa == "0" ? "0.0" : fa);
-            await asyncSleep(1500);
+            await asyncSleep(3000);
             setFreeGasFeeAmountOk(true);
         };
 
