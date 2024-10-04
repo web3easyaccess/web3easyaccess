@@ -2,16 +2,42 @@ import { getOwnerIdBigBrother as getBigBrotherOwnerId } from "../lib/client/keyT
 
 import { ChainCode, Menu, chainCodeFromString } from "../lib/myTypes";
 
-const KEY_PREFIX = "W3EA_PROFILE2:";
+const KEY_PREFIX = "W3EA_PROFILE_V2:";
 
 export type UserProperty = {
     bigBrotherOwnerId: string;
     email: string;
     emailDisplay: string;
-    selectedOrderNo: number;
-    selectedAccountAddr: string;
     selectedChainCode: ChainCode;
+    selectedAccountInfos: {
+        chainCode: ChainCode;
+        selectedOrderNo: number;
+        selectedAccountAddr: string;
+    }[];
+    selectedOrderNo: number; // copy from selectedAccountInfos
+    selectedAccountAddr: string; // copy from selectedAccountInfos
     testMode: boolean;
+};
+
+const userPropertyGetSelectedOrderNo = (prop: UserProperty) => {
+    const a = prop.selectedAccountInfos.filter(
+        (a) => a.chainCode == prop.selectedChainCode
+    );
+    if (a.length > 0) {
+        return a[0].selectedOrderNo;
+    } else {
+        return 0;
+    }
+};
+const userPropertyGetSelectedAccountAddr = (prop: UserProperty) => {
+    const a = prop.selectedAccountInfos.filter(
+        (a) => a.chainCode == prop.selectedChainCode
+    );
+    if (a.length > 0) {
+        return a[0].selectedAccountAddr;
+    } else {
+        return "";
+    }
 };
 
 function transToEmailDisplay(email: string) {
@@ -35,20 +61,12 @@ function getLoginPageProperty() {
     return prop;
 }
 
-function getUserProperty(email: string): {
-    bigBrotherOwnerId: string;
-    email: string;
-    emailDisplay: string;
-    selectedOrderNo: number;
-    selectedAccountAddr: string;
-    selectedChainCode: ChainCode;
-    testMode: boolean;
-} {
+function getUserProperty(email: string): UserProperty {
     if (typeof window !== "undefined") {
         console.log("localstore, we are running on the client");
     } else {
         console.log("localstore, we are running on the server");
-        return {};
+        return { selectedAccountInfos: [] };
     }
 
     let defaultChain: ChainCode = ChainCode.ETHEREUM_MAIN_NET;
@@ -62,15 +80,24 @@ function getUserProperty(email: string): {
     console.log("propJson:::", email, "+", propJson, defaultChain);
     if (propJson == undefined || propJson == null || propJson == "") {
         console.log("propJson:::AA");
-        return {
+        const myRtn = {
             bigBrotherOwnerId: iBigBrotherOwnerId,
             email: email,
             emailDisplay: transToEmailDisplay(email),
+
+            selectedChainCode: defaultChain,
+            selectedAccountInfos: [
+                {
+                    chainCode: defaultChain,
+                    selectedOrderNo: 0,
+                    selectedAccountAddr: "",
+                },
+            ],
             selectedOrderNo: 0,
             selectedAccountAddr: "",
-            selectedChainCode: defaultChain,
             testMode: false,
         };
+        return myRtn;
     }
     console.log("propJson:::BB");
 
@@ -78,6 +105,8 @@ function getUserProperty(email: string): {
     property.selectedChainCode = chainCodeFromString(
         property.selectedChainCode?.toString()
     );
+    property.selectedOrderNo = userPropertyGetSelectedOrderNo(property);
+    property.selectedAccountAddr = userPropertyGetSelectedAccountAddr(property);
     return property;
 }
 
@@ -87,8 +116,22 @@ function setPropSelectedOrderNo(
     selectedAccountAddr: string
 ) {
     const prop: UserProperty = getUserProperty(email);
-    prop.selectedOrderNo = sNo;
-    prop.selectedAccountAddr = selectedAccountAddr;
+    const cc = prop.selectedChainCode;
+    let upFlag = false;
+    prop.selectedAccountInfos.forEach((a) => {
+        if (a.chainCode == cc) {
+            a.selectedOrderNo = sNo;
+            a.selectedAccountAddr = selectedAccountAddr;
+            upFlag = true;
+        }
+    });
+    if (!upFlag) {
+        prop.selectedAccountInfos.push({
+            chainCode: cc,
+            selectedOrderNo: sNo,
+            selectedAccountAddr: selectedAccountAddr,
+        });
+    }
     localStorage.setItem(KEY_PREFIX + email, JSON.stringify(prop));
 }
 

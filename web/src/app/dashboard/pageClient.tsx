@@ -28,9 +28,16 @@ export default function Page({ email }: { email: string }) {
         bigBrotherOwnerId: "",
         email: "",
         emailDisplay: "",
+        selectedChainCode: ChainCode.UNKNOW,
+        selectedAccountInfos: [
+            {
+                chainCode: ChainCode.UNKNOW,
+                selectedOrderNo: -1,
+                selectedAccountAddr: "",
+            },
+        ],
         selectedOrderNo: -1,
         selectedAccountAddr: "",
-        selectedChainCode: ChainCode.UNKNOW,
         testMode: false,
     }; // LocalStore.getLoginPageProperty();
 
@@ -129,7 +136,7 @@ export default function Page({ email }: { email: string }) {
 
     useEffect(() => {
         const fun = async () => {
-            console.log("pageClient,effect:", userPropRef.current);
+            console.log("pageClient,effect-xyz:", userPropRef.current);
 
             const w3eapAddr = await getW3eapAddr(
                 userPropRef.current.selectedChainCode

@@ -182,9 +182,13 @@ export async function queryAccount(
         const rtn = {
             accountAddr: "" + acct,
             created: true,
-            passwdAddr: "",
+            passwdAddr: "000",
         };
         return rtn;
+    }
+
+    if (!ownerId.startsWith("0x")) {
+        ownerId = "0x" + ownerId;
     }
 
     try {
@@ -225,7 +229,11 @@ export async function queryAccount(
                 functionName: "predictAccountAddress",
                 args: [ownerId],
             });
-            return { accountAddr: predictAddr, created: false, passwdAddr: "" };
+            return {
+                accountAddr: predictAddr,
+                created: false,
+                passwdAddr: "0x",
+            };
         } else {
             const passwdAddr = await cpc.publicClient.readContract({
                 account: accountOnlyForRead,
@@ -253,8 +261,8 @@ export async function queryAccount(
                 ownerId,
             e
         );
-        // 临时 注释
-        // throw new Error("queryAccount error!");
+
+        throw new Error("queryAccount error!");
     }
 }
 
@@ -511,13 +519,17 @@ export async function queryEthBalance(
     factoryAddr: string,
     addr: string
 ) {
+    if (
+        chainCode == undefined ||
+        addr == undefined ||
+        addr == popularAddr.ZERO_ADDR
+    ) {
+        return "0.0";
+    }
     if (chainCode.indexOf("SOLANA") >= 0 || !addr.startsWith("0x")) {
         return libsolana.querySolBalance(chainCode, addr);
     }
 
-    if (addr == undefined || addr == popularAddr.ZERO_ADDR) {
-        return "0.0";
-    }
     try {
         // const blockNumber = await client.getBlockNumber();
         var addrWithout0x = addr;
@@ -563,12 +575,17 @@ export async function queryW3eapBalance(
     factoryAddr: string,
     addr: string
 ) {
+    if (
+        chainCode == undefined ||
+        addr == undefined ||
+        addr == popularAddr.ZERO_ADDR
+    ) {
+        return "0.0";
+    }
     if (chainCode.indexOf("SOLANA") >= 0 || !addr.startsWith("0x")) {
         return "0.0";
     }
-    if (addr == undefined || addr == popularAddr.ZERO_ADDR) {
-        return "0.0";
-    }
+
     try {
         const cpc = chainPublicClient(chainCode, factoryAddr);
         // console.log("rpc:", cpc.rpcUrl);
@@ -612,12 +629,17 @@ export async function queryfreeGasFeeAmount(
     factoryAddr: string,
     addr: string
 ) {
+    if (
+        chainCode == undefined ||
+        addr == undefined ||
+        addr == popularAddr.ZERO_ADDR
+    ) {
+        return "0.0";
+    }
     if (chainCode.indexOf("SOLANA") >= 0 || !addr.startsWith("0x")) {
         return "0.0";
     }
-    if (addr == undefined || addr == popularAddr.ZERO_ADDR) {
-        return "0.0";
-    }
+
     try {
         const cpc = chainPublicClient(chainCode, factoryAddr);
         // console.log("rpc:", cpc.rpcUrl);
@@ -760,7 +782,11 @@ export async function queryTransactions(
     chainCode: string,
     addr: string
 ): Promise<Transaction[]> {
-    if (chainCode == "SEPOLIA_CHAIN" || chainCode == "LINEA_TEST_CHAIN") {
+    if (
+        chainCode == "SEPOLIA_CHAIN" ||
+        chainCode == "LINEA_TEST_CHAIN" ||
+        chainCode == "NEOX_TEST_CHAIN"
+    ) {
         const res = await _queryTransactions(chainCode, addr);
         return res;
     }

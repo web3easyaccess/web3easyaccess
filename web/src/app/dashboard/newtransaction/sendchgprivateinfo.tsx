@@ -93,7 +93,6 @@ import {
     ChainCode,
 } from "../../lib/myTypes";
 
-import lineaBridge from "./bridge/lineaBridge";
 import { UserProperty } from "@/app/storage/LocalStore";
 
 const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
@@ -103,6 +102,8 @@ const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
     console.log("questionNosEnc2:", questionNosEnc);
     return questionNosEnc;
 };
+
+let nativeCoinSymbol = "ETH";
 
 export default function SendChgPrivateInfo({
     userProp,
@@ -122,6 +123,13 @@ export default function SendChgPrivateInfo({
     forTransaction: boolean;
 }) {
     const chainObj = getChainObj(userProp.state.selectedChainCode);
+
+    try {
+        nativeCoinSymbol = chainObj.nativeCurrency.symbol;
+    } catch (e) {
+        console.log("warn,nativeCoinSymbol,:", e);
+        nativeCoinSymbol = "ETH";
+    }
 
     const explorerUrl = chainObj.blockExplorers.default.url;
 
@@ -160,13 +168,13 @@ export default function SendChgPrivateInfo({
 
         console.log("updateFillInOk, currentTabTag:", currentTabTag);
         // Send transactions while creating an account
-        let msg = "Send ETH";
+        let msg = `Send ${nativeCoinSymbol}`;
         if (currentTabTag == "sendETH") {
             if (myAccountCreated) {
-                msg = "Send ETH";
+                msg = `Send ${nativeCoinSymbol}`;
             } else {
                 // todo it's different when create other account.
-                msg = "Create Account and Send ETH";
+                msg = `Create Account and Send ${nativeCoinSymbol}`;
             }
         } else if (currentTabTag == "chgPrivate") {
             if (myAccountCreated) {
@@ -328,21 +336,6 @@ export default function SendChgPrivateInfo({
     // className="max-w-[400px]"
 
     useEffect(() => {
-        // init this component page.
-        // console.log("init ...xxx...");
-        // setCurrentTabTag("sendETH");
-        // setPrivateinfoHidden(false);
-        // setPrivateFillInOk(0);
-        // setButtonText("Send ETH");
-        // setInputFillInChange(0);
-        // currentPriInfoRef.current = piInit;
-        // oldPriInfoRef.current = piInit;
-        // setCurrentTx("");
-        // inputMaxFeePerGasRef.current = "0";
-        // setTransactionFee("? ETH");
-        //
-        //
-
         const fetchMyAccountStatus = async () => {
             // suffix with 0000
             console.log(
@@ -381,8 +374,8 @@ export default function SendChgPrivateInfo({
                     getOwnerId(),
                     acct.accountAddr
                 );
-                // demo 临时注释
-                // throw new Error("develop error2!");
+
+                throw new Error("develop error2!");
             }
             setMyAccountCreated(acct?.created);
         };
@@ -807,7 +800,8 @@ async function estimateChgPasswdFee(
             );
         }
     }
-    const feeDisplay = formatEther(myDetectEstimatedFee) + " ETH";
+    const feeDisplay =
+        formatEther(myDetectEstimatedFee) + ` ${nativeCoinSymbol}`;
     return { ...detectRes, feeDisplay, feeWei: myDetectEstimatedFee };
 }
 
@@ -1062,7 +1056,8 @@ async function estimateTransFee(
             );
         }
     }
-    const feeDisplay = formatEther(myDetectEstimatedFee) + " ETH";
+    const feeDisplay =
+        formatEther(myDetectEstimatedFee) + ` ${nativeCoinSymbol}`;
     return { ...detectRes, feeDisplay, feeWei: myDetectEstimatedFee };
 }
 

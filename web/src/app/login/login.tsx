@@ -34,9 +34,14 @@ export default function Page() {
         bigBrotherOwnerId: "",
         email: "",
         emailDisplay: "",
-        selectedOrderNo: -1,
-        selectedAccountAddr: "",
         selectedChainCode: ChainCode.UNKNOW,
+        selectedAccountInfos: [
+            {
+                chainCode: ChainCode.UNKNOW,
+                selectedOrderNo: -1,
+                selectedAccountAddr: "",
+            },
+        ],
         testMode: false,
     }; // LocalStore.getLoginPageProperty();
 

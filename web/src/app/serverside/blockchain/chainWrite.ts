@@ -145,6 +145,9 @@ export async function newAccountAndTransferETH(
     if (preparedGasPrice != undefined) {
         preparedGasPrice = BigInt(preparedGasPrice);
     }
+    if (!ownerId.startsWith("0x")) {
+        ownerId = `0x${ownerId}`;
+    }
     console.log(
         `newAccountAndTransferETH called ..onlyQueryFee=${onlyQueryFee}. ownerId= ${ownerId}, passwdAddr=${passwdAddr},detectEstimatedFee=${detectEstimatedFee}`
     );

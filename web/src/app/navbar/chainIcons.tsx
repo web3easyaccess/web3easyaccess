@@ -61,6 +61,8 @@ export const ChainIcons = ({
     const [sepoliaState, setSepoliaState] = useState(myDefault);
     const [defaultAnvilState, setDefaultAnvilState] = useState(myDefault);
     const [ethereumMainnetState, setEthereumMainnetState] = useState(myDefault);
+    const [neoxtestState, setNeoxtestState] = useState(myDefault);
+
     const [solanatestnetState, setSolanatestnetState] = useState(myDefault);
 
     const setChainCodeHere = (cc: ChainCode) => {
@@ -71,6 +73,8 @@ export const ChainIcons = ({
         setScrolltestState(myDefault);
         setLineatestState(myDefault);
         setSepoliaState(myDefault);
+        setNeoxtestState(myDefault);
+
         setSolanatestnetState(myDefault);
         if (cc == ChainCode.MORPH_TEST_CHAIN) {
             setMorphl2testState(myChecked);
@@ -84,6 +88,8 @@ export const ChainIcons = ({
             setLineatestState(myChecked);
         } else if (cc == ChainCode.SEPOLIA_CHAIN) {
             setSepoliaState(myChecked);
+        } else if (cc == ChainCode.NEOX_TEST_CHAIN) {
+            setNeoxtestState(myChecked);
         } else if (cc == ChainCode.SOLANA_TEST_CHAIN) {
             setSolanatestnetState(myChecked);
         }
@@ -147,6 +153,19 @@ export const ChainIcons = ({
         <div className="flex gap-3 items-center" style={{ cursor: "pointer" }}>
             {/* <SetChainForm /> */}
             {/* <Badge content="" color="secondary"> */}
+
+            <Tooltip content="NeoX testnet">
+                <Avatar
+                    src="/chain/neoxtest.png"
+                    size={neoxtestState.size}
+                    isBordered={neoxtestState.bordered}
+                    onClick={() => {
+                        handleClick(ChainCode.NEOX_TEST_CHAIN);
+                    }}
+                    color="primary"
+                    radius="sm"
+                />
+            </Tooltip>
 
             <Tooltip content="Solana testnet">
                 <Avatar
@@ -336,6 +355,21 @@ export const SelectedChainIcon = ({
                     <Tooltip content="sepolia testnet">
                         <Avatar
                             src="/chain/sepolia.png"
+                            size="sm"
+                            color="primary"
+                            radius="sm"
+                        />
+                    </Tooltip>
+                </Badge>
+            </div>
+        );
+    } else if (myChainCode == ChainCode.NEOX_TEST_CHAIN) {
+        return (
+            <div className="flex gap-3 items-center">
+                <Badge content="" color="secondary">
+                    <Tooltip content="NeoX testnet">
+                        <Avatar
+                            src="/chain/neoxtest.png"
                             size="sm"
                             color="primary"
                             radius="sm"

@@ -6,6 +6,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { createWalletClient, custom } from "viem";
 
 import { chainPublicClient } from "../../lib/chainQueryClient";
+import { ChainCode } from "@/app/lib/myTypes";
 
 export async function getFactoryAddr(chainCode: string) {
     console.log("getFactoryAddr, chainCode:", chainCode);
@@ -19,6 +20,8 @@ export async function getFactoryAddr(chainCode: string) {
         return process.env.CHAIN_FACTORY_ADDRESS_LINEA_TEST;
     } else if (chainCode == "SEPOLIA_CHAIN") {
         return process.env.CHAIN_FACTORY_ADDRESS_SEPOLIA;
+    } else if (chainCode == ChainCode.NEOX_TEST_CHAIN.toString()) {
+        return process.env.CHAIN_FACTORY_ADDRESS_NEOX_TEST;
     } else if (chainCode == "SOLANA_TEST_CHAIN") {
         return "123"; //process.env.CHAIN_FACTORY_ADDRESS_SOLANA_TEST;
     } else {
@@ -75,6 +78,13 @@ export async function chainClient(_chainCode: string) {
             process.env.INIT_FREE_FEE_AMOUNT_SEPOLIA
         );
         _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_SEPOLIA;
+        _l1GasPriceOracleContract = "0x0";
+        _l1DataFeeFunc = "";
+    } else if (chainCode == ChainCode.NEOX_TEST_CHAIN.toString()) {
+        _freeFeeAmountWhenCreated = Number(
+            process.env.INIT_FREE_FEE_AMOUNT_NEOX_TEST
+        );
+        _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_NEOX_TEST;
         _l1GasPriceOracleContract = "0x0";
         _l1DataFeeFunc = "";
     } else if (chainCode == "SOLANA_TEST_CHAIN") {

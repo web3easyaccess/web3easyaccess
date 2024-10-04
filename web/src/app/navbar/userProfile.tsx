@@ -22,12 +22,9 @@ import {
     Button,
     Spinner,
 } from "@nextui-org/react";
-import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
 
 import { saveSelectedOrderNo } from "../serverside/serverActions";
 import { useFormState, useFormStatus } from "react-dom";
-
-import { getOwnerIdSelfByBigBrother } from "../dashboard/privateinfo/lib/keyTools";
 
 import {
     queryAccountList,
@@ -45,12 +42,9 @@ import {
 } from "../lib/myTypes";
 import { getChainObj } from "../lib/myChain";
 
-import {
-    web3wallet,
-    createWeb3Wallet,
-    updateSignClientChainId,
-} from "../walletconnect/utils/WalletConnectUtil";
 import { UserProperty } from "../storage/LocalStore";
+
+let nativeCoinSymbol = "ETH";
 
 export default function App({
     userProp,
@@ -87,7 +81,14 @@ export default function App({
 
     const [resultMsg, dispatch] = useFormState(saveSelectedOrderNo, undefined);
 
-    const [nativeToken, setNativeToken] = useState("ETH");
+    const chainObj = getChainObj(userProp.state.selectedChainCode);
+    try {
+        nativeCoinSymbol = chainObj.nativeCurrency.symbol;
+    } catch (e) {
+        console.log("warn,nativeCoinSymbol,:", e);
+        nativeCoinSymbol = "ETH";
+    }
+
     const [ethBalance, setEthBalance] = useState("-");
     const [w3eapBalance, setW3eapBalance] = useState("-");
     const [freeGasFeeAmount, setFreeGasFeeAmount] = useState("-");
@@ -160,6 +161,7 @@ export default function App({
             });
 
             let mySelectedNo = userProp.ref.current.selectedOrderNo;
+
             if (mySelectedNo >= myAcctList.length) {
                 mySelectedNo = 0;
             }
@@ -192,15 +194,6 @@ export default function App({
 
     const [refreshFlag, setRefreshFlag] = useState(1);
     useEffect(() => {
-        if (
-            userProp.ref.current.selectedChainCode ==
-            ChainCode.SOLANA_TEST_CHAIN
-        ) {
-            setNativeToken("SOL");
-        } else {
-            setNativeToken("ETH");
-        }
-
         // This represents the currently selected account in the global scope
         if (accountAddrList.length == 0) {
             return;
@@ -308,10 +301,11 @@ export default function App({
     ]);
 
     const acctAddrDisplay = (fullAddr: string) => {
-        if (fullAddr == undefined) {
+        if (fullAddr == undefined || fullAddr == "" || fullAddr == null) {
             console.log("fullAddr is undefined in acctAddrDisplay");
             return "";
         }
+        console.log("xxxxxx123:fullAddr:", fullAddr);
         return fullAddr.substring(0, 8) + "..." + fullAddr.substring(38);
     };
 
@@ -517,7 +511,7 @@ export default function App({
                         ) : (
                             <Spinner size="sm" />
                         )}{" "}
-                        {nativeToken}
+                        {nativeCoinSymbol}
                     </div>
                 </CardHeader>
             </Card>
@@ -553,7 +547,7 @@ export default function App({
                         ) : (
                             <Spinner size="sm" />
                         )}
-                        &nbsp;{nativeToken}
+                        &nbsp;{nativeCoinSymbol}
                     </h4>
                     <Tooltip content="Free Amount of Gas Fee">
                         <h5

@@ -1,8 +1,5 @@
 import { NextApiResponse, NextApiRequest } from "next";
 
-import { queryAccountList } from "../../src/app/lib/chainQuery";
-import myCookies from "@/app/serverside/myCookies";
-import { getFactoryAddr } from "@/app/serverside/blockchain/chainWriteClient";
 type UserAccount = {
     addr: string;
     created: boolean;

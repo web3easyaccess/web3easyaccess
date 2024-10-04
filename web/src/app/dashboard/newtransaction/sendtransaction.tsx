@@ -111,6 +111,8 @@ const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
     return questionNosEnc;
 };
 
+let nativeCoinSymbol = "ETH";
+
 export default function SendTransaction({
     userProp,
     accountAddrList,
@@ -139,6 +141,14 @@ export default function SendTransaction({
         chainCode: ChainCode;
         l1ChainCode: ChainCode;
     } = getChainObj(userProp.state.selectedChainCode);
+
+    try {
+        nativeCoinSymbol = chainObj.nativeCurrency.symbol;
+    } catch (e) {
+        console.log("warn,nativeCoinSymbol,:", e);
+        nativeCoinSymbol = "ETH";
+    }
+
     const explorerUrl = chainObj.blockExplorers.default.url;
 
     const explorerTxUrl = (hash: string) => {
@@ -154,8 +164,6 @@ export default function SendTransaction({
             return `${explorerUrl}/tx/${xx}`;
         }
     };
-
-    const [nativeToken, setNativeToken] = useState("ETH");
 
     let l1Chain = null; // it will be not null if current chain is a L2 chain.
     if (
@@ -286,12 +294,6 @@ export default function SendTransaction({
                 console.log("xxxxxx113:", logs);
             }, 1000 * 6);
         }
-
-        if (userProp.state.selectedChainCode == ChainCode.SOLANA_TEST_CHAIN) {
-            setNativeToken("SOL");
-        } else {
-            setNativeToken("ETH");
-        }
     }, [
         bridgeL1ToL2,
         setBridgeL1ToL2,
@@ -373,13 +375,13 @@ export default function SendTransaction({
     const [privateFillInOk, setPrivateFillInOk] = useState(0);
 
     const refreshButtonText = () => {
-        let msg = "Send ETH";
+        let msg = `Send ${nativeCoinSymbol}`;
         if (currentTabTagRef.current == "sendETH") {
             if (myAccountCreated) {
-                msg = "Send ETH";
+                msg = `Send ${nativeCoinSymbol}`;
             } else {
                 // todo it's different when create other account.
-                msg = "Create Account and Send ETH";
+                msg = `Create Account and Send ${nativeCoinSymbol}`;
             }
         } else if (currentTabTagRef.current == "sendToken") {
             if (myAccountCreated) {
@@ -778,21 +780,6 @@ export default function SendTransaction({
     // className="max-w-[400px]"
 
     useEffect(() => {
-        // init this component page.
-        // console.log("init ...xxx...");
-        // setCurrentTabTag("sendETH");
-        // setPrivateinfoHidden(false);
-        // setPrivateFillInOk(0);
-        // setButtonText("Send ETH");
-        // setInputFillInChange(0);
-        // currentPriInfoRef.current = piInit;
-        // oldPriInfoRef.current = piInit;
-        // setCurrentTx("");
-        // inputMaxFeePerGasRef.current = "0";
-        // setTransactionFee("? ETH");
-        //
-        //
-
         const fetchMyAccountStatus = async () => {
             if (
                 userProp.state.selectedChainCode == ChainCode.UNKNOW ||
@@ -830,8 +817,8 @@ export default function SendTransaction({
                     getOwnerId(),
                     acct.accountAddr
                 );
-                // demo 临时注释.
-                // throw new Error("develop error2!");
+
+                throw new Error("develop error2!");
             }
             setMyAccountCreated(acct?.created);
         };
@@ -854,7 +841,7 @@ export default function SendTransaction({
                 selectedKey={currentTabTagRef.current}
                 defaultSelectedKey={currentTabTagRef.current}
             >
-                <Tab key="sendETH" title={`Send ${nativeToken}`}>
+                <Tab key="sendETH" title={`Send ${nativeCoinSymbol}`}>
                     <div className="w-x-full flex flex-col gap-4">
                         <div
                             className="flex w-x-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
@@ -1141,8 +1128,8 @@ export default function SendTransaction({
                                 <p>
                                     {bridgeL1ToL2
                                         ? bridgeBalanceInfo.l1Balance
-                                        : bridgeBalanceInfo.l2Balance}{" "}
-                                    ETH
+                                        : bridgeBalanceInfo.l2Balance}
+                                    {` ${nativeCoinSymbol}`}
                                 </p>
                             </div>
                             <Divider
@@ -1169,8 +1156,8 @@ export default function SendTransaction({
                                 <p>
                                     {bridgeL1ToL2
                                         ? bridgeBalanceInfo.l2Balance
-                                        : bridgeBalanceInfo.l1Balance}{" "}
-                                    ETH
+                                        : bridgeBalanceInfo.l1Balance}
+                                    {` ${nativeCoinSymbol}`}
                                 </p>
                             </div>
                         </div>
@@ -1179,7 +1166,7 @@ export default function SendTransaction({
                         className="flex w-x-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
                         style={{ width: "500px", marginTop: "30px" }}
                     >
-                        <p>ETH:</p>
+                        <p>{nativeCoinSymbol}:</p>
                         <Input
                             id="id_newtrans_amount_ui_bridge"
                             type="text"
@@ -1196,7 +1183,8 @@ export default function SendTransaction({
                         >
                             <TableHeader>
                                 <TableColumn style={{ width: "50px" }}>
-                                    Send ETH Transaction on L1(Sepolia)
+                                    Send {nativeCoinSymbol} Transaction on
+                                    L1(Sepolia)
                                 </TableColumn>
                                 {/* <TableColumn style={{ width: "50px" }}>
                                     Send Timestamp on L1(Sepolia)
@@ -1739,7 +1727,8 @@ async function estimateTransFee(
         }
     }
     const feeDisplay =
-        formatEther(BigInt(myDetectEstimatedFee) + myL1DataFee) + " ETH";
+        formatEther(BigInt(myDetectEstimatedFee) + myL1DataFee) +
+        ` ${nativeCoinSymbol}`;
     return {
         ...detectRes,
         feeDisplay,
