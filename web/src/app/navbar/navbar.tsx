@@ -26,8 +26,6 @@ import { ChainLogo } from "./myLogo";
 
 import { Logout } from "./logout";
 
-import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
-
 import { SelectedChainIcon, ChainIcons } from "./chainIcons";
 import UserProfile from "./userProfile";
 
