@@ -103,8 +103,6 @@ const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
     return questionNosEnc;
 };
 
-let nativeCoinSymbol = "ETH";
-
 export default function SendChgPrivateInfo({
     userProp,
     accountAddrList,
@@ -124,12 +122,15 @@ export default function SendChgPrivateInfo({
 }) {
     const chainObj = getChainObj(userProp.state.selectedChainCode);
 
-    try {
-        nativeCoinSymbol = chainObj.nativeCurrency.symbol;
-    } catch (e) {
-        console.log("warn,nativeCoinSymbol,:", e);
-        nativeCoinSymbol = "ETH";
-    }
+    const [nativeCoinSymbol, setNativeCoinSymbol] = useState("");
+    const updateNativeCoinSymbol = () => {
+        try {
+            setNativeCoinSymbol(chainObj.nativeCurrency.symbol);
+        } catch (e) {
+            console.log("warn,nativeCoinSymbol,:", e);
+            setNativeCoinSymbol("ETH");
+        }
+    };
 
     const explorerUrl = chainObj.blockExplorers.default.url;
 
@@ -265,7 +266,8 @@ export default function SendChgPrivateInfo({
                             chainObj,
                             bigBrotherAccountCreated(),
                             questionNosEnc,
-                            preparedPriceRef
+                            preparedPriceRef,
+                            nativeCoinSymbol
                         );
                     } else {
                         if (receiverAddr != "" && amountETH != "") {
@@ -313,7 +315,7 @@ export default function SendChgPrivateInfo({
                     }
                     setTransactionFee(eFee.feeDisplay);
                 } else {
-                    setTransactionFee("? SOL.");
+                    setTransactionFee(`? ${nativeCoinSymbol}.`);
                 }
             } catch (e) {
                 console.log("seek error:", e);
@@ -324,6 +326,7 @@ export default function SendChgPrivateInfo({
 
         //
         refreshFee();
+        updateNativeCoinSymbol();
     }, [privateFillInOk, inputFillInChange]);
 
     //   const privateInfo: PrivateInfoType = {
@@ -474,6 +477,7 @@ export default function SendChgPrivateInfo({
                         preparedPriceRef={preparedPriceRef}
                         updateCurrentTx={updateCurrentTx}
                         currentTabTag={currentTabTag}
+                        nativeCoinSymbol={nativeCoinSymbol}
                     />
                 </div>
             </div>
@@ -497,6 +501,7 @@ function CreateTransaction({
     preparedPriceRef,
     updateCurrentTx,
     currentTabTag,
+    nativeCoinSymbol,
 }: {
     myOwnerId: string;
     verifyingContract: string;
@@ -519,6 +524,7 @@ function CreateTransaction({
     preparedPriceRef: any;
     updateCurrentTx: any;
     currentTabTag: string;
+    nativeCoinSymbol: string;
 }) {
     const { pending } = useFormStatus();
 
@@ -574,7 +580,8 @@ function CreateTransaction({
                 chainObj,
                 myAccountCreated,
                 newQuestionNosEnc,
-                preparedPriceRef
+                preparedPriceRef,
+                nativeCoinSymbol
             );
 
             updateCurrentTx(tx);
@@ -637,7 +644,8 @@ function CreateTransaction({
                 chainObj,
                 myAccountCreated,
                 questionNosEnc,
-                preparedPriceRef
+                preparedPriceRef,
+                nativeCoinSymbol
             );
 
             updateCurrentTx(tx);
@@ -697,7 +705,8 @@ async function estimateChgPasswdFee(
     },
     bigBrotherAccountCreated: boolean,
     questionNos: string,
-    preparedPriceRef: any
+    preparedPriceRef: any,
+    nativeCoinSymbol: string
 ) {
     let myDetectEstimatedFee = BigInt(0);
     console.log(
@@ -823,7 +832,8 @@ async function executeChgPasswd(
     },
     bigBrotherAccountCreated: boolean,
     newQuestionNos: string,
-    preparedPriceRef: any
+    preparedPriceRef: any,
+    nativeCoinSymbol: string
 ) {
     let eFee = await estimateChgPasswdFee(
         bigBrotherOwnerId,
@@ -833,7 +843,8 @@ async function executeChgPasswd(
         chainObj,
         bigBrotherAccountCreated,
         newQuestionNos,
-        preparedPriceRef
+        preparedPriceRef,
+        nativeCoinSymbol
     );
     console.log("user realtime fee, when changing Passwd:", eFee);
     if (eFee.feeWei == undefined || eFee.feeWei == 0) {
@@ -937,7 +948,8 @@ async function estimateTransFee(
     },
     myAccountCreated: boolean,
     questionNos: string,
-    preparedPriceRef: any
+    preparedPriceRef: any,
+    nativeCoinSymbol: string
 ) {
     let myDetectEstimatedFee = BigInt(0);
     const receiverAmt = parseEther(receiverAmountETH);
@@ -1006,7 +1018,9 @@ async function estimateTransFee(
                 onlyQueryFee,
                 myDetectEstimatedFee,
                 BigInt(0),
-                BigInt(0)
+                BigInt(0),
+                myDetectEstimatedFee,
+                ""
             );
         } else {
             console.log(
@@ -1015,6 +1029,7 @@ async function estimateTransFee(
                 myContractAccount
             );
             detectRes = await newAccountAndTransferETH(
+                chainCode,
                 myOwnerId,
                 passwdAccount.address,
                 questionNos,
@@ -1025,7 +1040,9 @@ async function estimateTransFee(
                 onlyQueryFee,
                 myDetectEstimatedFee,
                 BigInt(0),
-                BigInt(0)
+                BigInt(0),
+                myDetectEstimatedFee,
+                ""
             );
         }
 
@@ -1081,7 +1098,8 @@ async function executeTransaction(
     },
     myAccountCreated: boolean,
     questionNos: string,
-    preparedPriceRef: any
+    preparedPriceRef: any,
+    nativeCoinSymbol: string
 ) {
     let eFee = await estimateTransFee(
         myOwnerId,
@@ -1093,7 +1111,8 @@ async function executeTransaction(
         chainObj,
         myAccountCreated,
         questionNos,
-        preparedPriceRef
+        preparedPriceRef,
+        nativeCoinSymbol
     );
     console.log("user realtime fee, when executeing:", eFee);
     if (eFee.feeWei == undefined || eFee.feeWei == 0) {

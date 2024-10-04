@@ -69,26 +69,28 @@ function getUserProperty(email: string): UserProperty {
         return { selectedAccountInfos: [] };
     }
 
-    let defaultChain: ChainCode = ChainCode.ETHEREUM_MAIN_NET;
-    if (email.indexOf("@") >= 0) {
-        defaultChain = getLoginPageProperty().selectedChainCode;
-        console.log("xxxxx:defaultChain", defaultChain);
+    let loginChainCode: ChainCode;
+    const loginJson = localStorage.getItem(KEY_PREFIX + EMAIL_LOGIN_PAGE);
+    if (loginJson == undefined || loginJson == null || loginJson == "") {
+        loginChainCode = ChainCode.ETHEREUM_MAIN_NET;
+    } else {
+        const p: UserProperty = JSON.parse(loginJson);
+        loginChainCode = p.selectedChainCode;
     }
-
-    const iBigBrotherOwnerId = getBigBrotherOwnerId(email, defaultChain);
+    console.log("loginChainCode:::AA:", loginChainCode);
     const propJson = localStorage.getItem(KEY_PREFIX + email);
-    console.log("propJson:::", email, "+", propJson, defaultChain);
     if (propJson == undefined || propJson == null || propJson == "") {
-        console.log("propJson:::AA");
+        const iBigBrotherOwnerId = getBigBrotherOwnerId(email, loginChainCode);
+
         const myRtn = {
             bigBrotherOwnerId: iBigBrotherOwnerId,
             email: email,
             emailDisplay: transToEmailDisplay(email),
 
-            selectedChainCode: defaultChain,
+            selectedChainCode: loginChainCode,
             selectedAccountInfos: [
                 {
-                    chainCode: defaultChain,
+                    chainCode: loginChainCode,
                     selectedOrderNo: 0,
                     selectedAccountAddr: "",
                 },
@@ -102,9 +104,20 @@ function getUserProperty(email: string): UserProperty {
     console.log("propJson:::BB");
 
     const property: UserProperty = JSON.parse(propJson);
-    property.selectedChainCode = chainCodeFromString(
-        property.selectedChainCode?.toString()
-    );
+    property.selectedChainCode = loginChainCode;
+    if (
+        property.selectedAccountInfos == undefined ||
+        property.selectedAccountInfos == null ||
+        property.selectedAccountInfos.length == 0
+    ) {
+        property.selectedAccountInfos = [
+            {
+                chainCode: property.selectedChainCode,
+                selectedOrderNo: 0,
+                selectedAccountAddr: "",
+            },
+        ];
+    }
     property.selectedOrderNo = userPropertyGetSelectedOrderNo(property);
     property.selectedAccountAddr = userPropertyGetSelectedAccountAddr(property);
     return property;

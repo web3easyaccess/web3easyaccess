@@ -111,8 +111,6 @@ const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
     return questionNosEnc;
 };
 
-let nativeCoinSymbol = "ETH";
-
 export default function SendTransaction({
     userProp,
     accountAddrList,
@@ -142,12 +140,15 @@ export default function SendTransaction({
         l1ChainCode: ChainCode;
     } = getChainObj(userProp.state.selectedChainCode);
 
-    try {
-        nativeCoinSymbol = chainObj.nativeCurrency.symbol;
-    } catch (e) {
-        console.log("warn,nativeCoinSymbol,:", e);
-        nativeCoinSymbol = "ETH";
-    }
+    const [nativeCoinSymbol, setNativeCoinSymbol] = useState("");
+    const updateNativeCoinSymbol = () => {
+        try {
+            setNativeCoinSymbol(chainObj.nativeCurrency.symbol);
+        } catch (e) {
+            console.log("warn,nativeCoinSymbol,:", e);
+            setNativeCoinSymbol("ETH");
+        }
+    };
 
     const explorerUrl = chainObj.blockExplorers.default.url;
 
@@ -239,6 +240,8 @@ export default function SendTransaction({
         console.log("xxxxxx110B");
         //
         refreshBalance();
+
+        updateNativeCoinSymbol();
 
         console.log("xxxxxx110C:", bridgeL1ToL2, currentTabTagRef.current);
         if (bridgeL1ToL2 && currentTabTagRef.current == "bridgeL2AndL1") {
@@ -684,7 +687,8 @@ export default function SendTransaction({
                             questionNosEnc,
                             preparedPriceRef,
                             bridgeDirection,
-                            currentPriInfoRef
+                            currentPriInfoRef,
+                            nativeCoinSymbol
                         );
                     } else {
                         // transfer ETH
@@ -700,7 +704,8 @@ export default function SendTransaction({
                             questionNosEnc,
                             preparedPriceRef,
                             bridgeDirection,
-                            currentPriInfoRef
+                            currentPriInfoRef,
+                            nativeCoinSymbol
                         );
                     }
 
@@ -737,7 +742,7 @@ export default function SendTransaction({
                     }
                     setTransactionFee(eFee.feeDisplay + feePrice);
                 } else {
-                    setTransactionFee("? SOL.");
+                    setTransactionFee(`? ${nativeCoinSymbol}.`);
                 }
             } catch (e) {
                 let feePrice = "...";
@@ -1329,6 +1334,7 @@ export default function SendTransaction({
                         updateCurrentTx={updateCurrentTx}
                         readReceiverInfo={readReceiverInfo}
                         factoryAddr={userProp.serverSidePropState.factoryAddr}
+                        nativeCoinSymbol={nativeCoinSymbol}
                     />
                 </div>
             </div>
@@ -1352,6 +1358,7 @@ function CreateTransaction({
     updateCurrentTx,
     readReceiverInfo,
     factoryAddr,
+    nativeCoinSymbol,
 }: {
     myOwnerId: string;
     verifyingContract: string;
@@ -1364,6 +1371,7 @@ function CreateTransaction({
     updateCurrentTx: any;
     readReceiverInfo: any;
     factoryAddr: string;
+    nativeCoinSymbol: string;
 }) {
     const { pending } = useFormStatus();
 
@@ -1481,7 +1489,9 @@ function CreateTransaction({
                 theAccountCreated,
                 questionNosEnc,
                 preparedPriceRef,
-                bridgeDirection
+                bridgeDirection,
+                currentPriInfoRef,
+                nativeCoinSymbol
             );
         } else {
             tx = await executeTransaction(
@@ -1495,7 +1505,9 @@ function CreateTransaction({
                 myAccountCreated,
                 questionNosEnc,
                 preparedPriceRef,
-                ""
+                "",
+                currentPriInfoRef,
+                nativeCoinSymbol
             );
         }
 
@@ -1559,7 +1571,8 @@ async function estimateTransFee(
     questionNos: string,
     preparedPriceRef: any,
     bridgeDirection: string,
-    currentPriInfoRef: React.MutableRefObject<PrivateInfoType>
+    currentPriInfoRef: React.MutableRefObject<PrivateInfoType>,
+    nativeCoinSymbol: string
 ) {
     let myDetectEstimatedFee = BigInt(0);
     let myL1DataFee = BigInt(0);
@@ -1759,7 +1772,8 @@ async function executeTransaction(
     questionNos: string,
     preparedPriceRef: any,
     bridgeDirection: string,
-    currentPriInfoRef: React.MutableRefObject<PrivateInfoType>
+    currentPriInfoRef: React.MutableRefObject<PrivateInfoType>,
+    nativeCoinSymbol: string
 ) {
     let eFee = await estimateTransFee(
         myOwnerId,
@@ -1773,7 +1787,8 @@ async function executeTransaction(
         questionNos,
         preparedPriceRef,
         bridgeDirection,
-        currentPriInfoRef
+        currentPriInfoRef,
+        nativeCoinSymbol
     );
     console.log("executeTransaction,user realtime fee, when executeing:", eFee);
     if (eFee.feeWei == undefined || eFee.feeWei == 0) {

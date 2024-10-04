@@ -1,5 +1,3 @@
-"use client";
-
 import popularAddr from "../lib/client/popularAddr";
 import { privateKeyToAccount } from "viem/accounts";
 import axios from "axios";
@@ -206,6 +204,7 @@ export async function queryAccount(
             return cache;
         }
         const cpc = chainPublicClient(chainCode, factoryAddr);
+
         // console.log("rpc:", cpc.rpcUrl);
         console.log(
             "factoryAddr in queryAccount:",
@@ -693,6 +692,14 @@ export async function queryAssets(
         ];
     }
 
+    let nativeSymbol = "ETH";
+    try {
+        nativeSymbol = getChainObj(chainCode).nativeCurrency.symbol;
+    } catch (e) {
+        console.log("warn....nativeSymbol222:", e);
+        nativeSymbol = "ETH";
+    }
+
     let tokenList = [];
     const result = [];
     try {
@@ -706,7 +713,7 @@ export async function queryAssets(
 
         const myETH = {
             token_address: "",
-            token_symbol: "ETH",
+            token_symbol: nativeSymbol,
             balance: ethBalance,
         };
 
@@ -810,7 +817,7 @@ export async function queryTransactions(
 }
 
 export const formatTimestamp = (tm: number) => {
-    let tt = tm;
+    let tt = Number(tm);
     if (tt < 1000000000000) {
         tt = tt * 1000;
     }
@@ -843,6 +850,10 @@ const CHAIN_PROPS = {
         scanApiKey: "Y3EURWY2JI96686J7G6G4I614IF48ZM6JF",
         startBlock: 3735000,
     },
+    NEOX_TEST_CHAIN: {
+        scanApiKey: "123",
+        startBlock: 526100,
+    },
 };
 
 async function _queryTransactions(
@@ -859,6 +870,9 @@ async function _queryTransactions(
     const internalTransactionsUrl = `${apiUrl}?module=account&action=txlistinternal&address=${addr}&startblock=${startBlock}&endblock=99999999&page=1&offset=200&sort=asc&apikey=${LINEASCAN_APIKEY}`;
 
     const resultData: Transaction[] = [];
+    if (chainCode == ChainCode.NEOX_TEST_CHAIN.toString()) {
+        return resultData;
+    }
     let data;
     try {
         console.log(
