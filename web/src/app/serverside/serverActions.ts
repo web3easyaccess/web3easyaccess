@@ -8,12 +8,7 @@ import myCookies from "./myCookies";
 import { sendMail } from "./mailService";
 import { queryAccount, formatTimestamp } from "../lib/chainQuery";
 import { getFactoryAddr } from "./blockchain/chainWriteClient";
-import {
-    newAccount,
-    newAccountAndTransferETH,
-    transferETH,
-    chgPasswdAddr,
-} from "./blockchain/chainWrite";
+import { newAccount, newAccountAndTransferETH } from "./blockchain/chainWrite";
 
 import {
     generateRandomDigitInteger,
@@ -21,8 +16,6 @@ import {
 } from "../lib/myRandom";
 
 import { queryEthBalance } from "../serverside/blockchain/queryAccountInfo";
-
-import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
 
 import { parseEther } from "viem";
 import { ChainCode } from "../lib/myTypes";
@@ -32,7 +25,7 @@ export async function userLogout(
     formData: FormData
 ) {
     console.log("server action,userLogout.");
-    myCookies.clearData();
+    myCookies.setEmail("");
     console.log("byebye...");
     redirectTo.urlLogin();
     return "byebye to server.";
@@ -157,8 +150,20 @@ const THEGRAPH_URLS: { [key: string]: string } = {
     SCROLL_TEST_CHAIN: `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY_f77a}/subgraphs/id/4pPyuX64mqazXXjL2xUCJESDbhHj9KPnzWudeZrfDs1R`,
     LINEA_TEST_CHAIN: `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/5zap7aqMFgJkErfkhHrngaGs24x5h2YyrWLeni5TkVZL`,
     SEPOLIA_CHAIN: `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/JCzyXC26m46orpfwuY4i4nUWMXk3LAJjGpWoQGw451Lp`,
+    NEOX_TEST_CHAIN: `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/o2FaoPpD1KeP8Dk5KnUyGuw7b7tZvvcrTUu3xYuGkez`,
 };
 export async function thegraphQueryOpLog(accountAddr, chainCode) {
+    const result: {
+        operationType: string;
+        description: string;
+        timestamp: string;
+        hash: string;
+    }[] = [];
+
+    if (chainCode.indexOf("SOLANA") >= 0) {
+        return result;
+    }
+
     const query =
         "{" +
         // " createAccounts(first: 999) { id ownerId account blockNumber blockTimestamp transactionHash}" +
@@ -185,12 +190,6 @@ export async function thegraphQueryOpLog(accountAddr, chainCode) {
     );
     const sss = await myData.json();
     console.log("xxx,sss:", sss);
-    const result: {
-        operationType: string;
-        description: string;
-        timestamp: string;
-        hash: string;
-    }[] = [];
 
     sss.data.chgEntries.forEach((e: any) => {
         result.push({
@@ -202,6 +201,7 @@ export async function thegraphQueryOpLog(accountAddr, chainCode) {
     });
 
     sss.data.chgPasswdAddrs.forEach((e: any) => {
+        console.log("test123456:", e);
         result.push({
             operationType: "Change Password",
             description: "",

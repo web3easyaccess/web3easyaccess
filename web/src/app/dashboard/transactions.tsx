@@ -43,6 +43,13 @@ export default function Transactions({
 
     const chainObj = getChainObj(userProp.state.selectedChainCode);
     const explorerUrl = chainObj.blockExplorers.default.url;
+    let nativeCoinSymbol = "ETH";
+    try {
+        nativeCoinSymbol = chainObj.nativeCurrency.symbol;
+    } catch (e) {
+        console.log("warn,nativeCoinSymbol,:", e);
+        nativeCoinSymbol = "ETH";
+    }
 
     const [opLogs, setOpLogs] = React.useState([]);
 
@@ -217,7 +224,7 @@ export default function Transactions({
                                 Transaction Order
                             </TableColumn>
                             <TableColumn style={{ width: "100px" }}>
-                                Gas Fee(ETH)
+                                Gas Fee({nativeCoinSymbol})
                             </TableColumn>
                         </TableHeader>
                         <TableBody>

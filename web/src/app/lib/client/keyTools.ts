@@ -7,12 +7,17 @@ import {
     formatEther,
 } from "viem";
 
+import { md5 } from "js-md5";
+
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
 import { entropyToMnemonic } from "@scure/bip39";
 
 import { english, simplifiedChinese, generateMnemonic } from "viem/accounts";
 import { mnemonicToAccount } from "viem/accounts";
+
+import * as libsolana from "./solana/libsolana";
+import { ChainCode } from "../myTypes";
 
 export type PrivateInfoType = {
     email: string;
@@ -28,7 +33,7 @@ const salt = "20240601:z1yQJixs65wO1vdRBfGwrfcPR6stFT";
 const saltPrivateKey = salt + ":web3easyaccess:pri:";
 const saltOwnerId = salt + ":web3easyaccess:owner:";
 
-function _getMnemonic(privateInfo: PrivateInfoType) {
+export function getMnemonic(privateInfo: PrivateInfoType) {
     var s1 = saltPrivateKey + privateInfo.email;
     var s2 = saltPrivateKey + privateInfo.pin;
     var s3 = saltPrivateKey + privateInfo.question1answer;
@@ -53,10 +58,20 @@ function _getMnemonic(privateInfo: PrivateInfoType) {
 // only select index 0.
 const ADDRESS_INDEX = 0;
 
-export function getPasswdAccount(privateInfo: PrivateInfoType) {
+export function getPasswdAccount(
+    privateInfo: PrivateInfoType,
+    chainCode: ChainCode
+) {
+    if (chainCode.toString().indexOf("SOLANA") >= 0) {
+        const keypair = libsolana.privateInfoToKeypair(privateInfo);
+        return keypair.publicKey.toBase58();
+    }
+
+    const mnemonic = getMnemonic(privateInfo);
+
     // const account = privateKeyToAccount(privateKey);
     const account = mnemonicToAccount(
-        _getMnemonic(privateInfo), // "legal winner thank year wave sausage worth useful legal winner thank yellow",
+        mnemonic, // "legal winner thank year wave sausage worth useful legal winner thank yellow",
         {
             addressIndex: ADDRESS_INDEX,
         }
@@ -65,7 +80,7 @@ export function getPasswdAccount(privateInfo: PrivateInfoType) {
     return account;
 }
 
-export function getOwnerIdBigBrother(email: string) {
+export function getOwnerIdBigBrother(email: string, chainCode: ChainCode) {
     if (!email || email.trim() == "") {
         console.log("email is invalid:", email);
         throw new Error("email is invalid!");
@@ -74,6 +89,18 @@ export function getOwnerIdBigBrother(email: string) {
     var s2 = keccak256(toHex(s1)).toString();
     var sss = email + s2.substring(2) + "." + ADDRESS_INDEX;
     let ownerId = keccak256(toHex(sss));
+
+    if (chainCode.toString().indexOf("SOLANA") >= 0) {
+        // need trans 64 btyes to 32 bytes.
+        let oo = ownerId.toString().substring(2);
+        console.log("ownerId,solana,1:", oo);
+        oo = md5(oo);
+        console.log("ownerId,solana,2:", oo);
+        oo = oo.toString().substring(4) + "0000";
+        console.log("ownerId,solana,3:", oo);
+        return oo;
+    }
+
     console.log("getOwnerIdBigBrother-1:", ownerId, email);
     // left shift 4 letter, and append 4 ZEROs.
     ownerId = "0x" + ownerId.toString().substring(6) + "0000"; // this is BigBrother

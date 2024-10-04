@@ -1,0 +1,559 @@
+[
+    {
+        "type": "fallback",
+        "stateMutability": "payable"
+    },
+    {
+        "type": "receive",
+        "stateMutability": "payable"
+    },
+    {
+        "type": "function",
+        "name": "DOMAIN_SEPARATOR",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "bytes32",
+                "internalType": "bytes32"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "chgPasswdAddr",
+        "inputs": [
+            {
+                "name": "_newPasswdAddr",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "_newQuestionNos",
+                "type": "string",
+                "internalType": "string"
+            },
+            {
+                "name": "estimatedFee",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "_passwdAddr",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "_signature",
+                "type": "bytes",
+                "internalType": "bytes"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "eip712Domain",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "fields",
+                "type": "bytes1",
+                "internalType": "bytes1"
+            },
+            {
+                "name": "name",
+                "type": "string",
+                "internalType": "string"
+            },
+            {
+                "name": "version",
+                "type": "string",
+                "internalType": "string"
+            },
+            {
+                "name": "chainId",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "verifyingContract",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "salt",
+                "type": "bytes32",
+                "internalType": "bytes32"
+            },
+            {
+                "name": "extensions",
+                "type": "uint256[]",
+                "internalType": "uint256[]"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "gasFreeAmount",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "increaseGasFreeAmount",
+        "inputs": [
+            {
+                "name": "_amount",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "initByFactory",
+        "inputs": [
+            {
+                "name": "_entryEOA",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "_bigBrotherAccount",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "_passwdAddr",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "_questionNos",
+                "type": "string",
+                "internalType": "string"
+            },
+            {
+                "name": "_gasFreeAmount",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "initImpl",
+        "inputs": [
+            {
+                "name": "_impl",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "nonce",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "passwdAddr",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "questionNos",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "string",
+                "internalType": "string"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "sendMultiTransaction",
+        "inputs": [
+            {
+                "name": "toArr",
+                "type": "address[]",
+                "internalType": "address[]"
+            },
+            {
+                "name": "amountArr",
+                "type": "uint256[]",
+                "internalType": "uint256[]"
+            },
+            {
+                "name": "dataArr",
+                "type": "bytes[]",
+                "internalType": "bytes[]"
+            },
+            {
+                "name": "estimatedFee",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "_passwdAddr",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "_signature",
+                "type": "bytes",
+                "internalType": "bytes"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "results",
+                "type": "bytes[]",
+                "internalType": "bytes[]"
+            }
+        ],
+        "stateMutability": "payable"
+    },
+    {
+        "type": "function",
+        "name": "sendTransaction",
+        "inputs": [
+            {
+                "name": "to",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "amount",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "data",
+                "type": "bytes",
+                "internalType": "bytes"
+            },
+            {
+                "name": "estimatedFee",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "_passwdAddr",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "_signature",
+                "type": "bytes",
+                "internalType": "bytes"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "rtnData",
+                "type": "bytes",
+                "internalType": "bytes"
+            }
+        ],
+        "stateMutability": "payable"
+    },
+    {
+        "type": "function",
+        "name": "standbyVariables",
+        "inputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "bytes32",
+                "internalType": "bytes32"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "upImplAfterSend",
+        "inputs": [
+            {
+                "name": "to",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "amount",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "data",
+                "type": "bytes",
+                "internalType": "bytes"
+            },
+            {
+                "name": "estimatedFee",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "_passwdAddr",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "_signature",
+                "type": "bytes",
+                "internalType": "bytes"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "rtnData",
+                "type": "bytes",
+                "internalType": "bytes"
+            }
+        ],
+        "stateMutability": "payable"
+    },
+    {
+        "type": "function",
+        "name": "upgradeImpl",
+        "inputs": [
+            {
+                "name": "estimatedFee",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "_passwdAddr",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "_signature",
+                "type": "bytes",
+                "internalType": "bytes"
+            }
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "w3eaPointAmount",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "event",
+        "name": "ChgEntry",
+        "inputs": [
+            {
+                "name": "newEntry",
+                "type": "address",
+                "indexed": false,
+                "internalType": "address"
+            }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "ChgPasswdAddr",
+        "inputs": [
+            {
+                "name": "oldPasswdAddr",
+                "type": "address",
+                "indexed": false,
+                "internalType": "address"
+            },
+            {
+                "name": "newPasswdAddr",
+                "type": "address",
+                "indexed": false,
+                "internalType": "address"
+            }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "EIP712DomainChanged",
+        "inputs": [],
+        "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "InitAccount",
+        "inputs": [
+            {
+                "name": "passwdAddr",
+                "type": "address",
+                "indexed": false,
+                "internalType": "address"
+            },
+            {
+                "name": "factory",
+                "type": "address",
+                "indexed": false,
+                "internalType": "address"
+            }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "SendTransaction",
+        "inputs": [
+            {
+                "name": "to",
+                "type": "address",
+                "indexed": false,
+                "internalType": "address"
+            },
+            {
+                "name": "data",
+                "type": "bytes",
+                "indexed": false,
+                "internalType": "bytes"
+            },
+            {
+                "name": "value",
+                "type": "uint256",
+                "indexed": false,
+                "internalType": "uint256"
+            }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "SyncEntryEOA",
+        "inputs": [
+            {
+                "name": "newEntryEOA",
+                "type": "address",
+                "indexed": false,
+                "internalType": "address"
+            }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "UpgradeImpl",
+        "inputs": [
+            {
+                "name": "oldImpl",
+                "type": "address",
+                "indexed": false,
+                "internalType": "address"
+            },
+            {
+                "name": "newImpl",
+                "type": "address",
+                "indexed": false,
+                "internalType": "address"
+            }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "error",
+        "name": "ECDSAInvalidSignature",
+        "inputs": []
+    },
+    {
+        "type": "error",
+        "name": "ECDSAInvalidSignatureLength",
+        "inputs": [
+            {
+                "name": "length",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ]
+    },
+    {
+        "type": "error",
+        "name": "ECDSAInvalidSignatureS",
+        "inputs": [
+            {
+                "name": "s",
+                "type": "bytes32",
+                "internalType": "bytes32"
+            }
+        ]
+    },
+    {
+        "type": "error",
+        "name": "FunctionError",
+        "inputs": []
+    },
+    {
+        "type": "error",
+        "name": "InvalidShortString",
+        "inputs": []
+    },
+    {
+        "type": "error",
+        "name": "StringTooLong",
+        "inputs": [
+            {
+                "name": "str",
+                "type": "string",
+                "internalType": "string"
+            }
+        ]
+    }
+]

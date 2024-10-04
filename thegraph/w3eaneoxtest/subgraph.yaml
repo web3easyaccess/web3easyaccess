@@ -1,0 +1,56 @@
+specVersion: 1.0.0
+indexerHints:
+    prune: auto
+schema:
+    file: ./schema.graphql
+dataSources:
+    - kind: ethereum
+      name: Factory
+      network: neox-testnet
+      source:
+          address: "0x8F8F94C5D5EEceE02A8adF5Ccd5050E51009608D"
+          abi: Factory
+          startBlock: 526100
+      mapping:
+          kind: ethereum/events
+          apiVersion: 0.0.7
+          language: wasm/assemblyscript
+          entities:
+              - CreateAccount
+          abis:
+              - name: Factory
+                file: ./abis/Factory.json
+          eventHandlers:
+              - event: CreateAccount(uint256,address)
+                handler: handleCreateAccount
+          file: ./src/factory.ts
+
+templates:
+    - name: Account
+      kind: ethereum
+      network: neox-testnet
+      source:
+          abi: Account
+      mapping:
+          kind: ethereum/events
+          apiVersion: 0.0.7
+          language: wasm/assemblyscript
+          entities:
+              - Account
+          abis:
+              - name: Account
+                file: ./abis/Account.json
+          eventHandlers:
+              - event: InitAccount(address,address)
+                handler: handleInitAccount
+              - event: ChgEntry(address)
+                handler: handleChgEntry
+              - event: ChgPasswdAddr(address,address)
+                handler: handleChgPasswdAddr
+              - event: SyncEntryEOA(address)
+                handler: handleSyncEntryEOA
+              - event: UpgradeImpl(address,address)
+                handler: handleUpgradeImpl
+              - event: SendTransaction(address,bytes,uint256)
+                handler: handleSendTransaction
+          file: ./src/account.ts
