@@ -1,20 +1,5 @@
 [
-  {
-    "type": "constructor",
-    "inputs": [
-      { "name": "_entryEOA", "type": "address", "internalType": "address" },
-      {
-        "name": "_accountEntityTemplate",
-        "type": "address",
-        "internalType": "address"
-      },
-      { "name": "_accountImpl", "type": "address", "internalType": "address" },
-      { "name": "_admin1", "type": "address", "internalType": "address" },
-      { "name": "_admin2", "type": "address", "internalType": "address" },
-      { "name": "_admin3", "type": "address", "internalType": "address" }
-    ],
-    "stateMutability": "nonpayable"
-  },
+  { "type": "constructor", "inputs": [], "stateMutability": "nonpayable" },
   { "type": "receive", "stateMutability": "payable" },
   {
     "type": "function",
@@ -90,6 +75,24 @@
     "inputs": [
       { "name": "acct", "type": "address", "internalType": "address" },
       { "name": "amount", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "init",
+    "inputs": [
+      { "name": "_entryEOA", "type": "address", "internalType": "address" },
+      {
+        "name": "_accountEntityTemplate",
+        "type": "address",
+        "internalType": "address"
+      },
+      { "name": "_accountImpl", "type": "address", "internalType": "address" },
+      { "name": "_admin1", "type": "address", "internalType": "address" },
+      { "name": "_admin2", "type": "address", "internalType": "address" },
+      { "name": "_admin3", "type": "address", "internalType": "address" }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"

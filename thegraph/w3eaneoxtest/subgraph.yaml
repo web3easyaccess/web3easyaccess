@@ -28,7 +28,7 @@ dataSources:
 templates:
     - name: Account
       kind: ethereum
-      network: sepolia
+      network: neox-testnet
       source:
           abi: Account
       mapping:
