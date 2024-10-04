@@ -1,0 +1,168 @@
+{
+    "address": "BA3YWB1TPRqMcKjMRBugDqjcowNiZJb4FcPwjWfg9aCD",
+    "metadata": {
+        "name": "easyaccess",
+        "version": "0.1.0",
+        "spec": "0.1.0",
+        "description": "Created with Anchor"
+    },
+    "instructions": [
+        {
+            "name": "change_acct_passwd_addr",
+            "discriminator": [236, 234, 133, 242, 13, 180, 251, 90],
+            "accounts": [
+                {
+                    "name": "payer_acct",
+                    "signer": true
+                },
+                {
+                    "name": "user_passwd_acct",
+                    "signer": true
+                },
+                {
+                    "name": "user_acct",
+                    "writable": true,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "arg",
+                                "path": "owner_id"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "args": [
+                {
+                    "name": "owner_id",
+                    "type": "string"
+                },
+                {
+                    "name": "new_passwd_addr",
+                    "type": "string"
+                },
+                {
+                    "name": "question_nos",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "create_acct",
+            "discriminator": [249, 106, 189, 96, 83, 99, 15, 113],
+            "accounts": [
+                {
+                    "name": "payer_acct",
+                    "writable": true,
+                    "signer": true
+                },
+                {
+                    "name": "user_acct",
+                    "writable": true,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "arg",
+                                "path": "owner_id"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "system_program",
+                    "address": "11111111111111111111111111111111"
+                }
+            ],
+            "args": [
+                {
+                    "name": "owner_id",
+                    "type": "string"
+                },
+                {
+                    "name": "passwd_addr",
+                    "type": "string"
+                },
+                {
+                    "name": "question_nos",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "transfer_acct_lamports",
+            "discriminator": [216, 166, 104, 99, 65, 29, 133, 19],
+            "accounts": [
+                {
+                    "name": "payer_acct",
+                    "signer": true
+                },
+                {
+                    "name": "user_passwd_acct",
+                    "signer": true
+                },
+                {
+                    "name": "user_acct",
+                    "writable": true,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "arg",
+                                "path": "owner_id"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "to_account",
+                    "writable": true
+                },
+                {
+                    "name": "system_program",
+                    "address": "11111111111111111111111111111111"
+                }
+            ],
+            "args": [
+                {
+                    "name": "owner_id",
+                    "type": "string"
+                },
+                {
+                    "name": "lamports",
+                    "type": "u64"
+                }
+            ]
+        }
+    ],
+    "accounts": [
+        {
+            "name": "AcctEntity",
+            "discriminator": [50, 180, 28, 58, 154, 174, 238, 161]
+        }
+    ],
+    "types": [
+        {
+            "name": "AcctEntity",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "owner_id",
+                        "type": "string"
+                    },
+                    {
+                        "name": "passwd_addr",
+                        "type": "string"
+                    },
+                    {
+                        "name": "question_nos",
+                        "type": "string"
+                    },
+                    {
+                        "name": "bump",
+                        "type": "u8"
+                    }
+                ]
+            }
+        }
+    ]
+}

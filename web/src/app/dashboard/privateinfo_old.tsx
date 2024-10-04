@@ -79,6 +79,7 @@ export default function App({
             const bigBrotherOwnerId = getOwnerIdBigBrother(
                 currentUserInfo.email
             );
+            console.log("queryAccount...6");
             const acct = await queryAccount(
                 currentUserInfo.chainCode,
                 currentUserInfo.factoryAddr,

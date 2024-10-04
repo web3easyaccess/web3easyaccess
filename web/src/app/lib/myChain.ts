@@ -1,6 +1,9 @@
 import { defineChain } from "viem";
-import myCookies from "../serverside/myCookies";
+
 import { scrollSepolia, lineaSepolia, sepolia } from "viem/chains";
+// import solana from "@solana/web3.js";
+
+import { ChainCode } from "./myTypes";
 
 // node_modules\viem\chains\definitions\scrollSepolia.ts
 
@@ -60,7 +63,79 @@ const morphHoleskyTestnet = defineChain({
     testnet: true,
 });
 
-export const getChainObj = (chainCode) => {
+const neoxMainnet = defineChain({
+    id: 47763,
+    name: "NeoX Mainnet",
+    nativeCurrency: {
+        decimals: 18,
+        name: "GAS",
+        symbol: "GAS",
+    },
+    rpcUrls: {
+        default: {
+            http: ["https://mainnet-1.rpc.banelabs.org"],
+            webSocket: ["wss://mainnet.wss1.banelabs.org"],
+        },
+    },
+    blockExplorers: {
+        default: {
+            name: "Explorer",
+            url: "https://xexplorer.neo.org",
+        },
+    },
+    contracts: {
+        multicall3: {
+            address: "0xD6010D102015fEa9cB3a9AbFBB51994c0Fd6E672",
+            blockCreated: 1,
+        },
+    },
+    explorerApiUrl: "https://12345/api/v2",
+    testnet: true,
+});
+
+const neoxTestnet = defineChain({
+    id: 12227332,
+    name: "NeoX T4(testnet)",
+    nativeCurrency: {
+        decimals: 18,
+        name: "GAS",
+        symbol: "GAS",
+    },
+    rpcUrls: {
+        default: {
+            http: ["https://neoxt4seed1.ngd.network"],
+            webSocket: ["wss://neoxt4wss1.ngd.network"],
+        },
+    },
+    blockExplorers: {
+        default: {
+            name: "Explorer",
+            url: "https://xt4scan.ngd.network",
+        },
+    },
+    contracts: {
+        multicall3: {
+            address: "0x82096F92248dF7afDdef72E545F06e5be0cf0F99",
+            blockCreated: 1,
+        },
+    },
+    explorerApiUrl: "https://12345test/api/v2",
+    testnet: true,
+});
+
+export const getChainObj = (
+    chainCode: ChainCode
+): {
+    id: number;
+    name: string;
+    nativeCurrency: {};
+    rpcUrls: {};
+    blockExplorers: {};
+    contracts: {};
+    testnet: boolean;
+    chainCode: ChainCode;
+    l1ChainCode: ChainCode;
+} => {
     var rtn = {
         id: 0,
         name: "",
@@ -84,22 +159,30 @@ export const getChainObj = (chainCode) => {
             },
         },
         testnet: true,
-        chainCode: "",
-        l1ChainCode: "", // when I am L2 chain, here store my corresponding L1 CHAIN
+        chainCode: ChainCode.UNKNOW,
+        l1ChainCode: ChainCode.UNKNOW, // when I am L2 chain, here store my corresponding L1 CHAIN
     };
 
-    if (chainCode == "DEFAULT_ANVIL_CHAIN") {
+    if (chainCode == ChainCode.DEFAULT_ANVIL_CHAIN) {
         rtn = defaultAnvil;
-    } else if (chainCode == "MORPH_TEST_CHAIN") {
+    } else if (chainCode == ChainCode.MORPH_TEST_CHAIN) {
         rtn = morphHoleskyTestnet;
-    } else if (chainCode == "SCROLL_TEST_CHAIN") {
+    } else if (chainCode == ChainCode.SCROLL_TEST_CHAIN) {
         rtn = scrollSepolia;
-        rtn.l1ChainCode = "SEPOLIA_CHAIN";
-    } else if (chainCode == "LINEA_TEST_CHAIN") {
+        rtn.l1ChainCode = ChainCode.SEPOLIA_CHAIN;
+    } else if (chainCode == ChainCode.LINEA_TEST_CHAIN) {
         rtn = lineaSepolia;
-        rtn.l1ChainCode = "SEPOLIA_CHAIN";
-    } else if (chainCode == "SEPOLIA_CHAIN") {
-        rtn = sepolia;
+        rtn.l1ChainCode = ChainCode.SEPOLIA_CHAIN;
+    } else if (chainCode == ChainCode.SEPOLIA_CHAIN) {
+        // rtn = sepolia;
+        rtn = { ...sepolia };
+        rtn.rpcUrls.default.http.unshift(
+            "https://eth-sepolia.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW"
+        );
+    } else if (chainCode == ChainCode.NEOX_TEST_CHAIN) {
+        rtn = neoxTestnet;
+    } else if (chainCode == ChainCode.SOLANA_TEST_CHAIN) {
+        //
     } else {
         console.warn("not supprted:" + chainCode);
     }

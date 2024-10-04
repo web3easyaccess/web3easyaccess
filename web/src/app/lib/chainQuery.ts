@@ -1,10 +1,10 @@
-import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
+import popularAddr from "../lib/client/popularAddr";
 import { privateKeyToAccount } from "viem/accounts";
 import axios from "axios";
 import { Axios, AxiosResponse, AxiosError } from "axios";
 
 import { isMorphNet, isScrollNet, isLineaNet } from "./myChain";
-import { Transaction } from "./myTypes";
+import { ChainCode, Transaction } from "./myTypes";
 import { getChainObj } from "./myChain";
 import {
     getContract,
@@ -14,10 +14,13 @@ import {
     encodeFunctionData,
 } from "viem";
 
+import * as libsolana from "./client/solana/libsolana";
+
 import { chainPublicClient } from "./chainQueryClient";
-import { getOwnerIdLittleBrother } from "../dashboard/privateinfo/lib/keyTools";
+import { getOwnerIdLittleBrother } from "../lib/client/keyTools";
 
 import abis from "../serverside/blockchain/abi/abis";
+import LocalStore from "../storage/LocalStore";
 
 const accountOnlyForRead = privateKeyToAccount(
     "0x1000000000000000000000000000000000000000000000000000000000000000"
@@ -108,18 +111,42 @@ export function parseUnits(value: string, decimals: number) {
     return BigInt(`${negative ? "-" : ""}${integer}${fraction}`);
 }
 
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export async function queryAccountList(
     chainCode: string,
     factoryAddr: string,
     baseOwnerId: string
 ) {
     const acctList: { addr: string; created: boolean; orderNo: number }[] = [];
+
     // max count supported is 10.
     for (let k = 0; k < 10; k++) {
         console.log("getOwnerIdLittleBrother before:", baseOwnerId, k);
         const realOwnerId = getOwnerIdLittleBrother(baseOwnerId, k);
         console.log("getOwnerIdLittleBrother after:", realOwnerId);
-        const account = await queryAccount(chainCode, factoryAddr, realOwnerId);
+        let account = {
+            addr: "0x000",
+            created: true,
+        };
+
+        for (let mm = 0; mm < 5; mm++) {
+            try {
+                console.log("queryAccount...777");
+                account = await queryAccount(
+                    chainCode,
+                    factoryAddr,
+                    realOwnerId
+                );
+                break;
+            } catch (eee) {
+                console.log("warn....:queryAccount error:k=", k, eee);
+                await sleep(3000);
+            }
+        }
+
         console.log(realOwnerId + "'s account: " + account);
         acctList.push({
             addr: account?.accountAddr,
@@ -137,10 +164,47 @@ export async function queryAccountList(
 export async function queryAccount(
     chainCode: string,
     factoryAddr: string,
-    ownerId: `0x${string}`
+    ownerId: string
 ) {
+    console.log(
+        "queryAccount--888:",
+        chainCode,
+        "::",
+        factoryAddr,
+        "::",
+        ownerId
+    );
+
+    if (chainCode.toString().indexOf("SOLANA") >= 0) {
+        const acct = libsolana.queryAccount(chainCode, ownerId);
+        const rtn = {
+            accountAddr: "" + acct,
+            created: true,
+            passwdAddr: "000",
+        };
+        return rtn;
+    }
+
+    if (!ownerId.startsWith("0x")) {
+        ownerId = "0x" + ownerId;
+    }
+
     try {
+        const cache = LocalStore.getCacheQueryAccount(
+            chainCode,
+            factoryAddr,
+            ownerId
+        );
+        console.log("getCacheQueryAccount:", cache);
+        if (
+            cache != null &&
+            cache.accountAddr != null &&
+            cache.accountAddr.length > 0
+        ) {
+            return cache;
+        }
         const cpc = chainPublicClient(chainCode, factoryAddr);
+
         // console.log("rpc:", cpc.rpcUrl);
         console.log(
             "factoryAddr in queryAccount:",
@@ -164,7 +228,11 @@ export async function queryAccount(
                 functionName: "predictAccountAddress",
                 args: [ownerId],
             });
-            return { accountAddr: predictAddr, created: false, passwdAddr: "" };
+            return {
+                accountAddr: predictAddr,
+                created: false,
+                passwdAddr: "0x",
+            };
         } else {
             const passwdAddr = await cpc.publicClient.readContract({
                 account: accountOnlyForRead,
@@ -173,11 +241,18 @@ export async function queryAccount(
                 functionName: "passwdAddr",
                 args: [],
             });
-            return {
-                accountAddr: accountAddr,
+            const rtn = {
+                accountAddr: "" + accountAddr,
                 created: true,
-                passwdAddr: passwdAddr,
+                passwdAddr: "" + passwdAddr,
             };
+            LocalStore.setCacheQueryAccount(
+                chainCode,
+                factoryAddr,
+                ownerId,
+                rtn
+            );
+            return rtn;
         }
     } catch (e) {
         console.log(
@@ -185,6 +260,7 @@ export async function queryAccount(
                 ownerId,
             e
         );
+
         throw new Error("queryAccount error!");
     }
 }
@@ -442,26 +518,42 @@ export async function queryEthBalance(
     factoryAddr: string,
     addr: string
 ) {
-    if (addr == undefined || addr == popularAddr.ZERO_ADDR) {
+    if (
+        chainCode == undefined ||
+        addr == undefined ||
+        addr == popularAddr.ZERO_ADDR
+    ) {
         return "0.0";
     }
-    // const blockNumber = await client.getBlockNumber();
-    var addrWithout0x = addr;
-    if (addr.substring(0, 2) == "0x" || addr.substring(0, 2) == "0X") {
-        addrWithout0x = addr.substring(2);
+    if (chainCode.indexOf("SOLANA") >= 0 || !addr.startsWith("0x")) {
+        return libsolana.querySolBalance(chainCode, addr);
     }
-    const cpc = chainPublicClient(chainCode, factoryAddr);
 
-    const balance = await cpc.publicClient.getBalance({
-        address: `0x${addrWithout0x}`,
-    });
+    try {
+        // const blockNumber = await client.getBlockNumber();
+        var addrWithout0x = addr;
+        if (addr.substring(0, 2) == "0x" || addr.substring(0, 2) == "0X") {
+            addrWithout0x = addr.substring(2);
+        }
+        const cpc = chainPublicClient(chainCode, factoryAddr);
 
-    const balanceAsEther = formatEther(balance);
-    return balanceAsEther;
+        const balance = await cpc.publicClient.getBalance({
+            address: `0x${addrWithout0x}`,
+        });
+
+        const balanceAsEther = formatEther(balance);
+        return balanceAsEther;
+    } catch (ee) {
+        console.log("queryEthBalance error:", ee);
+        return "0";
+    }
 }
 
 const getW3eapAddr = async (cpc, chainCode: string, factoryAddr: string) => {
     console.log(`factoryAddr ${factoryAddr} called.`);
+    if (chainCode.indexOf("SOLANA") >= 0) {
+        return "";
+    }
     const addr = await cpc.publicClient.readContract({
         account: accountOnlyForRead,
         address: factoryAddr,
@@ -482,9 +574,17 @@ export async function queryW3eapBalance(
     factoryAddr: string,
     addr: string
 ) {
-    if (addr == undefined || addr == popularAddr.ZERO_ADDR) {
+    if (
+        chainCode == undefined ||
+        addr == undefined ||
+        addr == popularAddr.ZERO_ADDR
+    ) {
         return "0.0";
     }
+    if (chainCode.indexOf("SOLANA") >= 0 || !addr.startsWith("0x")) {
+        return "0.0";
+    }
+
     try {
         const cpc = chainPublicClient(chainCode, factoryAddr);
         // console.log("rpc:", cpc.rpcUrl);
@@ -508,11 +608,18 @@ export async function queryW3eapBalance(
         return bb;
     } catch (e) {
         console.log(
-            "==================queryW3eapBalance error======================, accountAddr=" +
+            "==================queryW3eapBalance error======================2, accountAddr=" +
                 addr,
             e
         );
-        throw new Error("queryW3eapBalance error!");
+        if (
+            e != null &&
+            e != undefined &&
+            e.toString().indexOf("returned no data") >= 0
+        ) {
+            return "0";
+        }
+        throw new Error("queryW3eapBalance error2!");
     }
 }
 
@@ -521,9 +628,17 @@ export async function queryfreeGasFeeAmount(
     factoryAddr: string,
     addr: string
 ) {
-    if (addr == undefined || addr == popularAddr.ZERO_ADDR) {
+    if (
+        chainCode == undefined ||
+        addr == undefined ||
+        addr == popularAddr.ZERO_ADDR
+    ) {
         return "0.0";
     }
+    if (chainCode.indexOf("SOLANA") >= 0 || !addr.startsWith("0x")) {
+        return "0.0";
+    }
+
     try {
         const cpc = chainPublicClient(chainCode, factoryAddr);
         // console.log("rpc:", cpc.rpcUrl);
@@ -543,11 +658,18 @@ export async function queryfreeGasFeeAmount(
         return bb;
     } catch (e) {
         console.log(
-            "==================queryW3eapBalance error======================, accountAddr=" +
+            "==================queryW3eapBalance error======================1, accountAddr=" +
                 addr,
             e
         );
-        throw new Error("queryW3eapBalance error!");
+        if (
+            e != null &&
+            e != undefined &&
+            e.toString().indexOf("returned no data") >= 0
+        ) {
+            return "0";
+        }
+        throw new Error("queryW3eapBalance error1!");
     }
 }
 
@@ -556,7 +678,30 @@ export async function queryAssets(
     factoryAddr: string,
     addr: string
 ) {
+    if (
+        chainCode.indexOf("SOLANA") >= 0 ||
+        !addr.startsWith("0x") ||
+        factoryAddr.length < 20
+    ) {
+        return [
+            {
+                token_address: "",
+                token_symbol: "SOL",
+                balance: "1.234",
+            },
+        ];
+    }
+
+    let nativeSymbol = "ETH";
+    try {
+        nativeSymbol = getChainObj(chainCode).nativeCurrency.symbol;
+    } catch (e) {
+        console.log("warn....nativeSymbol222:", e);
+        nativeSymbol = "ETH";
+    }
+
     let tokenList = [];
+    const result = [];
     try {
         const cpc = chainPublicClient(chainCode, factoryAddr);
         // console.log("rpc:", cpc.rpcUrl);
@@ -568,11 +713,9 @@ export async function queryAssets(
 
         const myETH = {
             token_address: "",
-            token_symbol: "ETH",
+            token_symbol: nativeSymbol,
             balance: ethBalance,
         };
-
-        const result = [];
 
         if (isMorphNet(chainCode)) {
             const w3eapIncluded = { addr: w3eapAddr, included: false };
@@ -637,7 +780,8 @@ export async function queryAssets(
                 addr,
             e
         );
-        throw new Error("queryAssets error!");
+        // throw new Error("queryAssets error!");
+        return result;
     }
 }
 
@@ -645,11 +789,18 @@ export async function queryTransactions(
     chainCode: string,
     addr: string
 ): Promise<Transaction[]> {
-    if (chainCode == "SEPOLIA_CHAIN" || chainCode == "LINEA_TEST_CHAIN") {
+    if (
+        chainCode == "SEPOLIA_CHAIN" ||
+        chainCode == "LINEA_TEST_CHAIN" ||
+        chainCode == "NEOX_TEST_CHAIN"
+    ) {
         const res = await _queryTransactions(chainCode, addr);
         return res;
     }
     // //
+    if (chainCode.indexOf("SOLANA") >= 0) {
+        return [];
+    }
 
     if (isMorphNet(chainCode)) {
         const res = await _queryMorphTransactions(chainCode, addr);
@@ -666,7 +817,7 @@ export async function queryTransactions(
 }
 
 export const formatTimestamp = (tm: number) => {
-    let tt = tm;
+    let tt = Number(tm);
     if (tt < 1000000000000) {
         tt = tt * 1000;
     }
@@ -699,6 +850,10 @@ const CHAIN_PROPS = {
         scanApiKey: "Y3EURWY2JI96686J7G6G4I614IF48ZM6JF",
         startBlock: 3735000,
     },
+    NEOX_TEST_CHAIN: {
+        scanApiKey: "123",
+        startBlock: 526100,
+    },
 };
 
 async function _queryTransactions(
@@ -715,6 +870,9 @@ async function _queryTransactions(
     const internalTransactionsUrl = `${apiUrl}?module=account&action=txlistinternal&address=${addr}&startblock=${startBlock}&endblock=99999999&page=1&offset=200&sort=asc&apikey=${LINEASCAN_APIKEY}`;
 
     const resultData: Transaction[] = [];
+    if (chainCode == ChainCode.NEOX_TEST_CHAIN.toString()) {
+        return resultData;
+    }
     let data;
     try {
         console.log(

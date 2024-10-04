@@ -1,0 +1,195 @@
+[
+  { "type": "constructor", "inputs": [], "stateMutability": "nonpayable" },
+  { "type": "receive", "stateMutability": "payable" },
+  {
+    "type": "function",
+    "name": "accountImpl",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "admin1",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "admin2",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "admin3",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "adminAuth",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "chgAdmin",
+    "inputs": [
+      { "name": "aNo", "type": "uint256", "internalType": "uint256" },
+      { "name": "newAdmin", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "chgEntryEOA",
+    "inputs": [
+      { "name": "_entryEOA", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "deployer",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "entryEOA",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "increaseGasFreeAmount",
+    "inputs": [
+      { "name": "acct", "type": "address", "internalType": "address" },
+      { "name": "amount", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "init",
+    "inputs": [
+      { "name": "_entryEOA", "type": "address", "internalType": "address" },
+      {
+        "name": "_accountEntityTemplate",
+        "type": "address",
+        "internalType": "address"
+      },
+      { "name": "_accountImpl", "type": "address", "internalType": "address" },
+      { "name": "_admin1", "type": "address", "internalType": "address" },
+      { "name": "_admin2", "type": "address", "internalType": "address" },
+      { "name": "_admin3", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "newAccount",
+    "inputs": [
+      { "name": "_ownerId", "type": "uint256", "internalType": "uint256" },
+      { "name": "_passwdAddr", "type": "address", "internalType": "address" },
+      { "name": "_questionNos", "type": "string", "internalType": "string" },
+      {
+        "name": "depositFeeAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "newAccountAndSendTrans",
+    "inputs": [
+      { "name": "_ownerId", "type": "uint256", "internalType": "uint256" },
+      { "name": "_passwdAddr", "type": "address", "internalType": "address" },
+      { "name": "_questionNos", "type": "string", "internalType": "string" },
+      {
+        "name": "_depositFeeAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      { "name": "_to", "type": "address", "internalType": "address" },
+      { "name": "_amount", "type": "uint256", "internalType": "uint256" },
+      { "name": "_data", "type": "bytes", "internalType": "bytes" },
+      { "name": "_estimatedFee", "type": "uint256", "internalType": "uint256" },
+      { "name": "_signature", "type": "bytes", "internalType": "bytes" }
+    ],
+    "outputs": [
+      { "name": "rtnData", "type": "bytes", "internalType": "bytes" }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "predictAccountAddress",
+    "inputs": [
+      { "name": "_ownerId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [
+      { "name": "predicted", "type": "address", "internalType": "address" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "queryAccount",
+    "inputs": [
+      { "name": "_ownerId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "upgradeImpl",
+    "inputs": [
+      { "name": "_newImpl", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "w3eaPoint",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "event",
+    "name": "CreateAccount",
+    "inputs": [
+      {
+        "name": "ownerId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "account",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  { "type": "error", "name": "ERC1167FailedCreateClone", "inputs": [] }
+]

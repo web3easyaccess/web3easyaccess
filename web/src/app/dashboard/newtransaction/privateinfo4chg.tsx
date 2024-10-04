@@ -29,23 +29,20 @@ import {
     parseEther,
 } from "viem";
 import { useRouter } from "next/navigation";
-import { queryAccount, queryQuestionIdsEnc } from "../../lib/chainQuery";
+import { queryQuestionIdsEnc } from "../../lib/chainQuery";
 
 import pq from "../privateinfo/passwdQuestion.json";
 
 import Passwd from "../privateinfo/passwd2";
-import {
-    getOwnerIdBigBrother,
-    getPasswdAccount,
-    PrivateInfoType,
-} from "../privateinfo/lib/keyTools";
-import { signAuth } from "../privateinfo/lib/signAuthTypedData";
+import { getPasswdAccount, PrivateInfoType } from "../../lib/client/keyTools";
+import { signAuth } from "../../lib/client/signAuthTypedData";
 
-import popularAddr from "../privateinfo/lib/popularAddr";
-import { useRef, useState, useEffect } from "react";
+import popularAddr from "../../lib/client/popularAddr";
+import { useRef, useState, useEffect, MutableRefObject } from "react";
 
 import { Menu, UserInfo, uiToString, Transaction } from "../../lib/myTypes";
 import { getChainObj } from "../../lib/myChain";
+import { UserProperty } from "@/app/storage/LocalStore";
 
 const OP_TYPE = {
     // "Enter the email's new information for the first time",
@@ -59,18 +56,28 @@ const OP_TYPE = {
 };
 
 const pwdRegex = new RegExp(
-    "(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[^a-zA-Z0-9]).{10,30}"
+    "(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[^a-zA-Z0-9]).{11,30}"
 );
 
 export function PrivateInfo({
-    currentUserInfo,
+    userProp,
+    accountAddrList,
     forTransaction,
     currentPriInfoRef,
     oldPriInfoRef,
     updateFillInOk,
     privateinfoHidden,
 }: {
-    currentUserInfo: UserInfo;
+    userProp: {
+        ref: MutableRefObject<UserProperty>;
+        state: UserProperty;
+        serverSidePropState: {
+            w3eapAddr: string;
+            factoryAddr: string;
+            bigBrotherPasswdAddr: string;
+        };
+    };
+    accountAddrList: string[];
     forTransaction: boolean;
     currentPriInfoRef: React.MutableRefObject<PrivateInfoType>;
     oldPriInfoRef: React.MutableRefObject<PrivateInfoType>;
@@ -81,9 +88,9 @@ export function PrivateInfo({
     const bigBrotherAccountCreated = () => {
         console.log(
             "in bigBrotherAccountCreated, addr length:",
-            currentUserInfo.accountAddrList.length
+            accountAddrList.length
         );
-        return currentUserInfo.accountAddrList.length > 1;
+        return accountAddrList.length > 1;
     };
 
     let opTypeInit = OP_TYPE.OP_infoForPermit;
@@ -104,7 +111,7 @@ export function PrivateInfo({
     console.log("PrivateInfo, currentPriInfoRef init...1");
     if (currentPriInfoRef.current.email == "") {
         console.log("PrivateInfo, currentPriInfoRef init...2");
-        currentPriInfoRef.current.email = currentUserInfo.email;
+        currentPriInfoRef.current.email = userProp.state.email;
         currentPriInfoRef.current.pin = "";
         currentPriInfoRef.current.question1answer = "";
         currentPriInfoRef.current.question2answer = "";
@@ -117,7 +124,7 @@ export function PrivateInfo({
         }
     }
     if (oldPriInfoRef.current.email == "") {
-        oldPriInfoRef.current.email = currentUserInfo.email;
+        oldPriInfoRef.current.email = userProp.state.email;
         oldPriInfoRef.current.pin = "";
         oldPriInfoRef.current.question1answer = "";
         oldPriInfoRef.current.question2answer = "";
@@ -125,7 +132,10 @@ export function PrivateInfo({
         oldPriInfoRef.current.secondQuestionNo = "";
     }
 
-    console.log("factoryAddr in privateinfo:", currentUserInfo.factoryAddr);
+    console.log(
+        "factoryAddr in privateinfo:",
+        userProp.serverSidePropState.factoryAddr
+    );
 
     const selectedQuestionIdsEncRef = useRef("");
 
@@ -133,7 +143,7 @@ export function PrivateInfo({
         `privateinfo..123,forTransaction=${forTransaction},bigBrotherAccountCreated()=${bigBrotherAccountCreated()}`
     );
 
-    const chainObj = getChainObj(currentUserInfo.chainCode);
+    const chainObj = getChainObj(userProp.state.selectedChainCode);
 
     const forModification = () => {
         return bigBrotherAccountCreated() && !forTransaction;
@@ -143,13 +153,13 @@ export function PrivateInfo({
         if (oldPin != "") {
             console.log(
                 "fetchBigBrothersQuestionNos:",
-                currentUserInfo.bigBrotherOwnerId,
-                currentUserInfo.accountAddrList[0]
+                userProp.state.bigBrotherOwnerId,
+                accountAddrList[0]
             );
             const encQuestionNos = await queryQuestionIdsEnc(
-                currentUserInfo.chainCode,
-                currentUserInfo.factoryAddr,
-                currentUserInfo.accountAddrList[0]
+                userProp.state.selectedChainCode,
+                userProp.serverSidePropState.factoryAddr,
+                accountAddrList[0]
             );
             console.log("fetchBigBrothersQuestionNos, encNos:", encQuestionNos);
             const nos = aesDecrypt(encQuestionNos, oldPin);
@@ -523,13 +533,12 @@ export function PrivateInfo({
                 <input id="id_private_new_first_time_sign"></input>
                 <input id="id_private_new_second_time_sign"></input>
             </div>
-            <WarnMsgForNewBigBrother
-                bigBrotherCreated={bigBrotherAccountCreated()}
-            />
+            <WarnMsgForNewBigBrother />
 
             <WarnMsgForSender
                 forTransaction={forTransaction}
-                currentUserInfo={currentUserInfo}
+                userProp={userProp}
+                accountAddrList={accountAddrList}
                 bigBrotherAccountCreated={bigBrotherAccountCreated()}
             />
 
@@ -543,7 +552,7 @@ export function PrivateInfo({
             >
                 <CardHeader className="flex gap-3">
                     <p style={{ fontWeight: "bold", fontSize: "20px" }}>
-                        {currentUserInfo.email}
+                        {userProp.state.email}
                     </p>
                     's
                     <p>Private information</p>
@@ -773,9 +782,9 @@ export function PrivateInfo({
                                     {/*todo need show multi chain when modifying....*/}
                                     <MultiChainForModify />
                                     <SubmitMessage
-                                        email={currentUserInfo.email}
+                                        email={userProp.state.email}
                                         verifyingContract={
-                                            currentUserInfo.selectedAccountAddr
+                                            userProp.state.selectedAccountAddr
                                         }
                                         chainObj={chainObj}
                                         bigBrotherAccountCreated={bigBrotherAccountCreated()}
@@ -789,7 +798,8 @@ export function PrivateInfo({
                                         submitOpType={submitOpType}
                                         updateSubmitOpType={updateSubmitOpType}
                                         bigBrotherPasswdAddr={
-                                            currentUserInfo.bigBrotherPasswdAddr
+                                            userProp.serverSidePropState
+                                                .bigBrotherPasswdAddr
                                         }
                                     />
                                 </>
@@ -837,35 +847,42 @@ function WarnMsgForNewBigBrother() {
 
 function WarnMsgForSender({
     forTransaction,
-    currentUserInfo,
+    userProp,
+    accountAddrList,
     bigBrotherAccountCreated,
 }: {
     forTransaction: boolean;
-    currentUserInfo: UserInfo;
+    userProp: {
+        ref: MutableRefObject<UserProperty>;
+        state: UserProperty;
+        serverSidePropState: {
+            w3eapAddr: string;
+            factoryAddr: string;
+            bigBrotherPasswdAddr: string;
+        };
+    };
+    accountAddrList: string[];
     bigBrotherAccountCreated: boolean;
 }) {
     const myMsg = () => {
         if (forTransaction) {
-            if (
-                currentUserInfo.selectedOrderNo <
-                currentUserInfo.accountAddrList.length - 1
-            ) {
+            if (userProp.state.selectedOrderNo < accountAddrList.length - 1) {
                 // account has created.
                 return {
-                    msg: `Sender: ${currentUserInfo.selectedAccountAddr}.`,
+                    msg: `Sender: ${userProp.state.selectedAccountAddr}.`,
                     color: "success",
                 };
             } else {
                 if (bigBrotherAccountCreated) {
                     return {
-                        // No account has been created under your email [${currentUserInfo.email}]
-                        msg: `Sender: ${currentUserInfo.selectedAccountAddr}.\nThe sender is a new account, system will create it when you make your first transaction.`,
+                        // No account has been created under your email [${userProp.state.email}]
+                        msg: `Sender: ${userProp.state.selectedAccountAddr}.\nThe sender is a new account, system will create it when you make your first transaction.`,
                         color: "danger",
                     };
                 } else {
                     return {
-                        // No account has been created under your email [${currentUserInfo.email}]
-                        msg: `Sender: ${currentUserInfo.selectedAccountAddr}.\nThe sender is a new account, and it is Your first account, you need to repeat some private information and system will create it when you make your first transaction.`,
+                        // No account has been created under your email [${userProp.state.email}]
+                        msg: `Sender: ${userProp.state.selectedAccountAddr}.\nThe sender is a new account, and it is Your first account, you need to repeat some private information and system will create it when you make your first transaction.`,
                         color: "danger",
                     };
                 }
@@ -1062,7 +1079,10 @@ function SubmitMessage({
         );
 
         if (forModification) {
-            let oldPasswdAccount = getPasswdAccount(oldPriInfoRef.current);
+            let oldPasswdAccount = getPasswdAccount(
+                oldPriInfoRef.current,
+                chainObj.chainCode
+            );
             console.log(
                 "for modification.... old passwdAddr 1,2:",
                 oldPasswdAccount.address,
@@ -1078,9 +1098,10 @@ function SubmitMessage({
             }
         }
 
-        let ownerId = getOwnerIdBigBrother(email);
-
-        let passwdAccount = getPasswdAccount(currentPriInfoRef.current);
+        let passwdAccount = getPasswdAccount(
+            currentPriInfoRef.current,
+            chainObj.chainCode
+        );
 
         // // //
         if (
@@ -1205,6 +1226,13 @@ function MultiChainForModify() {
                                 style={{ marginLeft: "20px" }}
                             >
                                 Sepolia
+                            </Checkbox>
+                            <Checkbox
+                                defaultSelected
+                                size="md"
+                                style={{ marginLeft: "20px" }}
+                            >
+                                Solana testnet
                             </Checkbox>
                         </div>
                     </CardBody>

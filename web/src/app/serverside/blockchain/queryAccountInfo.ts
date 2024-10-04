@@ -18,19 +18,21 @@ import { chainClient } from "./chainWriteClient";
 
 import abis from "./abi/abis";
 
-export async function queryLatestBlockNumber() {
-    const blockNumber = await chainClient("").publicClient.getBlockNumber();
+export async function queryLatestBlockNumber(chainCode: string) {
+    const blockNumber = await chainClient(
+        chainCode
+    ).publicClient.getBlockNumber();
     return blockNumber;
 }
 
-export async function queryBlock(blockNumber: bigint) {
-    const block = await chainClient("").publicClient.getBlock({
+export async function queryBlock(chainCode: string, blockNumber: bigint) {
+    const block = await chainClient(chainCode).publicClient.getBlock({
         blockNumber: blockNumber,
     });
     return block;
 }
 
-export async function queryEthBalance(addr: string) {
+export async function queryEthBalance(chainCode: string, addr: string) {
     if (addr == undefined || addr == popularAddr.ZERO_ADDR) {
         return "0.0";
     }
@@ -39,7 +41,7 @@ export async function queryEthBalance(addr: string) {
     if (addr.substring(0, 2) == "0x" || addr.substring(0, 2) == "0X") {
         addrWithout0x = addr.substring(2);
     }
-    const balance = await chainClient("").publicClient.getBalance({
+    const balance = await chainClient(chainCode).publicClient.getBalance({
         address: `0x${addrWithout0x}`,
     });
     const balanceAsEther = formatEther(balance);

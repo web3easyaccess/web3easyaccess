@@ -9,10 +9,10 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 
 import { mnemonicToAccount } from "viem/accounts";
-import { chainPublicClient } from "../../../lib/chainQueryClient";
+import { chainPublicClient } from "../chainQueryClient";
 import { walletClient } from "./chainClientInBrowser";
 
-import abis from "../../../serverside/blockchain/abi/abis";
+import abis from "../../serverside/blockchain/abi/abis";
 
 import { type TypedData } from "viem";
 

@@ -8,12 +8,7 @@ import myCookies from "./myCookies";
 import { sendMail } from "./mailService";
 import { queryAccount, formatTimestamp } from "../lib/chainQuery";
 import { getFactoryAddr } from "./blockchain/chainWriteClient";
-import {
-    newAccount,
-    newAccountAndTransferETH,
-    transferETH,
-    chgPasswdAddr,
-} from "./blockchain/chainWrite";
+import { newAccount, newAccountAndTransferETH } from "./blockchain/chainWrite";
 
 import {
     generateRandomDigitInteger,
@@ -22,16 +17,15 @@ import {
 
 import { queryEthBalance } from "../serverside/blockchain/queryAccountInfo";
 
-import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
-
 import { parseEther } from "viem";
+import { ChainCode } from "../lib/myTypes";
 
 export async function userLogout(
     _currentUserInfo: unknown,
     formData: FormData
 ) {
     console.log("server action,userLogout.");
-    myCookies.clearData();
+    myCookies.setEmail("");
     console.log("byebye...");
     redirectTo.urlLogin();
     return "byebye to server.";
@@ -71,27 +65,19 @@ export async function checkEmail(
     try {
         const email = formData.get("email");
         console.log("email000:", email);
+        const chainCode = formData.get("chainCode");
+        console.log("chainCode1111:", chainCode);
         if (
-            myCookies.getChainCode() == undefined ||
-            myCookies.getChainCode() == null ||
-            myCookies.getChainCode() == ""
+            chainCode == undefined ||
+            chainCode == null ||
+            chainCode == ChainCode.UNKNOW.toString()
         ) {
             return JSON.stringify({
                 success: false,
                 msg: "please select a chain at the top-right corner!",
             });
         }
-        if (myCookies.loadData()?.email == email) {
-            const ownerId = myCookies.loadData().ownerId;
-            const acct = await queryAccount(
-                myCookies.getChainCode(),
-                getFactoryAddr(myCookies.getChainCode()),
-                ownerId
-            );
-            const accountId = acct?.accountAddr;
-            console.log(
-                `query accountId when reuse email,  ownerId=${ownerId}, accountId=${accountId},created=${acct?.created}`
-            );
+        if (myCookies.getEmail() == email) {
             return JSON.stringify({ success: true, msg: "[existing]" });
         }
         //
@@ -135,25 +121,9 @@ export async function verifyEmail(
         }
         console.log("verify success!", email, code);
 
-        let md = myCookies.flushData(email);
+        myCookies.setEmail(email);
 
-        // update accountId from chain, and loadData again.
-        const ownerId = myCookies.loadData().ownerId;
-        const acct = await queryAccount(
-            myCookies.getChainCode(),
-            getFactoryAddr(myCookies.getChainCode()),
-            ownerId
-        );
-        const accountId = acct?.accountAddr;
-        console.log(
-            `query accountId when verified,  ownerId=${ownerId}, account=${acct?.accountAddr},created=${acct?.created}`
-        );
-
-        md = myCookies.loadData();
-
-        console.log(
-            `verifyEmail-current owner ${email} have account ${md.accountId}, redirect to urlDashboard.`
-        );
+        console.log(`verified Email ${email} , redirect to urlDashboard.`);
         redirectTo.urlDashboard();
         // return "";
     } else {
@@ -166,10 +136,10 @@ export async function saveSelectedOrderNo(
     _currentUserInfo: unknown,
     formData: FormData
 ) {
-    const sNo = formData.get("selectedOrderNo");
-    const selectedAccountAddr = formData.get("selectedAccountAddr");
-    myCookies.flushSelectedOrderNo(Number(sNo), selectedAccountAddr);
-    console.log("cookie saveSelectedOrderNo:", sNo);
+    // const sNo = formData.get("selectedOrderNo");
+    // const selectedAccountAddr = formData.get("selectedAccountAddr");
+    // myCookies.flushSelectedOrderNo(Number(sNo), selectedAccountAddr);
+    // console.log("cookie saveSelectedOrderNo:", sNo);
 }
 
 // f77a钱包地址对应的thegraph账号, 不再进一步使用
@@ -180,8 +150,20 @@ const THEGRAPH_URLS: { [key: string]: string } = {
     SCROLL_TEST_CHAIN: `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY_f77a}/subgraphs/id/4pPyuX64mqazXXjL2xUCJESDbhHj9KPnzWudeZrfDs1R`,
     LINEA_TEST_CHAIN: `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/5zap7aqMFgJkErfkhHrngaGs24x5h2YyrWLeni5TkVZL`,
     SEPOLIA_CHAIN: `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/JCzyXC26m46orpfwuY4i4nUWMXk3LAJjGpWoQGw451Lp`,
+    NEOX_TEST_CHAIN: `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/o2FaoPpD1KeP8Dk5KnUyGuw7b7tZvvcrTUu3xYuGkez`,
 };
 export async function thegraphQueryOpLog(accountAddr, chainCode) {
+    const result: {
+        operationType: string;
+        description: string;
+        timestamp: string;
+        hash: string;
+    }[] = [];
+
+    if (chainCode.indexOf("SOLANA") >= 0) {
+        return result;
+    }
+
     const query =
         "{" +
         // " createAccounts(first: 999) { id ownerId account blockNumber blockTimestamp transactionHash}" +
@@ -208,12 +190,6 @@ export async function thegraphQueryOpLog(accountAddr, chainCode) {
     );
     const sss = await myData.json();
     console.log("xxx,sss:", sss);
-    const result: {
-        operationType: string;
-        description: string;
-        timestamp: string;
-        hash: string;
-    }[] = [];
 
     sss.data.chgEntries.forEach((e: any) => {
         result.push({
@@ -225,6 +201,7 @@ export async function thegraphQueryOpLog(accountAddr, chainCode) {
     });
 
     sss.data.chgPasswdAddrs.forEach((e: any) => {
+        console.log("test123456:", e);
         result.push({
             operationType: "Change Password",
             description: "",
@@ -293,9 +270,10 @@ export async function createAccount(
     console.log(
         `createAccount, input: ownerId=${ownerId}, passwdAddr=${passwdAddr}, questionNosEnc=${questionNosEnc}`
     );
+    console.log("queryAccount...a");
     var acct = await queryAccount(
         myCookies.getChainCode(),
-        getFactoryAddr(myCookies.getChainCode()),
+        await getFactoryAddr(myCookies.getChainCode()),
         ownerId
     );
 
@@ -311,9 +289,10 @@ export async function createAccount(
         }
     }
 
+    console.log("queryAccount...b");
     acct = await queryAccount(
         myCookies.getChainCode(),
-        getFactoryAddr(myCookies.getChainCode()),
+        await getFactoryAddr(myCookies.getChainCode()),
         ownerId
     );
     console.log("createAccount finished, acct:", acct);

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { MutableRefObject, useRef } from "react";
 import { useState, useEffect } from "react";
 
 import Navbar from "../navbar/navbar";
@@ -10,7 +10,15 @@ import { Divider, Card, CardHeader, CardBody } from "@nextui-org/react";
 
 import OpMenu from "./opMenu";
 import { ShowMain } from "./opMenu";
-import { Menu, UserInfo, uiToString } from "../lib/myTypes";
+
+import {
+    Menu,
+    UserInfo,
+    uiToString,
+    ChainCode,
+    chainCodeFromString,
+} from "../lib/myTypes";
+import LocalStore, { UserProperty } from "../storage/LocalStore";
 
 // export function getSessionData(req) {
 //   const encryptedSessionData = cookies().get("session")?.value;
@@ -19,25 +27,57 @@ import { Menu, UserInfo, uiToString } from "../lib/myTypes";
 //     : null;
 // }
 
-export default function Home({ userInfo }: { userInfo: UserInfo }) {
-    //   const [currentChainCode, setCurrentChainCode] = useState(chainObj.chainCode);
-    //   const setMyCurrentChainCode = (cc: string) => {
-    //     setCurrentChainCode(cc);
-    //   };
+export default function Dashboard({
+    userProp,
+    updateUserProp,
+    accountAddrList,
+    updateAccountAddrList,
+}: {
+    userProp: {
+        ref: MutableRefObject<UserProperty>;
+        state: UserProperty;
+        serverSidePropState: {
+            w3eapAddr: string;
+            factoryAddr: string;
+            bigBrotherPasswdAddr: string;
+        };
+    };
+    updateUserProp: ({
+        email,
+        selectedOrderNo,
+        selectedAccountAddr,
+        selectedChainCode,
+        testMode,
+    }: {
+        email: string;
+        selectedOrderNo: number;
+        selectedAccountAddr: string;
+        selectedChainCode: ChainCode;
+        testMode: boolean;
+    }) => void;
+    accountAddrList: string[];
+    updateAccountAddrList: (acctList: string[]) => void;
+}) {
+    console.log("dashborad,ui:", userProp.ref.current);
 
-    const [currentUserInfo, setCurrentUserInfo] = useState(userInfo);
-
-    const updateCurrentUserInfo = (cu: UserInfo) => {
-        setCurrentUserInfo(cu);
+    const [selectedMenu, setSelectedMenu] = useState(Menu.OOOO);
+    const updateSelectedMenu = (menu: Menu) => {
+        setSelectedMenu(menu);
+        LocalStore.setMenu(menu);
     };
 
-    console.log("dashborad,ui:", uiToString(userInfo));
+    useEffect(() => {
+        const oldMenu: Menu = LocalStore.getMenu();
+        setSelectedMenu(oldMenu);
+    }, []);
 
     return (
         <>
             <Navbar
-                currentUserInfo={currentUserInfo}
-                updateCurrentUserInfo={updateCurrentUserInfo}
+                userProp={userProp}
+                updateUserProp={updateUserProp}
+                accountAddrList={accountAddrList}
+                updateAccountAddrList={updateAccountAddrList}
             ></Navbar>
             <Divider
                 orientation="horizontal"
@@ -51,7 +91,11 @@ export default function Home({ userInfo }: { userInfo: UserInfo }) {
                 }}
             >
                 <Card className="max-w-full">
-                    <OpMenu selectedMenu={currentUserInfo.selectedMenu} />
+                    <OpMenu
+                        email={userProp.ref.current.email}
+                        selectedMenu={selectedMenu}
+                        updateSelectedMenu={updateSelectedMenu}
+                    />
                 </Card>
 
                 <Card
@@ -59,7 +103,12 @@ export default function Home({ userInfo }: { userInfo: UserInfo }) {
                     style={{ marginLeft: "5px" }}
                 >
                     <CardBody>
-                        <ShowMain currentUserInfo={currentUserInfo} />
+                        <ShowMain
+                            selectedMenu={selectedMenu}
+                            userProp={userProp}
+                            updateUserProp={updateUserProp}
+                            accountAddrList={accountAddrList}
+                        />
                     </CardBody>
                 </Card>
             </div>

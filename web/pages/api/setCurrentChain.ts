@@ -2,9 +2,6 @@ import { NextApiResponse, NextApiRequest } from "next";
 
 import { headers } from "next/headers";
 
-import { saveChainCode } from "../../src/app/serverside/serverActions";
-import myCookies from "@/app/serverside/myCookies";
-import { getFactoryAddr } from "@/app/serverside/blockchain/chainWriteClient";
 type UserAccount = {
     addr: string;
     created: boolean;
