@@ -19,11 +19,7 @@ import {
     chainCodeFromString,
 } from "../lib/myTypes";
 
-import { test1 } from "../lib/solana/accessSolana";
-
 export default function Page({ email }: { email: string }) {
-    test1();
-
     const prop: UserProperty = {
         bigBrotherOwnerId: "",
         email: "",
