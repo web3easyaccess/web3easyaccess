@@ -50,11 +50,18 @@ export type Easyaccess = {
                 {
                     name: "questionNos";
                     type: "string";
+                },
+                {
+                    name: "transFeeLamports";
+                    type: "u64";
                 }
             ];
         },
         {
             name: "createAcct";
+            docs: [
+                "* lamports: transfer amount in lamports\n     * trans_fee_lamports: transaction's fee, which should be minus from entity account, and add to payer."
+            ];
             discriminator: [249, 106, 189, 96, 83, 99, 15, 113];
             accounts: [
                 {
@@ -99,6 +106,10 @@ export type Easyaccess = {
                 {
                     name: "lamports";
                     type: "u64";
+                },
+                {
+                    name: "transFeeLamports";
+                    type: "u64";
                 }
             ];
         },
@@ -142,6 +153,10 @@ export type Easyaccess = {
                 },
                 {
                     name: "lamports";
+                    type: "u64";
+                },
+                {
+                    name: "transFeeLamports";
                     type: "u64";
                 }
             ];

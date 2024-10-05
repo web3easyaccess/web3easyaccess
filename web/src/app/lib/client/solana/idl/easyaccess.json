@@ -44,11 +44,18 @@
                 {
                     "name": "question_nos",
                     "type": "string"
+                },
+                {
+                    "name": "trans_fee_lamports",
+                    "type": "u64"
                 }
             ]
         },
         {
             "name": "create_acct",
+            "docs": [
+                "* lamports: transfer amount in lamports\n     * trans_fee_lamports: transaction's fee, which should be minus from entity account, and add to payer."
+            ],
             "discriminator": [249, 106, 189, 96, 83, 99, 15, 113],
             "accounts": [
                 {
@@ -93,6 +100,10 @@
                 {
                     "name": "lamports",
                     "type": "u64"
+                },
+                {
+                    "name": "trans_fee_lamports",
+                    "type": "u64"
                 }
             ]
         },
@@ -136,6 +147,10 @@
                 },
                 {
                     "name": "lamports",
+                    "type": "u64"
+                },
+                {
+                    "name": "trans_fee_lamports",
                     "type": "u64"
                 }
             ]

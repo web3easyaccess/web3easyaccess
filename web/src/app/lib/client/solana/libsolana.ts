@@ -146,6 +146,7 @@ export async function newAccountAndTransferSol_onClient(
         throw new Error("not supported data this time, in solana.1.");
     }
     const amountInLamports = amountInEthWei / BigInt(1e9);
+    const transferFeeInLamports = detectEstimatedFee / BigInt(1e9);
     return funCreateSolTrans(
         "NEW",
         chainCode,
@@ -155,7 +156,8 @@ export async function newAccountAndTransferSol_onClient(
         to,
         amountInLamports, //
         onlyQueryFee,
-        privateInfo
+        privateInfo,
+        transferFeeInLamports
     );
 }
 
@@ -186,6 +188,7 @@ export async function createTransaction_onClient(
         throw new Error("not supported data this time, in solana.2.");
     }
     const amountInLamports = amountInEthWei / BigInt(1e9);
+    const transferFeeInLamports = detectEstimatedFee / BigInt(1e9);
     return funCreateSolTrans(
         "TRANSFER",
         chainCode,
@@ -195,7 +198,8 @@ export async function createTransaction_onClient(
         to,
         amountInLamports, //
         onlyQueryFee,
-        privateInfo
+        privateInfo,
+        transferFeeInLamports
     );
 }
 
@@ -208,7 +212,8 @@ async function funCreateSolTrans(
     to: string,
     amountInLamports: bigint,
     onlyQueryFee: boolean,
-    privateInfo: PrivateInfoType
+    privateInfo: PrivateInfoType,
+    transferFeeInLamports: bigint
 ) {
     try {
         const myChainCode = chainCodeFromString(chainCode);
@@ -216,6 +221,43 @@ async function funCreateSolTrans(
             myChainCode,
             privateInfo
         );
+
+        console.log(
+            "funCreateSolTrans,",
+            transType,
+            "transferFeeInLamports:",
+            transferFeeInLamports
+        );
+
+        const passwdAddrBalance = await querySolBalance(
+            myChainCode,
+            passwdKeypair.publicKey.toBase58()
+        );
+        // 适用于开发或测试环境... todo ... 上线主网的话，当前策略需要修改.
+        if (myChainCode == ChainCode.SOLANA_TEST_CHAIN) {
+            console.log(
+                "passwdKeypair.publicKey & balance:",
+                passwdKeypair.publicKey.toBase58(),
+                passwdAddrBalance
+            );
+            if (passwdAddrBalance < 0.1) {
+                let airdropSignature = await connection.requestAirdrop(
+                    passwdKeypair.publicKey,
+                    0.1 * web3.LAMPORTS_PER_SOL
+                );
+                await connection.confirmTransaction({
+                    signature: airdropSignature,
+                });
+            }
+            console.log(
+                "passwdKeypair.publicKey & balance2:",
+                passwdKeypair.publicKey.toBase58(),
+                await querySolBalance(
+                    myChainCode,
+                    passwdKeypair.publicKey.toBase58()
+                )
+            );
+        }
 
         const acctPDA = genPda(myChainCode, ownerId);
 
@@ -251,7 +293,8 @@ async function funCreateSolTrans(
                         Buffer.from(hexToBytes(ownerId)),
                         passwdKeypair.publicKey.toBase58(),
                         questionNos,
-                        new anchor.BN(amountInLamports)
+                        new anchor.BN(amountInLamports),
+                        new anchor.BN(transferFeeInLamports)
                     )
                     .accounts({
                         payerAcct: passwdKeypair.publicKey,
@@ -269,7 +312,8 @@ async function funCreateSolTrans(
                 return program.methods
                     .transferAcctLamports(
                         Buffer.from(hexToBytes(ownerId)),
-                        new anchor.BN(amountInLamports)
+                        new anchor.BN(amountInLamports),
+                        new anchor.BN(transferFeeInLamports)
                     )
                     .accounts({
                         payerAcct: passwdKeypair.publicKey,
@@ -321,6 +365,14 @@ async function funCreateSolTrans(
                 // .signers([signer])
                 .rpc();
             console.log("solana new acct ,hash:", hash);
+            console.log(
+                "passwdKeypair.publicKey & balance3:",
+                passwdKeypair.publicKey.toBase58(),
+                await querySolBalance(
+                    myChainCode,
+                    passwdKeypair.publicKey.toBase58()
+                )
+            );
             return { success: true, tx: hash, msg: "" };
         }
     } catch (e) {
