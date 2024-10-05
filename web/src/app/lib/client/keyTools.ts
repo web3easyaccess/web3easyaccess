@@ -90,17 +90,6 @@ export function getOwnerIdBigBrother(email: string, chainCode: ChainCode) {
     var sss = email + s2.substring(2) + "." + ADDRESS_INDEX;
     let ownerId = keccak256(toHex(sss));
 
-    if (chainCode.toString().indexOf("SOLANA") >= 0) {
-        // need trans 64 btyes to 32 bytes.
-        let oo = ownerId.toString().substring(2);
-        console.log("ownerId,solana,1:", oo);
-        oo = md5(oo);
-        console.log("ownerId,solana,2:", oo);
-        oo = oo.toString().substring(4) + "0000";
-        console.log("ownerId,solana,3:", oo);
-        return oo;
-    }
-
     console.log("getOwnerIdBigBrother-1:", ownerId, email);
     // left shift 4 letter, and append 4 ZEROs.
     ownerId = "0x" + ownerId.toString().substring(6) + "0000"; // this is BigBrother

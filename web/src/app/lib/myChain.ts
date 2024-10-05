@@ -90,7 +90,7 @@ const neoxMainnet = defineChain({
         },
     },
     explorerApiUrl: "https://12345/api/v2",
-    testnet: true,
+    testnet: false,
 });
 
 const neoxTestnet = defineChain({
@@ -111,6 +111,36 @@ const neoxTestnet = defineChain({
         default: {
             name: "Explorer",
             url: "https://xt4scan.ngd.network",
+        },
+    },
+    contracts: {
+        multicall3: {
+            address: "0x82096F92248dF7afDdef72E545F06e5be0cf0F99",
+            blockCreated: 1,
+        },
+    },
+    explorerApiUrl: "https://12345test/api/v2",
+    testnet: true,
+});
+
+const solanaTestnet = defineChain({
+    id: 999001,
+    name: "Solana testnet",
+    nativeCurrency: {
+        decimals: 9,
+        name: "SOL",
+        symbol: "SOL",
+    },
+    rpcUrls: {
+        default: {
+            http: [""],
+            webSocket: [""],
+        },
+    },
+    blockExplorers: {
+        default: {
+            name: "Explorer",
+            url: "https://explorer.solana.com/?cluster=custom&customUrl=http%3A%2F%2Flocalhost%3A8899",
         },
     },
     contracts: {
@@ -182,7 +212,7 @@ export const getChainObj = (
     } else if (chainCode == ChainCode.NEOX_TEST_CHAIN) {
         rtn = neoxTestnet;
     } else if (chainCode == ChainCode.SOLANA_TEST_CHAIN) {
-        //
+        rtn = solanaTestnet;
     } else {
         console.warn("not supprted:" + chainCode);
     }

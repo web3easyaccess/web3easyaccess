@@ -86,19 +86,24 @@ export const signAuth = async (
     domain.chainId = Number(chainId);
     domain.verifyingContract = verifyingContract;
 
-    console.log("signAuth,domain:", domain);
-
-    const signature = await walletClient(chainObj).signTypedData({
-        account,
-        domain,
-        types,
-        primaryType: "_permit",
-        message: {
-            _passwdAddr: account.address,
-            _nonce: nonce,
-            _argumentsHash: argumentsHash,
-        },
-    });
+    console.log("signAuth,domain:", domain, chainId);
+    let signature = "";
+    if (chainObj.chainCode.toString().indexOf("SOLANA") >= 0) {
+        signature = "solana useless. signature.";
+        console.log(signature);
+    } else {
+        signature = await walletClient(chainObj).signTypedData({
+            account,
+            domain,
+            types,
+            primaryType: "_permit",
+            message: {
+                _passwdAddr: account.address,
+                _nonce: nonce,
+                _argumentsHash: argumentsHash,
+            },
+        });
+    }
 
     const rtn = {
         signature: signature,

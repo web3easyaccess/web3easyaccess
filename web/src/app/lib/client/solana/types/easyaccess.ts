@@ -41,7 +41,7 @@ export type Easyaccess = {
             args: [
                 {
                     name: "ownerId";
-                    type: "string";
+                    type: "bytes";
                 },
                 {
                     name: "newPasswdAddr";
@@ -75,6 +75,10 @@ export type Easyaccess = {
                     };
                 },
                 {
+                    name: "toAccount";
+                    writable: true;
+                },
+                {
                     name: "systemProgram";
                     address: "11111111111111111111111111111111";
                 }
@@ -82,7 +86,7 @@ export type Easyaccess = {
             args: [
                 {
                     name: "ownerId";
-                    type: "string";
+                    type: "bytes";
                 },
                 {
                     name: "passwdAddr";
@@ -91,6 +95,10 @@ export type Easyaccess = {
                 {
                     name: "questionNos";
                     type: "string";
+                },
+                {
+                    name: "lamports";
+                    type: "u64";
                 }
             ];
         },
@@ -130,7 +138,7 @@ export type Easyaccess = {
             args: [
                 {
                     name: "ownerId";
-                    type: "string";
+                    type: "bytes";
                 },
                 {
                     name: "lamports";
@@ -153,7 +161,7 @@ export type Easyaccess = {
                 fields: [
                     {
                         name: "ownerId";
-                        type: "string";
+                        type: "bytes";
                     },
                     {
                         name: "passwdAddr";

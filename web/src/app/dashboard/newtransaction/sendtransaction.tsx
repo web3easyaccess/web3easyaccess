@@ -28,6 +28,8 @@ import {
     parseAbiItem,
 } from "viem";
 
+import * as funNewTrans from "./funNewTrans";
+
 import { chainPublicClient } from "../../lib/chainQueryClient";
 
 import abis from "../../serverside/blockchain/abi/abis";
@@ -726,17 +728,24 @@ export default function SendTransaction({
 
                     let feePrice = "...";
                     try {
-                        feePrice =
-                            "(gasPrice=" +
+                        const price_in_gwei =
                             Number(
                                 preparedPriceRef.current.preparedMaxFeePerGas >
                                     0
                                     ? preparedPriceRef.current
                                           .preparedMaxFeePerGas
                                     : preparedPriceRef.current.preparedGasPrice
-                            ) /
-                                1e9 +
-                            " Gwei)";
+                            ) / 1e9;
+                        if (
+                            chainObj.chainCode.toString().indexOf("SOLANA") >= 0
+                        ) {
+                            feePrice =
+                                "(computeUnitPrice=" +
+                                price_in_gwei / 1e9 +
+                                " SOL)";
+                        } else {
+                            feePrice = "(gasPrice=" + price_in_gwei + " Gwei)";
+                        }
                     } catch (e) {
                         console.log("eee1:", e);
                     }
@@ -747,15 +756,20 @@ export default function SendTransaction({
             } catch (e) {
                 let feePrice = "...";
                 try {
-                    feePrice =
-                        "(gasPrice=" +
+                    const price_in_gwei =
                         Number(
                             preparedPriceRef.current.preparedMaxFeePerGas > 0
                                 ? preparedPriceRef.current.preparedMaxFeePerGas
                                 : preparedPriceRef.current.preparedGasPrice
-                        ) /
-                            1e9 +
-                        " Gwei)";
+                        ) / 1e9;
+                    if (chainObj.chainCode.toString().indexOf("SOLANA") >= 0) {
+                        feePrice =
+                            "(computeUnitPrice=" +
+                            price_in_gwei / 1e9 +
+                            " SOL)";
+                    } else {
+                        feePrice = "(gasPrice=" + price_in_gwei + " Gwei)";
+                    }
                 } catch (e) {
                     console.log("eee:", e);
                 }
@@ -1390,13 +1404,25 @@ function CreateTransaction({
             bridgeDirection,
         } = readReceiverInfo();
 
-        if (
-            receiverAddr == null ||
-            receiverAddr.trim().length != 42 ||
-            receiverAddr.trim().startsWith("0x") == false
-        ) {
-            alert("Receiver Address invalid!");
-            return;
+        if (chainObj.chainCode.toString().indexOf("SOLANA") >= 0) {
+            if (
+                receiverAddr == null ||
+                (receiverAddr.trim().length != 44 &&
+                    receiverAddr.trim().length != 43) ||
+                receiverAddr.trim().startsWith("0x")
+            ) {
+                alert("SOLANA Receiver Address invalid!");
+                return;
+            }
+        } else {
+            if (
+                receiverAddr == null ||
+                receiverAddr.trim().length != 42 ||
+                receiverAddr.trim().startsWith("0x") == false
+            ) {
+                alert("EVM Receiver Address invalid!");
+                return;
+            }
         }
         if (isNaN(parseFloat(amount)) && nftId == "") {
             alert("NFT ID or Amount invalid!");
@@ -1593,56 +1619,51 @@ async function estimateTransFee(
         msg: string;
     } = {};
 
-    if (chainObj.chainCode.toString().indexOf("SOLANA") >= 0) {
-        console.log("esti,solana");
-        await libsolana.newAccountAndTransferSol_onClient(
-            chainObj.chainCode,
-            myOwnerId,
-            currentPriInfoRef.current,
-            questionNos,
-            receiverAddr,
-            0,
-            "",
-            "",
-            false,
-            0n
-        );
-        return detectRes;
-    } else {
-        console.log("esti,not solana");
-    }
-
     for (let k = 0; k < 15; k++) {
         const costFee = BigInt(myDetectEstimatedFee) + BigInt(myL1DataFee);
 
-        let argumentsHash = encodeAbiParameters(
-            [
-                { name: "funcId", type: "uint256" },
-                { name: "to", type: "address" },
-                { name: "amount", type: "uint256" },
-                { name: "data", type: "bytes" },
-                { name: "estimatedFee", type: "uint256" },
-            ],
-            [BigInt(3), receiverAddr, receiverAmt, receiverData, costFee]
-        );
-        argumentsHash = keccak256(argumentsHash);
+        let sign: {
+            signature: string;
+            eoa: any;
+            nonce: string;
+        } = { signature: "", eoa: "", nonce: "" };
 
-        let chainId = chainObj.id;
-        console.log("id-----------------:1:", chainId);
-        if (bridgeDirection == "L1ToL2") {
-            // L2 is selected, but it need to switch to L1
-            chainId = getChainObj(chainObj.l1ChainCode).id;
+        let argumentsHash = "";
+        if (chainObj.chainCode.toString().indexOf("SOLANA") >= 0) {
+            console.log("solana useless!2");
+            argumentsHash = "0x0";
+            sign.signature = "solana useless!signature.";
+        } else {
+            argumentsHash = encodeAbiParameters(
+                [
+                    { name: "funcId", type: "uint256" },
+                    { name: "to", type: "address" },
+                    { name: "amount", type: "uint256" },
+                    { name: "data", type: "bytes" },
+                    { name: "estimatedFee", type: "uint256" },
+                ],
+                [BigInt(3), receiverAddr, receiverAmt, receiverData, costFee]
+            );
+
+            argumentsHash = keccak256(argumentsHash);
+
+            let chainId = chainObj.id;
+            console.log("id-----------------:1:", chainId);
+            if (bridgeDirection == "L1ToL2") {
+                // L2 is selected, but it need to switch to L1
+                chainId = getChainObj(chainObj.l1ChainCode).id;
+            }
+            console.log("id-----------------:2:", chainId);
+            let withZeroNonce = !myAccountCreated;
+            sign = await signAuth(
+                passwdAccount,
+                chainId,
+                myContractAccount,
+                chainObj,
+                argumentsHash,
+                withZeroNonce
+            );
         }
-        console.log("id-----------------:2:", chainId);
-        let withZeroNonce = !myAccountCreated;
-        const sign = await signAuth(
-            passwdAccount,
-            chainId,
-            myContractAccount,
-            chainObj,
-            argumentsHash,
-            withZeroNonce
-        );
 
         const onlyQueryFee = true;
 
@@ -1652,7 +1673,7 @@ async function estimateTransFee(
                 myOwnerId,
                 myContractAccount
             );
-            detectRes = await createTransaction(
+            detectRes = await funNewTrans.createTransaction(
                 chainObj.chainCode,
                 myOwnerId,
                 myContractAccount,
@@ -1666,7 +1687,8 @@ async function estimateTransFee(
                 myL1DataFee,
                 BigInt(0),
                 BigInt(0),
-                bridgeDirection
+                bridgeDirection,
+                currentPriInfoRef.current
             );
         } else {
             console.log(
@@ -1674,7 +1696,7 @@ async function estimateTransFee(
                 myOwnerId,
                 myContractAccount
             );
-            detectRes = await newAccountAndTransferETH(
+            detectRes = await funNewTrans.newAccountAndTransfer(
                 chainObj.chainCode,
                 myOwnerId,
                 passwdAccount.address,
@@ -1688,7 +1710,8 @@ async function estimateTransFee(
                 myL1DataFee,
                 BigInt(0),
                 BigInt(0),
-                bridgeDirection
+                bridgeDirection,
+                currentPriInfoRef.current
             );
         }
 
@@ -1807,33 +1830,46 @@ async function executeTransaction(
         eFee.l1DataFeeWei
     );
 
-    let argumentsHash = encodeAbiParameters(
-        [
-            { name: "funcId", type: "uint256" },
-            { name: "to", type: "address" },
-            { name: "amount", type: "uint256" },
-            { name: "data", type: "bytes" },
-            { name: "estimatedFee", type: "uint256" },
-        ],
-        [BigInt(3), receiverAddr, receiverAmt, receiverData, execCost]
-    );
+    let sign: {
+        signature: string;
+        eoa: any;
+        nonce: string;
+    } = { signature: "", eoa: "", nonce: "" };
 
-    argumentsHash = keccak256(argumentsHash);
-    console.log("encodeAbiParameters3333bbb:", argumentsHash);
-    let chainId = chainObj.id;
-    if (bridgeDirection == "L1ToL2") {
-        // L2 is selected, but it need to switch to L1
-        chainId = getChainObj(chainObj.l1ChainCode).id;
+    let argumentsHash = "";
+    if (chainObj.chainCode.toString().indexOf("SOLANA") >= 0) {
+        console.log("solana useless!2");
+        argumentsHash = "0x0";
+        sign.signature = "solana useless!signature.22.";
+    } else {
+        argumentsHash = encodeAbiParameters(
+            [
+                { name: "funcId", type: "uint256" },
+                { name: "to", type: "address" },
+                { name: "amount", type: "uint256" },
+                { name: "data", type: "bytes" },
+                { name: "estimatedFee", type: "uint256" },
+            ],
+            [BigInt(3), receiverAddr, receiverAmt, receiverData, execCost]
+        );
+
+        argumentsHash = keccak256(argumentsHash);
+        console.log("encodeAbiParameters3333bbb:", argumentsHash);
+        let chainId = chainObj.id;
+        if (bridgeDirection == "L1ToL2") {
+            // L2 is selected, but it need to switch to L1
+            chainId = getChainObj(chainObj.l1ChainCode).id;
+        }
+        let withZeroNonce = !myAccountCreated;
+        sign = await signAuth(
+            passwdAccount,
+            chainId,
+            myContractAccount,
+            chainObj,
+            argumentsHash,
+            withZeroNonce
+        );
     }
-    let withZeroNonce = !myAccountCreated;
-    const sign = await signAuth(
-        passwdAccount,
-        chainId,
-        myContractAccount,
-        chainObj,
-        argumentsHash,
-        withZeroNonce
-    );
 
     let detectRes: {
         realEstimatedFee: bigint;
@@ -1853,7 +1889,7 @@ async function executeTransaction(
             myOwnerId,
             myContractAccount
         );
-        detectRes = await createTransaction(
+        detectRes = await funNewTrans.createTransaction(
             chainObj.chainCode,
             myOwnerId,
             myContractAccount,
@@ -1867,7 +1903,8 @@ async function executeTransaction(
             eFee.l1DataFeeWei,
             preparedPriceRef.current.preparedMaxFeePerGas,
             preparedPriceRef.current.preparedGasPrice,
-            bridgeDirection
+            bridgeDirection,
+            currentPriInfoRef.current
         );
     } else {
         console.log(
@@ -1875,7 +1912,7 @@ async function executeTransaction(
             myOwnerId,
             myContractAccount
         );
-        detectRes = await newAccountAndTransferETH(
+        detectRes = await funNewTrans.newAccountAndTransfer(
             chainObj.chainCode,
             myOwnerId,
             passwdAccount.address,
@@ -1889,12 +1926,13 @@ async function executeTransaction(
             eFee.l1DataFeeWei,
             preparedPriceRef.current.preparedMaxFeePerGas,
             preparedPriceRef.current.preparedGasPrice,
-            bridgeDirection
+            bridgeDirection,
+            currentPriInfoRef.current
         );
     }
 
     if (!detectRes.success) {
-        console.log("ERROR:", detectRes);
+        console.log("ERROR,xyz:", detectRes);
         return "ERROR: " + detectRes.msg;
     }
 

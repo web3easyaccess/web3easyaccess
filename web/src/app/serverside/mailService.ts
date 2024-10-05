@@ -15,7 +15,7 @@ const subject: string = "<subject>";
 const mailTemplate: string =
     "<html string either defined, or loaded from a html file>";
 
-export const sendMail = async (to: string, verifyCode: string) => {
+export const asyncSendMail = async (to: string, verifyCode: string) => {
     const transporter = nodemailer.createTransport({
         service: process.env.MAIL_HOST,
         auth: {

@@ -190,17 +190,16 @@ export default function App({
         //
 
         fetchAcctList();
-    }, [userProp.serverSidePropState]); // solana的demo临时加 trigger4Demo
+    }, [userProp.serverSidePropState]);
 
-    const [refreshFlag, setRefreshFlag] = useState(1);
-    useEffect(() => {
-        // This represents the currently selected account in the global scope
+    const refreshUserBalance = () => {
         if (accountAddrList.length == 0) {
             return;
         }
         if (userProp.serverSidePropState.factoryAddr == "") {
             return;
         }
+
         console.log(
             "do something ,for currentUserInfo changed...",
             userProp.ref.current.selectedAccountAddr
@@ -293,6 +292,11 @@ export default function App({
             }
             document.getElementById("id_user_selectedOrderNo_btn")?.click();
         }
+    };
+
+    const [refreshFlag, setRefreshFlag] = useState(1);
+    useEffect(() => {
+        refreshUserBalance();
     }, [
         userProp.serverSidePropState,
         userProp.state,

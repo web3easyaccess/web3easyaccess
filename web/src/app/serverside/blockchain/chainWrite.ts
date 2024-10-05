@@ -17,7 +17,8 @@ import { chainClient } from "./chainWriteClient";
 import { queryAccount } from "../../lib/chainQuery";
 
 import abis from "./abi/abis";
-import redirectTo from "../redirectTo";
+
+import * as libsolana from "@/app/lib/client/solana/libsolana";
 
 function sleep(time) {
     return new Promise((resolve) => setTimeout(resolve, time));
@@ -27,17 +28,22 @@ export async function getW3eapAddr(chainCode: string) {
     if (chainCode.indexOf("SOLANA") >= 0) {
         return "";
     }
-    console.log("xxxxxyyyy:", chainCode);
-    const myClient = await chainClient(chainCode);
-    const addr = await myClient.publicClient.readContract({
-        account: myClient.account,
-        address: myClient.factoryAddr,
-        abi: abis.w3eaPoint,
-        functionName: "w3eaPoint",
-        args: [],
-    });
+    try {
+        console.log("xxxxxyyyy:", chainCode);
+        const myClient = await chainClient(chainCode);
+        const addr = await myClient.publicClient.readContract({
+            account: myClient.account,
+            address: myClient.factoryAddr,
+            abi: abis.w3eaPoint,
+            functionName: "w3eaPoint",
+            args: [],
+        });
 
-    return "" + addr;
+        return "" + addr;
+    } catch (e) {
+        console.log("getW3eapAddr error...:", e);
+        return "";
+    }
 }
 
 export async function newAccount(
@@ -136,6 +142,9 @@ export async function newAccountAndTransferETH(
     bridgeDirection: string
 ) {
     if (chainCode.indexOf("SOL") >= 0) {
+        console.log(
+            "solana called on client side, this time. here can't be reach!"
+        );
     }
     detectEstimatedFee = BigInt(detectEstimatedFee);
     l1DataFee = BigInt(l1DataFee);

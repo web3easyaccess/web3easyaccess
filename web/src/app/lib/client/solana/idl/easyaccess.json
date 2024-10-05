@@ -35,7 +35,7 @@
             "args": [
                 {
                     "name": "owner_id",
-                    "type": "string"
+                    "type": "bytes"
                 },
                 {
                     "name": "new_passwd_addr",
@@ -69,6 +69,10 @@
                     }
                 },
                 {
+                    "name": "to_account",
+                    "writable": true
+                },
+                {
                     "name": "system_program",
                     "address": "11111111111111111111111111111111"
                 }
@@ -76,7 +80,7 @@
             "args": [
                 {
                     "name": "owner_id",
-                    "type": "string"
+                    "type": "bytes"
                 },
                 {
                     "name": "passwd_addr",
@@ -85,6 +89,10 @@
                 {
                     "name": "question_nos",
                     "type": "string"
+                },
+                {
+                    "name": "lamports",
+                    "type": "u64"
                 }
             ]
         },
@@ -124,7 +132,7 @@
             "args": [
                 {
                     "name": "owner_id",
-                    "type": "string"
+                    "type": "bytes"
                 },
                 {
                     "name": "lamports",
@@ -147,7 +155,7 @@
                 "fields": [
                     {
                         "name": "owner_id",
-                        "type": "string"
+                        "type": "bytes"
                     },
                     {
                         "name": "passwd_addr",

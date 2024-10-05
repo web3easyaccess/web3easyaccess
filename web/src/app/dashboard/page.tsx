@@ -2,11 +2,7 @@
 
 import myCookies from "../serverside/myCookies";
 
-import Dashboard from "./dashboard";
-
 import redirectTo from "../serverside/redirectTo";
-
-import { Menu, UserInfo, uiToString } from "../lib/myTypes";
 
 import PageClient from "./pageClient";
 

@@ -32,7 +32,7 @@ import UserProfile from "./userProfile";
 import { Menu, UserInfo, uiToString, ChainCode } from "../lib/myTypes";
 import { UserProperty } from "../storage/LocalStore";
 
-export default function App({
+export default function NavBar({
     userProp,
     updateUserProp,
     accountAddrList,

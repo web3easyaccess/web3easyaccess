@@ -62,7 +62,7 @@ export default function Assets({
             const a = await queryAssets(
                 userProp.state.selectedChainCode,
                 userProp.serverSidePropState.factoryAddr,
-                `0x${userProp.state.selectedAccountAddr.substring(2)}`
+                userProp.state.selectedAccountAddr
             );
             setAssets(a as any);
         };

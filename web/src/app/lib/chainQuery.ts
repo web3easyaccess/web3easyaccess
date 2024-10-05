@@ -4,7 +4,7 @@ import axios from "axios";
 import { Axios, AxiosResponse, AxiosError } from "axios";
 
 import { isMorphNet, isScrollNet, isLineaNet } from "./myChain";
-import { ChainCode, Transaction } from "./myTypes";
+import { ChainCode, chainCodeFromString, Transaction } from "./myTypes";
 import { getChainObj } from "./myChain";
 import {
     getContract,
@@ -176,12 +176,7 @@ export async function queryAccount(
     );
 
     if (chainCode.toString().indexOf("SOLANA") >= 0) {
-        const acct = libsolana.queryAccount(chainCode, ownerId);
-        const rtn = {
-            accountAddr: "" + acct,
-            created: true,
-            passwdAddr: "000",
-        };
+        const rtn = await libsolana.queryAccount(chainCode, ownerId);
         return rtn;
     }
 
@@ -529,6 +524,10 @@ export async function queryEthBalance(
         return libsolana.querySolBalance(chainCode, addr);
     }
 
+    if (!factoryAddr.startsWith("0x")) {
+        return "0.0";
+    }
+
     try {
         // const blockNumber = await client.getBlockNumber();
         var addrWithout0x = addr;
@@ -582,6 +581,10 @@ export async function queryW3eapBalance(
         return "0.0";
     }
     if (chainCode.indexOf("SOLANA") >= 0 || !addr.startsWith("0x")) {
+        return "0.0";
+    }
+
+    if (!factoryAddr.startsWith("0x")) {
         return "0.0";
     }
 
@@ -639,6 +642,10 @@ export async function queryfreeGasFeeAmount(
         return "0.0";
     }
 
+    if (!factoryAddr.startsWith("0x")) {
+        return "0.0";
+    }
+
     try {
         const cpc = chainPublicClient(chainCode, factoryAddr);
         // console.log("rpc:", cpc.rpcUrl);
@@ -678,16 +685,20 @@ export async function queryAssets(
     factoryAddr: string,
     addr: string
 ) {
-    if (
-        chainCode.indexOf("SOLANA") >= 0 ||
-        !addr.startsWith("0x") ||
-        factoryAddr.length < 20
-    ) {
+    if (chainCode.indexOf("SOLANA") >= 0) {
+        return libsolana.queryAssets(
+            chainCodeFromString(chainCode),
+            factoryAddr,
+            addr
+        );
+    }
+
+    if (!addr.startsWith("0x")) {
         return [
             {
                 token_address: "",
-                token_symbol: "SOL",
-                balance: "1.234",
+                token_symbol: "ETH",
+                balance: "0.0",
             },
         ];
     }
@@ -851,7 +862,7 @@ const CHAIN_PROPS = {
         startBlock: 3735000,
     },
     NEOX_TEST_CHAIN: {
-        scanApiKey: "123",
+        scanApiKey: "123apiKey",
         startBlock: 526100,
     },
 };

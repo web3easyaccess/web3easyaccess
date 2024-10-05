@@ -5,7 +5,7 @@
 import redirectTo from "./redirectTo";
 
 import myCookies from "./myCookies";
-import { sendMail } from "./mailService";
+import { asyncSendMail } from "./mailService";
 import { queryAccount, formatTimestamp } from "../lib/chainQuery";
 import { getFactoryAddr } from "./blockchain/chainWriteClient";
 import { newAccount, newAccountAndTransferETH } from "./blockchain/chainWrite";
@@ -83,7 +83,9 @@ export async function checkEmail(
         //
         const sixNum = generateRandomDigitInteger().toString();
         verifyCode[email] = sixNum + ":" + new Date().valueOf();
-        await sendMail(email, sixNum); // ignore tmp.
+
+        asyncSendMail(email, sixNum); // ignore tmp.
+
         console.log("sent email", email, "========> [" + sixNum + "]");
         // Please log in to your email address "123@a.com" and check for the verification code.
         var rtn = {
