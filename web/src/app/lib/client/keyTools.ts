@@ -62,9 +62,9 @@ export function getPasswdAccount(
     privateInfo: PrivateInfoType,
     chainCode: ChainCode
 ) {
-    if (chainCode.toString().indexOf("SOLANA") >= 0) {
+    if (libsolana.isSolana(chainCode)) {
         const keypair = libsolana.privateInfoToKeypair(privateInfo);
-        return keypair.publicKey.toBase58();
+        return { address: keypair.publicKey.toBase58() };
     }
 
     const mnemonic = getMnemonic(privateInfo);

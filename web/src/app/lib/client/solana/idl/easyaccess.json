@@ -20,6 +20,10 @@
                     "signer": true
                 },
                 {
+                    "name": "new_passwd_acct",
+                    "signer": true
+                },
+                {
                     "name": "user_acct",
                     "writable": true,
                     "pda": {
@@ -36,10 +40,6 @@
                 {
                     "name": "owner_id",
                     "type": "bytes"
-                },
-                {
-                    "name": "new_passwd_addr",
-                    "type": "string"
                 },
                 {
                     "name": "question_nos",
@@ -61,6 +61,10 @@
                 {
                     "name": "payer_acct",
                     "writable": true,
+                    "signer": true
+                },
+                {
+                    "name": "user_passwd_acct",
                     "signer": true
                 },
                 {
@@ -88,10 +92,6 @@
                 {
                     "name": "owner_id",
                     "type": "bytes"
-                },
-                {
-                    "name": "passwd_addr",
-                    "type": "string"
                 },
                 {
                     "name": "question_nos",

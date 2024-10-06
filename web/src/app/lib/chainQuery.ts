@@ -176,7 +176,11 @@ export async function queryAccount(
     );
 
     if (chainCode.toString().indexOf("SOLANA") >= 0) {
-        const rtn = await libsolana.queryAccount(chainCode, ownerId);
+        const rtn = await libsolana.queryAccount(
+            chainCode,
+            factoryAddr,
+            ownerId
+        );
         return rtn;
     }
 
@@ -266,6 +270,14 @@ export async function queryQuestionIdsEnc(
     accountAddr: string
 ) {
     try {
+        if (libsolana.isSolana(chainCode)) {
+            return await libsolana.queryQuestionIdsEnc(
+                chainCode,
+                factoryAddr,
+                accountAddr
+            );
+        }
+
         const cpc = chainPublicClient(chainCode, factoryAddr);
         // console.log("rpc:", cpc.rpcUrl);
         console.log("factoryAddr in queryAccount:", chainCode, factoryAddr);

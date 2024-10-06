@@ -15,6 +15,7 @@ import type { Easyaccess } from "./types/easyaccess";
 import { getMnemonic, getPasswdAccount, PrivateInfoType } from "../keyTools";
 
 import { serverSign } from "../../../lib/server/solana/libsolanaserver";
+import { getChainObj } from "../../myChain";
 
 interface AnchorWallet {
     publicKey: web3.PublicKey;
@@ -25,6 +26,14 @@ interface AnchorWallet {
         transactions: T[]
     ): Promise<T[]>;
 }
+
+export const isSolana = (chainCode) => {
+    if (chainCode.toString().indexOf("SOLANA") >= 0) {
+        return true;
+    } else {
+        return false;
+    }
+};
 
 const getFactorProgramId = (chainCode: ChainCode) => {
     return new web3.PublicKey("BA3YWB1TPRqMcKjMRBugDqjcowNiZJb4FcPwjWfg9aCD");
@@ -40,16 +49,30 @@ const connMainnet = new web3.Connection(
 );
 
 const getConnection = (chainCode: ChainCode) => {
-    if (chainCode == ChainCode.SOLANA_TEST_CHAIN) {
-        const connLocal = new web3.Connection(
-            "http://127.0.0.1:8899", // web3.clusterApiUrl("devnet"),
-            "confirmed"
-        );
-        return connLocal;
-    }
-
-    return connDevnet;
+    const chainObj = getChainObj(chainCode);
+    const apiUrl = chainObj.rpcUrls.default.http[0];
+    console.log("solana connection,apiUrl:", apiUrl);
+    const connection = new web3.Connection(
+        apiUrl, // web3.clusterApiUrl("devnet"),
+        "confirmed"
+    );
+    return connection;
 };
+
+export async function queryQuestionIdsEnc(
+    chainCode: string,
+    factoryAddr: string,
+    acctPubKeyBase58: string
+) {
+    const { program, connection, passwdKeypair } = initFactoryProgram(
+        chainCodeFromString(chainCode),
+        null
+    );
+    const pda = new web3.PublicKey(acctPubKeyBase58);
+    const nos = (await program.account.acctEntity.fetch(pda)).questionNos;
+    console.log("solana,queryQuestionIdsEnc:", nos);
+    return nos;
+}
 
 export const privateInfoToKeypair = (privateInfo: PrivateInfoType) => {
     const mnemonic = getMnemonic(privateInfo);
@@ -65,7 +88,7 @@ export const privateInfoToKeypair = (privateInfo: PrivateInfoType) => {
     return keypair;
 };
 
-const genPda = (chainCode: ChainCode, ownerId: String) => {
+const genPda = (chainCode: ChainCode, factoryAddr: string, ownerId: String) => {
     console.log("solana genPda,ownerId:", ownerId);
     console.log("solana genPda,ownerId2:", hexToBytes(ownerId));
 
@@ -75,20 +98,44 @@ const genPda = (chainCode: ChainCode, ownerId: String) => {
             //anchor.utils.bytes.utf8.encode("AAZZ1199AAZZ1199AAZZ1199AAZZ1199"),
             // provider.wallet.publicKey.toBuffer(),
         ],
-        getFactorProgramId(chainCode)
+        new web3.PublicKey(factoryAddr)
     );
     return acctPDA;
 };
 
-export const queryAccount = async (chainCode: ChainCode, ownerId: String) => {
-    const acctPDA = genPda(chainCode, ownerId);
+export const queryAccount = async (
+    chainCode: ChainCode,
+    factoryAddr: string,
+    ownerId: String
+) => {
+    const acctPDA = genPda(chainCode, factoryAddr, ownerId);
     console.log("solana,queryAccount,ownerId:", ownerId);
     console.log("solana,queryAccount2:", acctPDA.toBase58());
-    const balance = await querySolBalance(chainCode, acctPDA.toBase58());
+
+    let created = false;
+    const accountInfo = await getConnection(chainCode)?.getAccountInfo(acctPDA);
+    if (accountInfo != null && accountInfo != undefined) {
+        if (
+            accountInfo.data != null &&
+            accountInfo.data != undefined &&
+            accountInfo.data.length > 0
+        )
+            created = true;
+    }
+    let passwdAddr = "";
+    if (created) {
+        const { program, connection, passwdKeypair } = initFactoryProgram(
+            chainCodeFromString(chainCode),
+            null
+        );
+        passwdAddr = (await program.account.acctEntity.fetch(acctPDA))
+            .passwdAddr;
+    }
+
     return {
         accountAddr: acctPDA.toBase58(),
-        created: balance > 0,
-        passwdAddr: balance > 0 ? "" : "", // todo ....
+        created: created,
+        passwdAddr: passwdAddr,
     };
 };
 
@@ -140,7 +187,6 @@ export async function newAccountAndTransferSol_onClient(
         "solana,newAccountAndTransferSol_onClient:",
         chainCode,
         ownerId,
-        privateInfo,
         questionNos,
         data
     );
@@ -159,7 +205,8 @@ export async function newAccountAndTransferSol_onClient(
         amountInLamports, //
         onlyQueryFee,
         privateInfo,
-        transferFeeInLamports
+        transferFeeInLamports,
+        null
     );
 }
 
@@ -179,13 +226,7 @@ export async function createTransaction_onClient(
     bridgeDirection: string,
     privateInfo: PrivateInfoType
 ) {
-    console.log(
-        "solana,createTransaction_onClient:",
-        chainCode,
-        ownerId,
-        privateInfo,
-        data
-    );
+    console.log("solana,createTransaction_onClient:", chainCode, ownerId, data);
     if (data != null && data != undefined && data.length > 0) {
         throw new Error("not supported data this time, in solana.2.");
     }
@@ -201,7 +242,8 @@ export async function createTransaction_onClient(
         amountInLamports, //
         onlyQueryFee,
         privateInfo,
-        transferFeeInLamports
+        transferFeeInLamports,
+        null
     );
 }
 
@@ -212,225 +254,42 @@ const sk = new Uint8Array([
     170, 100, 111, 220, 209, 234, 129, 22, 212, 241, 47, 135, 97, 73, 149, 15,
 ]);
 
-async function funCreateSolTrans_old(
-    transType: "NEW" | "TRANSFER",
+export async function changePasswdAddr_onClient(
     chainCode: string,
-    ownerId: `0x${string}`,
-    fromAcctAddr: string,
-    questionNos: string,
-    to: string,
-    amountInLamports: bigint,
+    bigBrotherOwnerId: `0x${string}`,
+    bigBrotherAccountAddr: `0x${string}`,
+    passwdAddr: `0x${string}`,
+    newPasswdAddr: `0x${string}`,
+    newQuestionNos: `0x${string}`,
+    signature: `0x${string}`,
     onlyQueryFee: boolean,
-    privateInfo: PrivateInfoType,
-    transferFeeInLamports: bigint
+    detectEstimatedFee: bigint,
+    preparedMaxFeePerGas: bigint,
+    preparedGasPrice: bigint,
+    privateInfo: PrivateInfoType, // old private info.
+    newPrivateInfo: PrivateInfoType // new info
 ) {
-    try {
-        const myChainCode = chainCodeFromString(chainCode);
-        const { program, connection, passwdKeypair } = initFactoryProgram(
-            myChainCode,
-            privateInfo
-        );
+    console.log(
+        "solana,changePasswdAddr_onClient:",
+        chainCode,
+        bigBrotherOwnerId,
+        newQuestionNos
+    );
 
-        console.log(
-            "funCreateSolTrans,",
-            transType,
-            "transferFeeInLamports:",
-            transferFeeInLamports
-        );
-
-        const passwdAddrBalance = await querySolBalance(
-            myChainCode,
-            passwdKeypair.publicKey.toBase58()
-        );
-        // 适用于开发或测试环境... todo ... 上线主网的话，当前策略需要修改.
-        if (myChainCode == ChainCode.SOLANA_TEST_CHAIN) {
-            console.log(
-                "passwdKeypair.publicKey & balance:",
-                passwdKeypair.publicKey.toBase58(),
-                passwdAddrBalance
-            );
-            if (passwdAddrBalance < 0.1) {
-                let airdropSignature = await connection.requestAirdrop(
-                    passwdKeypair.publicKey,
-                    0.1 * web3.LAMPORTS_PER_SOL
-                );
-                await connection.confirmTransaction({
-                    signature: airdropSignature,
-                });
-            }
-            console.log(
-                "passwdKeypair.publicKey & balance2:",
-                passwdKeypair.publicKey.toBase58(),
-                await querySolBalance(
-                    myChainCode,
-                    passwdKeypair.publicKey.toBase58()
-                )
-            );
-        }
-
-        const acctPDA = genPda(myChainCode, ownerId);
-
-        console.log("11111xx:transType:", transType);
-        console.log("11111yy:acctPDA:", acctPDA.toBase58(), questionNos);
-
-        if (transType == "NEW") {
-            const accountInfo = await connection.getAccountInfo(acctPDA);
-            if (accountInfo != null && accountInfo != undefined) {
-                if (
-                    accountInfo.data != null &&
-                    accountInfo.data != undefined &&
-                    accountInfo.data.length > 0
-                )
-                    throw new Error(
-                        `user account[${acctPDA.toBase58()}] has already created!`
-                    );
-            }
-        }
-
-        let xxxPayer;
-
-        {
-            xxxPayer = web3.Keypair.fromSecretKey(sk);
-            console.log("xxxPayer:", xxxPayer.publicKey.toBase58());
-            let airdropSignature = await connection.requestAirdrop(
-                xxxPayer.publicKey,
-                10 * web3.LAMPORTS_PER_SOL
-            );
-            await connection.confirmTransaction({
-                signature: airdropSignature,
-            });
-        }
-
-        const createMethodsBuilder = () => {
-            let toAccount: web3.PublicKey;
-            if (to == undefined || to == null || to == "") {
-                toAccount = new web3.PublicKey(acctPDA);
-                amountInLamports = BigInt(0);
-            } else {
-                toAccount = new web3.PublicKey(to);
-            }
-            let build;
-            if (transType == "NEW") {
-                build = program.methods
-                    .createAcct(
-                        Buffer.from(hexToBytes(ownerId)),
-                        passwdKeypair.publicKey.toBase58(),
-                        questionNos,
-                        new anchor.BN(amountInLamports),
-                        new anchor.BN(transferFeeInLamports)
-                    )
-                    .accounts({
-                        payerAcct: passwdKeypair.publicKey,
-                        userAcct: acctPDA,
-                        toAccount: toAccount,
-                        SystemProgram: web3.SystemProgram,
-                    });
-            } else if (transType == "TRANSFER") {
-                if (fromAcctAddr != acctPDA.toBase58()) {
-                    console.log(
-                        `sol transfer, accountAddr error.fromAcctAddr=${fromAcctAddr}, !=:: ownerId=${ownerId}, thePda=${acctPDA}`
-                    );
-                    throw new Error("accountAddr error!");
-                }
-                build = program.methods
-                    .transferAcctLamports(
-                        Buffer.from(hexToBytes(ownerId)),
-                        new anchor.BN(amountInLamports),
-                        new anchor.BN(transferFeeInLamports)
-                    )
-                    .accounts({
-                        payerAcct: xxxPayer.publicKey, // passwdKeypair.publicKey,
-                        userPasswdAcct: passwdKeypair.publicKey,
-                        userAcct: acctPDA,
-                        toAccount: toAccount,
-                        SystemProgram: web3.SystemProgram,
-                    });
-            } else {
-                throw new Error("transType ERROR:", transType);
-            }
-
-            return build;
-        };
-
-        if (onlyQueryFee) {
-            const trans = await createMethodsBuilder().transaction();
-
-            if (1 == 1) {
-                //
-                const transaction = trans;
-                // const wireTransaction = transaction.serialize();
-
-                // send wireTransaction to backend to be signed
-                // on backend:
-                const latestBlockhash = await connection.getLatestBlockhash();
-                transaction.lastValidBlockHeight =
-                    latestBlockhash.lastValidBlockHeight;
-                transaction.recentBlockhash = latestBlockhash.blockhash;
-                transaction.feePayer = xxxPayer.publicKey;
-                transaction.partialSign(xxxPayer);
-                transaction.partialSign(passwdKeypair);
-                const wireTransactionToSendBack = transaction.serialize();
-
-                // send back wireTransactionToSendBack to frontend to be signed by user
-                // back on frontend:
-                transaction.partialSign(passwdKeypair); // or use a wallet adapter, most likely
-                const finalWireTransaction = transaction.serialize();
-                const signature = await connection.sendRawTransaction(
-                    finalWireTransaction
-                );
-                console.log("xxxx off chain signature:", signature);
-            }
-
-            trans.feePayer = passwdKeypair.publicKey;
-            const simTx = await connection.simulateTransaction(trans);
-
-            // 获取计算单元消耗
-            const computeUnitsUsed = simTx.value.unitsConsumed;
-
-            // 设置优先级费用率（例如，每个计算单元 0.000001 SOL）
-            const priorityFeeRate = 0.000001 * web3.LAMPORTS_PER_SOL;
-
-            // 计算优先级费用
-            const priorityFee = computeUnitsUsed * priorityFeeRate;
-
-            // 计算总费用
-            const totalFee = 5000 + priorityFee; // 5000 为基本费用
-
-            const realEstimatedFee = totalFee / web3.LAMPORTS_PER_SOL;
-
-            // 预计交易费用: 0.007887 SOL @ 15:04
-            console.log("solana预计交易费用:", realEstimatedFee, "SOL");
-            const gasPrice_e18 =
-                ((1e18 / web3.LAMPORTS_PER_SOL) * totalFee) / computeUnitsUsed; // 外层按照evm里精度18的套路使用.
-            return {
-                success: true,
-                msg: "",
-                realEstimatedFee: realEstimatedFee,
-                l1DataFee: 0,
-                maxFeePerGas: undefined, //eip-1559
-                gasPrice: Math.trunc(gasPrice_e18), // Legacy
-                gasCount: computeUnitsUsed,
-                tx: "",
-            };
-        } else {
-            const hash = await createMethodsBuilder()
-                // .signers([signer])
-                .rpc();
-            console.log("solana new acct ,hash:", hash);
-            console.log(
-                "passwdKeypair.publicKey & balance3:",
-                passwdKeypair.publicKey.toBase58(),
-                await querySolBalance(
-                    myChainCode,
-                    passwdKeypair.publicKey.toBase58()
-                )
-            );
-            return { success: true, tx: hash, msg: "" };
-        }
-    } catch (e) {
-        console.log("newAccountAndTransferSol error:", e);
-        return { success: false, msg: e.transactionMessage, tx: "" };
-    }
+    const transferFeeInLamports = detectEstimatedFee / BigInt(1e9);
+    return funCreateSolTrans(
+        "CHGPASSWD",
+        chainCode,
+        bigBrotherOwnerId,
+        "",
+        newQuestionNos,
+        "",
+        BigInt(0), //
+        onlyQueryFee,
+        privateInfo,
+        transferFeeInLamports,
+        newPrivateInfo
+    );
 }
 
 const serverSidePayer = web3.Keypair.fromSecretKey(sk);
@@ -449,19 +308,24 @@ async function testAirDrop(conn: web3.Connection) {
 }
 
 async function funCreateSolTrans(
-    transType: "NEW" | "TRANSFER",
+    transType: "NEW" | "TRANSFER" | "CHGPASSWD",
     chainCode: string,
-    ownerId: `0x${string}`,
+    ownerId: `0x${string}`, // bigBrotherOwnerId for chg passwd
     fromAcctAddr: string,
-    questionNos: string,
+    questionNos: string, // new questions for chg passwd
     to: string,
     amountInLamports: bigint,
     onlyQueryFee: boolean,
     privateInfo: PrivateInfoType,
-    transferFeeInLamports: bigint
+    transferFeeInLamports: bigint,
+    newPrivateInfo: PrivateInfoType // used in change password.
 ) {
     try {
         const myChainCode = chainCodeFromString(chainCode);
+
+        const tmpRes = initFactoryProgram(myChainCode, newPrivateInfo);
+        const newPasswdKeypair = tmpRes.passwdKeypair;
+
         const { program, connection, passwdKeypair } = initFactoryProgram(
             myChainCode,
             privateInfo
@@ -476,7 +340,8 @@ async function funCreateSolTrans(
 
         await testAirDrop(connection);
 
-        const acctPDA = genPda(myChainCode, ownerId);
+        const factoryAddr = program.programId.toBase58();
+        const acctPDA = genPda(myChainCode, factoryAddr, ownerId);
 
         console.log(
             "11111yy:transType & acctPDA & questionNos:",
@@ -512,13 +377,13 @@ async function funCreateSolTrans(
                 build = program.methods
                     .createAcct(
                         Buffer.from(hexToBytes(ownerId)),
-                        passwdKeypair.publicKey.toBase58(),
                         questionNos,
                         new anchor.BN(amountInLamports),
                         new anchor.BN(transferFeeInLamports)
                     )
                     .accounts({
                         payerAcct: serverSidePayer.publicKey,
+                        userPasswdAcct: passwdKeypair.publicKey,
                         userAcct: acctPDA,
                         toAccount: toAccount,
                         SystemProgram: web3.SystemProgram,
@@ -543,6 +408,19 @@ async function funCreateSolTrans(
                         userAcct: acctPDA,
                         toAccount: toAccount,
                         SystemProgram: web3.SystemProgram,
+                    });
+            } else if (transType == "CHGPASSWD") {
+                build = program.methods
+                    .changeAcctPasswdAddr(
+                        Buffer.from(hexToBytes(ownerId)),
+                        questionNos,
+                        new anchor.BN(transferFeeInLamports)
+                    )
+                    .accounts({
+                        payerAcct: serverSidePayer.publicKey, // passwdKeypair.publicKey,
+                        userPasswdAcct: passwdKeypair.publicKey,
+                        newPasswdAcct: newPasswdKeypair.publicKey,
+                        userAcct: acctPDA,
                     });
             } else {
                 throw new Error("transType ERROR:", transType);
@@ -653,8 +531,21 @@ async function funCreateSolTrans(
 
 const initFactoryProgram = (
     chainCode: ChainCode,
-    privateInfo: PrivateInfoType
+    privateInfo: PrivateInfoType | null
 ) => {
+    if (privateInfo == null || privateInfo == undefined) {
+        // only for reading
+        privateInfo = {
+            email: "1",
+            pin: "1",
+            question1answer: "1",
+            question2answer: "1",
+            firstQuestionNo: "1",
+            secondQuestionNo: "1",
+            confirmedSecondary: true,
+        };
+    }
+
     const myChainCode = chainCode;
     console.log("1111111:7777a:");
     // passwdAccount:

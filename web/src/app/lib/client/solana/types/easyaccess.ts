@@ -26,6 +26,10 @@ export type Easyaccess = {
                     signer: true;
                 },
                 {
+                    name: "newPasswdAcct";
+                    signer: true;
+                },
+                {
                     name: "userAcct";
                     writable: true;
                     pda: {
@@ -42,10 +46,6 @@ export type Easyaccess = {
                 {
                     name: "ownerId";
                     type: "bytes";
-                },
-                {
-                    name: "newPasswdAddr";
-                    type: "string";
                 },
                 {
                     name: "questionNos";
@@ -67,6 +67,10 @@ export type Easyaccess = {
                 {
                     name: "payerAcct";
                     writable: true;
+                    signer: true;
+                },
+                {
+                    name: "userPasswdAcct";
                     signer: true;
                 },
                 {
@@ -94,10 +98,6 @@ export type Easyaccess = {
                 {
                     name: "ownerId";
                     type: "bytes";
-                },
-                {
-                    name: "passwdAddr";
-                    type: "string";
                 },
                 {
                     name: "questionNos";

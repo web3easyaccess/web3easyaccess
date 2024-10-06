@@ -87,8 +87,6 @@ import {
 
 import { PrivateInfo } from "./privateinfo";
 
-import { PrivateInfo as PrivateInfo4Chg } from "./privateinfo4chg";
-
 import { getChainObj } from "../../lib/myChain";
 
 import { SelectedChainIcon } from "../../navbar/chainIcons";
@@ -158,13 +156,17 @@ export default function SendTransaction({
         if (hash == undefined || hash == null) {
             return "";
         }
-        let idx = hash.indexOf("::");
-        let xx = hash;
-        if (idx > 0) {
-            xx = hash.substring(0, idx);
-            return `${explorerUrl}/tx/${xx}?tab=internal`;
+        if (chainObj.chainCode.toString().indexOf("SOLANA") >= 0) {
+            return chainObj.blockExplorers.txUrl(hash);
         } else {
-            return `${explorerUrl}/tx/${xx}`;
+            let idx = hash.indexOf("::");
+            let xx = hash;
+            if (idx > 0) {
+                xx = hash.substring(0, idx);
+                return `${explorerUrl}/tx/${xx}?tab=internal`;
+            } else {
+                return `${explorerUrl}/tx/${xx}`;
+            }
         }
     };
 
@@ -314,6 +316,8 @@ export default function SendTransaction({
         refreshButtonText();
     };
 
+    const [receiverErrMsg, setReceiverErrMsg] = useState("");
+
     const readReceiverInfo = () => {
         let receiverAddr = "";
         let amount = "";
@@ -360,6 +364,27 @@ export default function SendTransaction({
                 tokenAddr = lineaBridge.getL2MessageServiceContract(
                     bridgeProps.l2ChainCode
                 );
+            }
+        }
+
+        receiverAddr = receiverAddr.trim();
+        if (receiverAddr.length > 0) {
+            if (chainObj.chainCode.toString().indexOf("SOLANA") >= 0) {
+                if (
+                    (receiverAddr.length != 44 && receiverAddr.length != 43) ||
+                    receiverAddr.startsWith("0x")
+                ) {
+                    // setReceiverErrMsg("SOLANA Receiver Address invalid!");
+                    // return {};
+                    console.log("WARN,solana address invalid,!", receiverAddr);
+                }
+            } else if (
+                receiverAddr.length != 42 ||
+                receiverAddr.startsWith("0x") == false
+            ) {
+                // setReceiverErrMsg("EVM Receiver Address invalid!");
+                // return {};
+                console.log("WARN,EVM address invalid,!", receiverAddr);
             }
         }
 
@@ -433,6 +458,32 @@ export default function SendTransaction({
         setInputFillInChange(x);
 
         refreshButtonText();
+
+        const {
+            receiverAddr,
+            amount,
+            tokenAddr,
+            amountDecimals,
+            nftId,
+            bridgeDirection,
+        } = readReceiverInfo();
+
+        setReceiverErrMsg("");
+        if (receiverAddr.length > 0) {
+            if (chainObj.chainCode.toString().indexOf("SOLANA") >= 0) {
+                if (
+                    (receiverAddr.length != 44 && receiverAddr.length != 43) ||
+                    receiverAddr.startsWith("0x")
+                ) {
+                    setReceiverErrMsg("ERROR,solana Receiver Address invalid!");
+                }
+            } else if (
+                receiverAddr.length != 42 ||
+                receiverAddr.startsWith("0x") == false
+            ) {
+                setReceiverErrMsg("ERROR,EVM Receiver Address invalid!");
+            }
+        }
     };
 
     const shortAddr = (aa: string) => {
@@ -854,6 +905,18 @@ export default function SendTransaction({
                 <input id="id_qCount" />
                 <input id="id_lastError" />
             </div>
+            <p
+                style={{
+                    width: "340px",
+                    marginTop: "5px",
+                    marginBottom: "5px",
+                    marginLeft: "15px",
+                    color: "red",
+                    // backgroundColor: "#FAD7A0",
+                }}
+            >
+                {receiverErrMsg}
+            </p>
             <Tabs
                 aria-label="Options"
                 onSelectionChange={handleSelectionChage}
@@ -1404,26 +1467,6 @@ function CreateTransaction({
             bridgeDirection,
         } = readReceiverInfo();
 
-        if (chainObj.chainCode.toString().indexOf("SOLANA") >= 0) {
-            if (
-                receiverAddr == null ||
-                (receiverAddr.trim().length != 44 &&
-                    receiverAddr.trim().length != 43) ||
-                receiverAddr.trim().startsWith("0x")
-            ) {
-                alert("SOLANA Receiver Address invalid!");
-                return;
-            }
-        } else {
-            if (
-                receiverAddr == null ||
-                receiverAddr.trim().length != 42 ||
-                receiverAddr.trim().startsWith("0x") == false
-            ) {
-                alert("EVM Receiver Address invalid!");
-                return;
-            }
-        }
         if (isNaN(parseFloat(amount)) && nftId == "") {
             alert("NFT ID or Amount invalid!");
             return;
@@ -1629,7 +1672,7 @@ async function estimateTransFee(
         } = { signature: "", eoa: "", nonce: "" };
 
         let argumentsHash = "";
-        if (chainObj.chainCode.toString().indexOf("SOLANA") >= 0) {
+        if (libsolana.isSolana(chainObj.chainCode)) {
             console.log("solana useless!2");
             argumentsHash = "0x0";
             sign.signature = "solana useless!signature.";
@@ -1837,7 +1880,7 @@ async function executeTransaction(
     } = { signature: "", eoa: "", nonce: "" };
 
     let argumentsHash = "";
-    if (chainObj.chainCode.toString().indexOf("SOLANA") >= 0) {
+    if (libsolana.isSolana(chainObj.chainCode)) {
         console.log("solana useless!2");
         argumentsHash = "0x0";
         sign.signature = "solana useless!signature.22.";

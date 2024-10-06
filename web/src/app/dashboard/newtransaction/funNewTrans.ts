@@ -3,6 +3,7 @@ import * as libsolana from "@/app/lib/client/solana/libsolana";
 import {
     newAccountAndTransferETH,
     createTransaction as createTransactionETH,
+    changePasswdAddr as changePasswdAddrETH,
 } from "@/app/serverside/blockchain/chainWrite";
 
 export async function newAccountAndTransfer(
@@ -114,6 +115,57 @@ export async function createTransaction(
             preparedMaxFeePerGas,
             preparedGasPrice,
             bridgeDirection
+        );
+        return rtn;
+    }
+}
+
+export async function changePasswdAddr(
+    chainCode: string,
+    bigBrotherOwnerId: `0x${string}`,
+    bigBrotherAccountAddr: `0x${string}`,
+    passwdAddr: `0x${string}`,
+    newPasswdAddr: `0x${string}`,
+    newQuestionNos: `0x${string}`,
+    signature: `0x${string}`,
+    onlyQueryFee: boolean,
+    detectEstimatedFee: bigint,
+    preparedMaxFeePerGas: bigint,
+    preparedGasPrice: bigint,
+    privateInfo: PrivateInfoType, // old private info.
+    newPrivateInfo: PrivateInfoType
+) {
+    console.log("wrapped changePasswdAddr,chainCode=", chainCode);
+    if (chainCode.indexOf("SOLANA") >= 0) {
+        const rtn = await libsolana.changePasswdAddr_onClient(
+            chainCode,
+            bigBrotherOwnerId,
+            bigBrotherAccountAddr,
+            passwdAddr,
+            newPasswdAddr,
+            newQuestionNos,
+            signature,
+            onlyQueryFee,
+            detectEstimatedFee,
+            preparedMaxFeePerGas,
+            preparedGasPrice,
+            privateInfo,
+            newPrivateInfo
+        );
+        return rtn;
+    } else {
+        const rtn = await changePasswdAddrETH(
+            chainCode,
+            bigBrotherOwnerId,
+            bigBrotherAccountAddr,
+            passwdAddr,
+            newPasswdAddr,
+            newQuestionNos,
+            signature,
+            onlyQueryFee,
+            detectEstimatedFee,
+            preparedMaxFeePerGas,
+            preparedGasPrice
         );
         return rtn;
     }

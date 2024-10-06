@@ -106,20 +106,29 @@ export default function Transactions({
         if (aa == undefined || aa == null) {
             return "";
         }
-        return `${explorerUrl}/address/${aa}`;
+        if (chainObj.chainCode.toString().indexOf("SOLANA") >= 0) {
+            return chainObj.blockExplorers.addressUrl(aa);
+        } else {
+            return `${explorerUrl}/address/${aa}`;
+        }
     };
 
     const explorerTxUrl = (hash: string) => {
         if (hash == undefined || hash == null) {
             return "";
         }
-        let idx = hash.indexOf("::");
-        let xx = hash;
-        if (idx > 0) {
-            xx = hash.substring(0, idx);
-            return `${explorerUrl}/tx/${xx}?tab=internal`;
+
+        if (chainObj.chainCode.toString().indexOf("SOLANA") >= 0) {
+            return chainObj.blockExplorers.txUrl(hash);
         } else {
-            return `${explorerUrl}/tx/${xx}`;
+            let idx = hash.indexOf("::");
+            let xx = hash;
+            if (idx > 0) {
+                xx = hash.substring(0, idx);
+                return `${explorerUrl}/tx/${xx}?tab=internal`;
+            } else {
+                return `${explorerUrl}/tx/${xx}`;
+            }
         }
     };
 

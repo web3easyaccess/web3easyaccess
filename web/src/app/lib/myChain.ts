@@ -1,7 +1,8 @@
 import { defineChain } from "viem";
 
 import { scrollSepolia, lineaSepolia, sepolia } from "viem/chains";
-// import solana from "@solana/web3.js";
+
+import { clusterApiUrl as solanaClusterApiUrl } from "@solana/web3.js";
 
 import { ChainCode } from "./myTypes";
 
@@ -123,9 +124,9 @@ const neoxTestnet = defineChain({
     testnet: true,
 });
 
-const solanaTestnet = defineChain({
-    id: 999001,
-    name: "Solana testnet",
+const solanaLocalnet = defineChain({
+    id: 999014,
+    name: "Solana Localnet",
     nativeCurrency: {
         decimals: 9,
         name: "SOL",
@@ -133,14 +134,65 @@ const solanaTestnet = defineChain({
     },
     rpcUrls: {
         default: {
-            http: [""],
+            http: ["http://127.0.0.1:8899"],
             webSocket: [""],
         },
     },
     blockExplorers: {
         default: {
             name: "Explorer",
-            url: "https://explorer.solana.com/?cluster=custom&customUrl=http%3A%2F%2Flocalhost%3A8899",
+            // https://explorer.solana.com/tx/hy2VE7yWJVc7SBBjPi4PALj3qCD3GQYLCcnkAEEy5LrSUKdB9ZsA7b1MRV2o329SBrD2frGvRrjzLXqZPxMwQvu?cluster=custom
+            url: "https://explorer.solana.com/[ADDRESS_OR_TX]?cluster=custom",
+        },
+        txUrl: (tx: string) => {
+            return `https://explorer.solana.com/tx/${tx}?cluster=custom`;
+        },
+        addressUrl: (address: string) => {
+            return `https://explorer.solana.com/address/${address}?cluster=custom`;
+        },
+    },
+    contracts: {
+        multicall3: {
+            address: "0x82096F92248dF7afDdef72E545F06e5be0cf0F99",
+            blockCreated: 1,
+        },
+    },
+    explorerApiUrl: "https://12345test/api/v2",
+    testnet: true,
+});
+
+/** 我的自定义代码
+ * 999011 Mainnet - https://api.mainnet-beta.solana.com
+ * 999012 Devnet  - https://api.devnet.solana.com
+ * 999013 Testnet - https://api.testnet.solana.com
+ * 999014 Localnet
+ */
+
+const solanaDevnet = defineChain({
+    id: 999012,
+    name: "Solana Devnet",
+    nativeCurrency: {
+        decimals: 9,
+        name: "SOL",
+        symbol: "SOL",
+    },
+    rpcUrls: {
+        default: {
+            http: [solanaClusterApiUrl("devnet")],
+            webSocket: [""],
+        },
+    },
+
+    blockExplorers: {
+        default: {
+            name: "Explorer",
+            url: "https://explorer.solana.com/[ADDRESS_OR_TX]?cluster=devnet",
+        },
+        txUrl: (tx: string) => {
+            return `https://explorer.solana.com/tx/${tx}?cluster=devnet`;
+        },
+        addressUrl: (address: string) => {
+            return `https://explorer.solana.com/address/${address}?cluster=devnet`;
         },
     },
     contracts: {
@@ -212,7 +264,7 @@ export const getChainObj = (
     } else if (chainCode == ChainCode.NEOX_TEST_CHAIN) {
         rtn = neoxTestnet;
     } else if (chainCode == ChainCode.SOLANA_TEST_CHAIN) {
-        rtn = solanaTestnet;
+        rtn = solanaLocalnet;
     } else {
         console.warn("not supprted:" + chainCode);
     }

@@ -23,7 +23,7 @@ export async function getFactoryAddr(chainCode: string) {
     } else if (chainCode == ChainCode.NEOX_TEST_CHAIN.toString()) {
         return process.env.CHAIN_FACTORY_ADDRESS_NEOX_TEST;
     } else if (chainCode == "SOLANA_TEST_CHAIN") {
-        return "solanaFactory123"; //process.env.CHAIN_FACTORY_ADDRESS_SOLANA_TEST;
+        return process.env.CHAIN_FACTORY_ADDRESS_SOLANA_TEST;
     } else {
         var a = 1 / 0;
     }

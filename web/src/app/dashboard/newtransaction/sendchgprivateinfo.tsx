@@ -15,6 +15,8 @@ import {
 
 import { aesEncrypt, aesDecrypt } from "../../lib/crypto.mjs";
 
+import * as libsolana from "@/app/lib/client/solana/libsolana";
+
 import {
     keccak256,
     encodePacked,
@@ -25,9 +27,8 @@ import {
     encodeFunctionData,
     parseAbiItem,
 } from "viem";
-import { chainPublicClient } from "../../lib/chainQueryClient";
 
-import abis from "../../serverside/blockchain/abi/abis";
+import * as funNewTrans from "./funNewTrans";
 
 import React, { useState, useEffect, useRef, MutableRefObject } from "react";
 
@@ -121,6 +122,7 @@ export default function SendChgPrivateInfo({
     forTransaction: boolean;
 }) {
     const chainObj = getChainObj(userProp.state.selectedChainCode);
+    console.log("userProp in SendChgPrivateInfo:", userProp);
 
     const [nativeCoinSymbol, setNativeCoinSymbol] = useState("");
     const updateNativeCoinSymbol = () => {
@@ -138,13 +140,17 @@ export default function SendChgPrivateInfo({
         if (hash == undefined || hash == null) {
             return "";
         }
-        let idx = hash.indexOf("::");
-        let xx = hash;
-        if (idx > 0) {
-            xx = hash.substring(0, idx);
-            return `${explorerUrl}/tx/${xx}?tab=internal`;
+        if (chainObj.chainCode.toString().indexOf("SOLANA") >= 0) {
+            return chainObj.blockExplorers.txUrl(hash);
         } else {
-            return `${explorerUrl}/tx/${xx}`;
+            let idx = hash.indexOf("::");
+            let xx = hash;
+            if (idx > 0) {
+                xx = hash.substring(0, idx);
+                return `${explorerUrl}/tx/${xx}?tab=internal`;
+            } else {
+                return `${explorerUrl}/tx/${xx}`;
+            }
         }
     };
 
@@ -267,7 +273,9 @@ export default function SendChgPrivateInfo({
                             bigBrotherAccountCreated(),
                             questionNosEnc,
                             preparedPriceRef,
-                            nativeCoinSymbol
+                            nativeCoinSymbol,
+                            oldPriInfoRef.current,
+                            currentPriInfoRef.current
                         );
                     } else {
                         if (receiverAddr != "" && amountETH != "") {
@@ -581,7 +589,9 @@ function CreateTransaction({
                 myAccountCreated,
                 newQuestionNosEnc,
                 preparedPriceRef,
-                nativeCoinSymbol
+                nativeCoinSymbol,
+                oldPriInfoRef.current,
+                currentPriInfoRef.current
             );
 
             updateCurrentTx(tx);
@@ -706,7 +716,9 @@ async function estimateChgPasswdFee(
     bigBrotherAccountCreated: boolean,
     questionNos: string,
     preparedPriceRef: any,
-    nativeCoinSymbol: string
+    nativeCoinSymbol: string,
+    privateInfo: PrivateInfoType,
+    newPrivateInfo: PrivateInfoType
 ) {
     let myDetectEstimatedFee = BigInt(0);
     console.log(
@@ -724,37 +736,54 @@ async function estimateChgPasswdFee(
         msg: string;
     } = {};
     for (let k = 0; k < 15; k++) {
-        let argumentsHash = encodeAbiParameters(
-            [
-                { name: "funcId", type: "uint256" },
-                { name: "newPasswdAddr", type: "address" },
-                { name: "newQuestionNos", type: "bytes32" },
-                { name: "estimatedFee", type: "uint256" },
-            ],
-            [
-                BigInt(2),
-                newPasswdAddr,
-                keccak256(questionNos),
-                myDetectEstimatedFee,
-            ]
-        );
-        console.log("encodeAbiParametersxx2222:", argumentsHash);
-        argumentsHash = keccak256(argumentsHash);
-        console.log("encodeAbiParametersxx3333:", argumentsHash);
-        let chainId = chainObj.id;
         if (!bigBrotherAccountCreated) {
             alert("No account is currently created in email. not supported.");
             return {};
         }
-        let withZeroNonce = !bigBrotherAccountCreated;
-        const sign = await signAuth(
-            passwdAccount,
-            chainId,
-            bigBrotherAccountAddr,
-            chainObj,
-            argumentsHash, // "" //
-            withZeroNonce
-        );
+
+        let sign: {
+            signature: string;
+            eoa: any;
+            nonce: string;
+        } = { signature: "", eoa: "", nonce: "" };
+
+        let argumentsHash;
+
+        if (libsolana.isSolana(chainObj.chainCode)) {
+            console.log("solana useless!1");
+            argumentsHash = "0x0";
+            sign.signature = "solana useless!signature.11.";
+        } else {
+            argumentsHash = encodeAbiParameters(
+                [
+                    { name: "funcId", type: "uint256" },
+                    { name: "newPasswdAddr", type: "address" },
+                    { name: "newQuestionNos", type: "bytes32" },
+                    { name: "estimatedFee", type: "uint256" },
+                ],
+                [
+                    BigInt(2),
+                    newPasswdAddr,
+                    keccak256(questionNos),
+                    myDetectEstimatedFee,
+                ]
+            );
+            console.log("encodeAbiParametersxx2222:", argumentsHash);
+            argumentsHash = keccak256(argumentsHash);
+            console.log("encodeAbiParametersxx3333:", argumentsHash);
+
+            let chainId = chainObj.id;
+
+            let withZeroNonce = !bigBrotherAccountCreated;
+            sign = await signAuth(
+                passwdAccount,
+                chainId,
+                bigBrotherAccountAddr,
+                chainObj,
+                argumentsHash, // "" //
+                withZeroNonce
+            );
+        }
 
         const onlyQueryFee = true;
 
@@ -764,7 +793,7 @@ async function estimateChgPasswdFee(
                 bigBrotherOwnerId,
                 bigBrotherAccountAddr
             );
-            detectRes = await changePasswdAddr(
+            detectRes = await funNewTrans.changePasswdAddr(
                 chainObj.chainCode,
                 bigBrotherOwnerId,
                 bigBrotherAccountAddr,
@@ -775,7 +804,9 @@ async function estimateChgPasswdFee(
                 onlyQueryFee,
                 myDetectEstimatedFee,
                 BigInt(0),
-                BigInt(0)
+                BigInt(0),
+                privateInfo,
+                newPrivateInfo
             );
         } else {
             console.log("error...not supported...");
@@ -833,7 +864,9 @@ async function executeChgPasswd(
     bigBrotherAccountCreated: boolean,
     newQuestionNos: string,
     preparedPriceRef: any,
-    nativeCoinSymbol: string
+    nativeCoinSymbol: string,
+    privateInfo: PrivateInfoType,
+    newPrivateInfo: PrivateInfoType
 ) {
     let eFee = await estimateChgPasswdFee(
         bigBrotherOwnerId,
@@ -844,41 +877,57 @@ async function executeChgPasswd(
         bigBrotherAccountCreated,
         newQuestionNos,
         preparedPriceRef,
-        nativeCoinSymbol
+        nativeCoinSymbol,
+        privateInfo,
+        newPrivateInfo
     );
     console.log("user realtime fee, when changing Passwd:", eFee);
     if (eFee.feeWei == undefined || eFee.feeWei == 0) {
         throw Error("estimateChgPasswdFee realtime fee ERROR.");
     }
 
-    let argumentsHash = encodeAbiParameters(
-        [
-            { name: "funcId", type: "uint256" },
-            { name: "newPasswdAddr", type: "address" },
-            { name: "newQuestionNos", type: "bytes32" },
-            { name: "estimatedFee", type: "uint256" },
-        ],
-        [BigInt(2), newPasswdAddr, keccak256(newQuestionNos), eFee.feeWei]
-    );
+    let sign: {
+        signature: string;
+        eoa: any;
+        nonce: string;
+    } = { signature: "", eoa: "", nonce: "" };
 
-    console.log("encodeAbiParameters2222ccc:", argumentsHash);
-    argumentsHash = keccak256(argumentsHash);
-    console.log("encodeAbiParameters3333ddd:", argumentsHash);
-    let chainId = chainObj.id;
+    let argumentsHash;
 
-    if (!bigBrotherAccountCreated) {
-        alert("No account is currently created in email. not supported2.");
-        return;
+    if (libsolana.isSolana(chainObj.chainCode)) {
+        console.log("solana useless!2");
+        argumentsHash = "0x0";
+        sign.signature = "solana useless!signature.22.";
+    } else {
+        argumentsHash = encodeAbiParameters(
+            [
+                { name: "funcId", type: "uint256" },
+                { name: "newPasswdAddr", type: "address" },
+                { name: "newQuestionNos", type: "bytes32" },
+                { name: "estimatedFee", type: "uint256" },
+            ],
+            [BigInt(2), newPasswdAddr, keccak256(newQuestionNos), eFee.feeWei]
+        );
+
+        console.log("encodeAbiParameters2222ccc:", argumentsHash);
+        argumentsHash = keccak256(argumentsHash);
+        console.log("encodeAbiParameters3333ddd:", argumentsHash);
+        let chainId = chainObj.id;
+
+        if (!bigBrotherAccountCreated) {
+            alert("No account is currently created in email. not supported2.");
+            return;
+        }
+        let withZeroNonce = !bigBrotherAccountCreated;
+        sign = await signAuth(
+            passwdAccount,
+            chainId,
+            bigBrotherAccountAddr,
+            chainObj,
+            argumentsHash, // "" //
+            withZeroNonce
+        );
     }
-    let withZeroNonce = !bigBrotherAccountCreated;
-    const sign = await signAuth(
-        passwdAccount,
-        chainId,
-        bigBrotherAccountAddr,
-        chainObj,
-        argumentsHash, // "" //
-        withZeroNonce
-    );
 
     let detectRes: {
         realEstimatedFee: bigint;
@@ -897,7 +946,7 @@ async function executeChgPasswd(
             bigBrotherOwnerId,
             bigBrotherAccountAddr
         );
-        detectRes = await changePasswdAddr(
+        detectRes = await funNewTrans.changePasswdAddr(
             chainObj.chainCode,
             bigBrotherOwnerId,
             bigBrotherAccountAddr,
@@ -908,7 +957,9 @@ async function executeChgPasswd(
             onlyQueryFee,
             eFee.feeWei,
             preparedPriceRef.current.preparedMaxFeePerGas,
-            preparedPriceRef.current.preparedGasPrice
+            preparedPriceRef.current.preparedGasPrice,
+            privateInfo,
+            newPrivateInfo
         );
     } else {
         console.log(
@@ -928,7 +979,7 @@ async function executeChgPasswd(
     return detectRes.tx;
 }
 
-async function estimateTransFee(
+async function estimateTransFee_del(
     myOwnerId: string,
     myContractAccount: string,
     passwdAccount: any,
@@ -968,36 +1019,49 @@ async function estimateTransFee(
         msg: string;
     } = {};
     for (let k = 0; k < 15; k++) {
-        let argumentsHash = encodeAbiParameters(
-            [
-                { name: "funcId", type: "uint256" },
-                { name: "to", type: "address" },
-                { name: "amount", type: "uint256" },
-                { name: "data", type: "bytes" },
-                { name: "estimatedFee", type: "uint256" },
-            ],
-            [
-                BigInt(3),
-                receiverAddr,
-                receiverAmt,
-                receiverData,
-                myDetectEstimatedFee,
-            ]
-        );
-        console.log("encodeAbiParameters2222:", argumentsHash);
-        argumentsHash = keccak256(argumentsHash);
-        console.log("encodeAbiParameters3333:", argumentsHash);
-        let chainId = chainObj.id;
-        let withZeroNonce = !myAccountCreated;
-        const sign = await signAuth(
-            passwdAccount,
-            chainId,
-            myContractAccount,
-            chainObj,
-            argumentsHash, // "0xE249dfD432B37872C40c0511cC5A3aE13906F77A0511cC5A3aE13906F77AAA11" //
-            withZeroNonce
-        );
+        let sign: {
+            signature: string;
+            eoa: any;
+            nonce: string;
+        } = { signature: "", eoa: "", nonce: "" };
 
+        let argumentsHash;
+
+        if (libsolana.isSolana(chainObj.chainCode)) {
+            console.log("solana useless!3");
+            argumentsHash = "0x0";
+            sign.signature = "solana useless!signature.33.";
+        } else {
+            argumentsHash = encodeAbiParameters(
+                [
+                    { name: "funcId", type: "uint256" },
+                    { name: "to", type: "address" },
+                    { name: "amount", type: "uint256" },
+                    { name: "data", type: "bytes" },
+                    { name: "estimatedFee", type: "uint256" },
+                ],
+                [
+                    BigInt(3),
+                    receiverAddr,
+                    receiverAmt,
+                    receiverData,
+                    myDetectEstimatedFee,
+                ]
+            );
+            console.log("encodeAbiParameters2222:", argumentsHash);
+            argumentsHash = keccak256(argumentsHash);
+            console.log("encodeAbiParameters3333:", argumentsHash);
+            let chainId = chainObj.id;
+            let withZeroNonce = !myAccountCreated;
+            sign = await signAuth(
+                passwdAccount,
+                chainId,
+                myContractAccount,
+                chainObj,
+                argumentsHash, // "0xE249dfD432B37872C40c0511cC5A3aE13906F77A0511cC5A3aE13906F77AAA11" //
+                withZeroNonce
+            );
+        }
         const onlyQueryFee = true;
 
         if (myAccountCreated) {
@@ -1006,7 +1070,7 @@ async function estimateTransFee(
                 myOwnerId,
                 myContractAccount
             );
-            detectRes = await createTransaction(
+            detectRes = await funNewTrans.createTransaction(
                 chainCode,
                 myOwnerId,
                 myContractAccount,
@@ -1028,7 +1092,7 @@ async function estimateTransFee(
                 myOwnerId,
                 myContractAccount
             );
-            detectRes = await newAccountAndTransferETH(
+            detectRes = await funNewTrans.newAccountAndTransferETH(
                 chainCode,
                 myOwnerId,
                 passwdAccount.address,
@@ -1078,7 +1142,7 @@ async function estimateTransFee(
     return { ...detectRes, feeDisplay, feeWei: myDetectEstimatedFee };
 }
 
-async function executeTransaction(
+async function executeTransaction_del(
     myOwnerId: string,
     myContractAccount: string,
     passwdAccount: any,
@@ -1120,29 +1184,43 @@ async function executeTransaction(
     }
     const receiverAmt = parseEther(receiverAmountETH);
 
-    let argumentsHash = encodeAbiParameters(
-        [
-            { name: "funcId", type: "uint256" },
-            { name: "to", type: "address" },
-            { name: "amount", type: "uint256" },
-            { name: "data", type: "bytes" },
-            { name: "estimatedFee", type: "uint256" },
-        ],
-        [BigInt(3), receiverAddr, receiverAmt, receiverData, eFee.feeWei]
-    );
-    console.log("encodeAbiParameters2222aaa:", argumentsHash);
-    argumentsHash = keccak256(argumentsHash);
-    console.log("encodeAbiParameters3333bbb:", argumentsHash);
-    let chainId = chainObj.id;
-    let withZeroNonce = !myAccountCreated;
-    const sign = await signAuth(
-        passwdAccount,
-        chainId,
-        myContractAccount,
-        chainObj,
-        argumentsHash, // "0xE249dfD432B37872C40c0511cC5A3aE13906F77A0511cC5A3aE13906F77AAA11" //
-        withZeroNonce
-    );
+    let sign: {
+        signature: string;
+        eoa: any;
+        nonce: string;
+    } = { signature: "", eoa: "", nonce: "" };
+
+    let argumentsHash;
+
+    if (libsolana.isSolana(chainObj.chainCode)) {
+        console.log("solana useless!1");
+        argumentsHash = "0x0";
+        sign.signature = "solana useless!signature.11.";
+    } else {
+        argumentsHash = encodeAbiParameters(
+            [
+                { name: "funcId", type: "uint256" },
+                { name: "to", type: "address" },
+                { name: "amount", type: "uint256" },
+                { name: "data", type: "bytes" },
+                { name: "estimatedFee", type: "uint256" },
+            ],
+            [BigInt(3), receiverAddr, receiverAmt, receiverData, eFee.feeWei]
+        );
+        console.log("encodeAbiParameters2222aaa:", argumentsHash);
+        argumentsHash = keccak256(argumentsHash);
+        console.log("encodeAbiParameters3333bbb:", argumentsHash);
+        let chainId = chainObj.id;
+        let withZeroNonce = !myAccountCreated;
+        sign = await signAuth(
+            passwdAccount,
+            chainId,
+            myContractAccount,
+            chainObj,
+            argumentsHash, // "0xE249dfD432B37872C40c0511cC5A3aE13906F77A0511cC5A3aE13906F77AAA11" //
+            withZeroNonce
+        );
+    }
 
     let detectRes: {
         realEstimatedFee: bigint;
@@ -1161,7 +1239,7 @@ async function executeTransaction(
             myOwnerId,
             myContractAccount
         );
-        detectRes = await createTransaction(
+        detectRes = await funNewTrans.createTransaction(
             chainCode,
             myOwnerId,
             myContractAccount,
@@ -1181,7 +1259,7 @@ async function executeTransaction(
             myOwnerId,
             myContractAccount
         );
-        detectRes = await newAccountAndTransferETH(
+        detectRes = await funNewTrans.newAccountAndTransferETH(
             myOwnerId,
             passwdAccount.address,
             questionNos,
