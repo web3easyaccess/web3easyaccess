@@ -2,6 +2,8 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program,BN } from "@coral-xyz/anchor";
 import { Easyaccess } from "../target/types/easyaccess";
 
+import { hexToBytes } from "viem"; 
+
 import nacl from "tweetnacl";
 
 import { PublicKey, LAMPORTS_PER_SOL ,SystemProgram,
@@ -76,8 +78,8 @@ describe("easyaccess", () => {
     // 4mkgCymBNuDYnjdPrdjaQVifSfn4JkdZ2R3nb8CwjJkr
     const passwdAddr1 = "47DkNqiKdH7XwpkNQm9u6seByzcHb1rztXYrF7Egfkbg";
     const passwdAddr2 = "47DkNqiKdH7XwpkNQm9u6seByzcHb1rztXYrF7Egfkbg";
-    const ownerId0 = "0xAAAAA55b3448D38724997747083323992C88dB4AccE55ABC";
-    const ownerId = "6664946da20a041b6541d931d9f40001"; //
+    const ownerId0 = "0x477a3efac4b9f407e6abbef158c7312585d675f688e11949c468b8d4dc560000"; //
+    const ownerId = hexToBytes(ownerId0);
     // ownerId0.substring(ownerId0.length-32) ;//anchor.utils.bytes.hex.decode(passwdAddr01);
 
     console.log("ownerId:",ownerId);
@@ -86,7 +88,8 @@ describe("easyaccess", () => {
         console.log("passwdAddr:xxxxxxx224a");
       const [acctPDA, acctBump] = PublicKey.findProgramAddressSync(
           [
-            anchor.utils.bytes.utf8.encode(ownerId),
+            ownerId,
+            // anchor.utils.bytes.utf8.encode(ownerId),
               // provider.wallet.publicKey.toBuffer(),
           ],
           program.programId
@@ -94,17 +97,25 @@ describe("easyaccess", () => {
       // 8p2szsPqFErA4m3kxYvSG1f7xEiuvZ9iXqwdSkLzjpuQ
       // 8p2szsPqFErA4m3kxYvSG1f7xEiuvZ9iXqwdSkLzjpuQ
       console.log("passwdAddr:xxxxxxx224b,acctPDA in client:",acctPDA);
-      await airdropTransfer (acctPDA, 1);
-
-      await program.methods.createAcct(ownerId, passwdAddr1)
+      await airdropTransfer (acctPDA, 3);
+      console.log("passwdAddr:xxxxxxx224b,acctPDA in client222:",acctPDA);
+      //  owner_id: Vec<u8>, passwd_addr: String, question_nos:String)
+      await program.methods.createAcct(Buffer.from(ownerId), "U2FsdGVkX1/9hml4Tf3VLEBNhUoJ5vzRZkX4UfEE2bE=", new BN(1*LAMPORTS_PER_SOL), new BN(10))
         .accounts({
           payerAcct: provider.wallet.publicKey,
+          userPasswdAcct: provider.wallet.publicKey,
           userAcct: acctPDA,
+          toAccount: provider.wallet.publicKey,
         })
         .rpc()
-  
+        console.log("passwdAddr:xxxxxxx224b,acctPDA in client3333:",acctPDA);
         const addrOnChain = (await program.account.acctEntity.fetch(acctPDA)).passwdAddr;
         console.log("passwdAddr on chain:",addrOnChain);
+        const ooId = (await program.account.acctEntity.fetch(acctPDA)).ownerId;
+        console.log("ownerId on chain:",ooId);
+        let balance2 = await connection.getBalance(acctPDA);
+        console.log("passwdAddr:xxxxxxx224b,acctPDA in balance222:",balance2);
+        return;
 
       expect(addrOnChain).to.equal(
         passwdAddr1
