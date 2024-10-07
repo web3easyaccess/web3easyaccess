@@ -74,12 +74,6 @@ import {
 } from "../../lib/chainQuery";
 import { getInputValueById, setInputValueById } from "../../lib/elementById";
 
-import {
-    newAccountAndTransferETH,
-    createTransaction,
-    changePasswdAddr,
-} from "../../serverside/blockchain/chainWrite";
-
 import { PrivateInfo as PrivateInfo4Chg } from "./privateinfo4chg";
 
 import { getChainObj } from "../../lib/myChain";
@@ -161,6 +155,9 @@ export default function SendChgPrivateInfo({
     };
 
     const [privateinfoHidden, setPrivateinfoHidden] = useState(false);
+    const updatePrivateinfoHidden = (hidden: boolean) => {
+        setPrivateinfoHidden(hidden);
+    };
 
     const [buttonText, setButtonText] = useState("Send ETH");
 
@@ -413,6 +410,7 @@ export default function SendChgPrivateInfo({
                     oldPriInfoRef={oldPriInfoRef}
                     updateFillInOk={updateFillInOk}
                     privateinfoHidden={privateinfoHidden}
+                    updatePrivateinfoHidden={updatePrivateinfoHidden}
                 ></PrivateInfo4Chg>
             </div>
             <div
@@ -1092,7 +1090,7 @@ async function estimateTransFee_del(
                 myOwnerId,
                 myContractAccount
             );
-            detectRes = await funNewTrans.newAccountAndTransferETH(
+            detectRes = await funNewTrans.newAccountAndTransfer(
                 chainCode,
                 myOwnerId,
                 passwdAccount.address,
@@ -1259,7 +1257,7 @@ async function executeTransaction_del(
             myOwnerId,
             myContractAccount
         );
-        detectRes = await funNewTrans.newAccountAndTransferETH(
+        detectRes = await funNewTrans.newAccountAndTransfer(
             myOwnerId,
             passwdAccount.address,
             questionNos,

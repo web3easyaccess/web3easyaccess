@@ -264,7 +264,7 @@ export const getChainObj = (
     } else if (chainCode == ChainCode.NEOX_TEST_CHAIN) {
         rtn = neoxTestnet;
     } else if (chainCode == ChainCode.SOLANA_TEST_CHAIN) {
-        rtn = solanaLocalnet;
+        rtn = solanaDevnet; // solanaLocalnet;
     } else {
         console.warn("not supprted:" + chainCode);
     }

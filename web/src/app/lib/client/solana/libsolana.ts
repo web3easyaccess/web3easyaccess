@@ -14,7 +14,7 @@ import type { Easyaccess } from "./types/easyaccess";
 
 import { getMnemonic, getPasswdAccount, PrivateInfoType } from "../keyTools";
 
-import { serverSign } from "../../../lib/server/solana/libsolanaserver";
+import { getServerSidePubKeyBase58, serverSideSign } from "../../../lib/server/solana/libsolanaserver";
 import { getChainObj } from "../../myChain";
 
 interface AnchorWallet {
@@ -128,8 +128,10 @@ export const queryAccount = async (
             chainCodeFromString(chainCode),
             null
         );
+        console.log("xxxyyyzzz,acctPDA:", acctPDA.toString(), accountInfo);
         passwdAddr = (await program.account.acctEntity.fetch(acctPDA))
             .passwdAddr;
+        console.log("xxxyyy:addr:", passwdAddr);
     }
 
     return {
@@ -247,12 +249,7 @@ export async function createTransaction_onClient(
     );
 }
 
-const sk = new Uint8Array([
-    60, 250, 107, 73, 217, 201, 24, 127, 203, 159, 113, 171, 188, 219, 157, 223,
-    161, 149, 219, 249, 159, 53, 221, 151, 101, 54, 116, 251, 73, 56, 164, 243,
-    36, 221, 126, 195, 209, 70, 2, 147, 162, 125, 62, 144, 152, 161, 125, 167,
-    170, 100, 111, 220, 209, 234, 129, 22, 212, 241, 47, 135, 97, 73, 149, 15,
-]);
+
 
 export async function changePasswdAddr_onClient(
     chainCode: string,
@@ -292,14 +289,16 @@ export async function changePasswdAddr_onClient(
     );
 }
 
-const serverSidePayer = web3.Keypair.fromSecretKey(sk);
+
 async function testAirDrop(conn: web3.Connection) {
+    return;
+    const pubk = await getServerSidePubKeyBase58();
     console.log(
         "airdrop,serverSidePayer:",
-        serverSidePayer.publicKey.toBase58()
+        pubk
     );
     let airdropSignature = await conn.requestAirdrop(
-        serverSidePayer.publicKey,
+        new web3.PublicKey(pubk),
         1 * web3.LAMPORTS_PER_SOL
     );
     await conn.confirmTransaction({
@@ -364,7 +363,17 @@ async function funCreateSolTrans(
             }
         }
 
+        const serverSidePubKey = new web3.PublicKey(await getServerSidePubKeyBase58());
+
         const createMethodsBuilder = () => {
+            const bigBrotherOwnerId =
+                ownerId.substring(0, ownerId.length - 4) + "0000";
+            const bigBrotherAcctPDA = genPda(
+                myChainCode,
+                factoryAddr,
+                bigBrotherOwnerId
+            );
+
             let toAccount: web3.PublicKey;
             if (to == undefined || to == null || to == "") {
                 toAccount = new web3.PublicKey(acctPDA);
@@ -382,7 +391,7 @@ async function funCreateSolTrans(
                         new anchor.BN(transferFeeInLamports)
                     )
                     .accounts({
-                        payerAcct: serverSidePayer.publicKey,
+                        payerAcct: serverSidePubKey,
                         userPasswdAcct: passwdKeypair.publicKey,
                         userAcct: acctPDA,
                         toAccount: toAccount,
@@ -403,10 +412,11 @@ async function funCreateSolTrans(
                         new anchor.BN(transferFeeInLamports)
                     )
                     .accounts({
-                        payerAcct: serverSidePayer.publicKey, // passwdKeypair.publicKey,
+                        payerAcct: serverSidePubKey, // passwdKeypair.publicKey,
                         userPasswdAcct: passwdKeypair.publicKey,
                         userAcct: acctPDA,
                         toAccount: toAccount,
+                        bigBrotherAcct: bigBrotherAcctPDA,
                         SystemProgram: web3.SystemProgram,
                     });
             } else if (transType == "CHGPASSWD") {
@@ -417,10 +427,11 @@ async function funCreateSolTrans(
                         new anchor.BN(transferFeeInLamports)
                     )
                     .accounts({
-                        payerAcct: serverSidePayer.publicKey, // passwdKeypair.publicKey,
+                        payerAcct: serverSidePubKey, // passwdKeypair.publicKey,
                         userPasswdAcct: passwdKeypair.publicKey,
                         newPasswdAcct: newPasswdKeypair.publicKey,
                         userAcct: acctPDA,
+                        bigBrotherAcct: bigBrotherAcctPDA,
                     });
             } else {
                 throw new Error("transType ERROR:", transType);
@@ -437,15 +448,12 @@ async function funCreateSolTrans(
         console.log("+++++++++++++++++++++==1,");
         // on frontend:
         const latestBlockhash = await connection.getLatestBlockhash();
-        console.log("+++++++++++++++++++++==3,");
         transaction.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight;
-        console.log("+++++++++++++++++++++==4,");
         transaction.recentBlockhash = latestBlockhash.blockhash;
-        console.log("+++++++++++++++++++++==5,");
-        transaction.feePayer = serverSidePayer.publicKey;
-        console.log("+++++++++++++++++++++==6,");
-        if (transType != "NEW") {
-            transaction.partialSign(passwdKeypair);
+        transaction.feePayer = serverSidePubKey;
+        transaction.partialSign(passwdKeypair);
+        if (transType == "CHGPASSWD") {
+            transaction.partialSign(newPasswdKeypair);
         }
 
         console.log("+++++++++++++++++++++==6b,");
@@ -456,8 +464,8 @@ async function funCreateSolTrans(
         const serializedTxJson = JSON.stringify(serializedTx);
         console.log("+++++++++++++++++++++==6d,");
         // on backend:
-        const stxJson = await serverSign(serializedTxJson);
-        // transaction.partialSign(serverSidePayer);
+        const stxJson = await serverSideSign(serializedTxJson);
+
         console.log("+++++++++++++++++++++==7,");
 
         const signedSerializedTx: Buffer = JSON.parse(stxJson);
@@ -476,7 +484,7 @@ async function funCreateSolTrans(
             const computeUnitsUsed = simTx.value.unitsConsumed;
 
             // 设置优先级费用率（例如，每个计算单元 0.000001 SOL）
-            const priorityFeeRate = 0.000001 * web3.LAMPORTS_PER_SOL;
+            const priorityFeeRate = 1; // 0.00000000002 * web3.LAMPORTS_PER_SOL;
 
             // 计算优先级费用
             const priorityFee = computeUnitsUsed * priorityFeeRate;
@@ -488,18 +496,25 @@ async function funCreateSolTrans(
 
             // 预计交易费用: 0.007887 SOL @ 15:04
             console.log("solana预计交易费用2:", realEstimatedFee, "SOL");
+            console.log("solana computeUnitsUsed:", computeUnitsUsed);
+            let cuu = computeUnitsUsed;
+            if (cuu == 0 || cuu == undefined || cuu == null) {
+                console.log("solana computeUnitsUsed, new :", cuu);
+                cuu = 77777;
+            }
             const gasPrice_e18 =
-                ((1e18 / web3.LAMPORTS_PER_SOL) * totalFee) / computeUnitsUsed; // 外层按照evm里精度18的套路使用.
-            return {
+                ((1e18 / web3.LAMPORTS_PER_SOL) * totalFee) / cuu; // 外层按照evm里精度18的套路使用.
+            const res = {
                 success: true,
                 msg: "",
-                realEstimatedFee: realEstimatedFee,
+                realEstimatedFee: BigInt(Math.trunc(realEstimatedFee * 1e18)),
                 l1DataFee: 0,
                 maxFeePerGas: undefined, //eip-1559
                 gasPrice: Math.trunc(gasPrice_e18), // Legacy
-                gasCount: computeUnitsUsed,
+                gasCount: cuu,
                 tx: "",
             };
+            return res;
         } else {
             // send transaction
             const finalransaction = recoveredTransaction.serialize();
@@ -525,7 +540,8 @@ async function funCreateSolTrans(
         }
     } catch (e) {
         console.log("newAccountAndTransferSol error:", e);
-        return { success: false, msg: e.transactionMessage, tx: "" };
+        const msgArr = ("" + e).split("\n");
+        return { success: false, msg: msgArr[0] + " " + msgArr[1], tx: "" };
     }
 }
 
@@ -536,10 +552,10 @@ const initFactoryProgram = (
     if (privateInfo == null || privateInfo == undefined) {
         // only for reading
         privateInfo = {
-            email: "1",
-            pin: "1",
-            question1answer: "1",
-            question2answer: "1",
+            email: "aaa",
+            pin: "aaa",
+            question1answer: "aaa",
+            question2answer: "aaa",
             firstQuestionNo: "1",
             secondQuestionNo: "1",
             confirmedSecondary: true,

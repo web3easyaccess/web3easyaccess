@@ -5,10 +5,9 @@ import { useFormState, useFormStatus } from "react-dom";
 import { Input } from "@nextui-org/input";
 import { Button } from "@nextui-org/button";
 import {
-    Accordion,
-    AccordionItem,
     Autocomplete,
     AutocompleteItem,
+    Switch,
     Textarea,
 } from "@nextui-org/react";
 import {
@@ -73,6 +72,7 @@ export function PrivateInfo({
     updateFillInOk,
     privateinfoHidden,
     accountAddrList,
+    updatePrivateinfoHidden,
 }: {
     userProp: {
         ref: MutableRefObject<UserProperty>;
@@ -89,6 +89,7 @@ export function PrivateInfo({
     updateFillInOk: any;
     privateinfoHidden: boolean;
     accountAddrList: string[];
+    updatePrivateinfoHidden: (hidden: boolean) => void;
 }) {
     const questions = pq.questions[1];
     const bigBrotherAccountCreated = () => {
@@ -490,8 +491,6 @@ export function PrivateInfo({
         }, 100);
     };
 
-    const prvateInfoTitle = userProp.state.email + "'s Private Infomation";
-
     return (
         <>
             <div style={{ display: "none" }}>
@@ -511,152 +510,111 @@ export function PrivateInfo({
 
             <Card
                 className="max-w-[800px]"
-                // style={
-                //     privateinfoHidden == false
-                //         ? { marginTop: "0px" }
-                //         : { marginTop: "0px", height: "1px" }
-                // }
+                style={
+                    privateinfoHidden == false
+                        ? { marginTop: "0px" }
+                        : { marginTop: "0px", height: "54px" }
+                }
             >
-                <Accordion defaultExpandedKeys={["1"]}>
-                    <AccordionItem
-                        key="1"
-                        aria-label={`{userProp.state.email}'s Private xx`}
-                        // subtitle={
-                        //     // <span>
-                        //     //     Press to expand <strong>key 2</strong>
-                        //     // </span>
-                        // }
-                        title={userProp.state.email}
-                        subtitle={"Private Infomation"}
+                <CardHeader className="flex gap-3">
+                    <p style={{ fontWeight: "bold", fontSize: "20px" }}>
+                        {userProp.state.email}
+                    </p>
+                    's
+                    <p>Private information</p>
+                    <Switch
+                        isSelected={privateinfoHidden}
+                        onValueChange={updatePrivateinfoHidden}
+                        style={{ marginLeft: "150px" }}
+                        defaultSelected={privateinfoHidden}
+                        size="sm"
+                        color="warning"
                     >
-                        {/* <CardHeader // className="flex gap-3"
-                        >
-                            <p style={{ fontWeight: "bold", fontSize: "20px" }}>
-                                {userProp.state.email}
-                            </p>
-                            's
-                            <p>Private information</p>
-                        </CardHeader> */}
-                        <Divider />
-                        <CardBody>
+                        Hide
+                    </Switch>
+                </CardHeader>
+                <Divider />
+                <CardBody>
+                    <div>
+                        {forModification() ? (
+                            <Passwd
+                                id="id_private_pin_old"
+                                label="old PIN code"
+                                hint="input private old PIN code"
+                                onMyBlur={handlePinBlur}
+                            ></Passwd>
+                        ) : null}
+                        {resetFlagForFirstConfirm == 1 ? (
                             <div>
-                                {forModification() ? (
+                                <div style={{ display: "flex" }}>
+                                    <Card
+                                        style={{
+                                            width: "300px",
+                                            marginTop: "5px",
+                                            marginBottom: "5px",
+                                            fontWeight: "bold",
+                                            backgroundColor: "LightBlue",
+                                        }}
+                                    >
+                                        <CardBody>
+                                            <p>PIN Code:</p>
+                                        </CardBody>
+                                    </Card>
+                                    <p
+                                        style={{
+                                            width: "340px",
+                                            marginTop: "5px",
+                                            marginBottom: "5px",
+                                            marginLeft: "15px",
+                                            color: "red",
+                                            // backgroundColor: "#FAD7A0",
+                                        }}
+                                    >
+                                        {pinErrorMsg}
+                                    </p>
+                                </div>
+
+                                <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
                                     <Passwd
-                                        id="id_private_pin_old"
-                                        label="old PIN code"
-                                        hint="input private old PIN code"
+                                        id="id_private_pin_1"
+                                        label="pin code"
+                                        hint="input private pin code"
                                         onMyBlur={handlePinBlur}
                                     ></Passwd>
-                                ) : null}
-                                {resetFlagForFirstConfirm == 1 ? (
-                                    <div>
-                                        <div style={{ display: "flex" }}>
-                                            <Card
-                                                style={{
-                                                    width: "300px",
-                                                    marginTop: "5px",
-                                                    marginBottom: "5px",
-                                                    fontWeight: "bold",
-                                                    backgroundColor:
-                                                        "LightBlue",
-                                                }}
-                                            >
-                                                <CardBody>
-                                                    <p>PIN Code:</p>
-                                                </CardBody>
-                                            </Card>
-                                            <p
-                                                style={{
-                                                    width: "340px",
-                                                    marginTop: "5px",
-                                                    marginBottom: "5px",
-                                                    marginLeft: "15px",
-                                                    color: "red",
-                                                    // backgroundColor: "#FAD7A0",
-                                                }}
-                                            >
-                                                {pinErrorMsg}
-                                            </p>
-                                        </div>
-
-                                        <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
-                                            <Passwd
-                                                id="id_private_pin_1"
-                                                label="pin code"
-                                                hint="input private pin code"
-                                                onMyBlur={handlePinBlur}
-                                            ></Passwd>
-                                            {!bigBrotherAccountCreated() ? (
-                                                <Passwd
-                                                    id="id_private_pin_2"
-                                                    label="pin code"
-                                                    hint="input private pin code again"
-                                                    onMyBlur={handlePinBlur}
-                                                ></Passwd>
-                                            ) : null}
-                                        </div>
-                                        <Divider
-                                            style={{
-                                                marginTop: "10px",
-                                                color: "black",
-                                                height: "5px",
-                                            }}
-                                        ></Divider>
-                                        <Card
-                                            style={{
-                                                width: "300px",
-                                                marginTop: "5px",
-                                                marginBottom: "5px",
-                                                fontWeight: "bold",
-                                                backgroundColor: "LightBlue",
-                                            }}
-                                        >
-                                            <CardBody>
-                                                <p>First Private Question:</p>
-                                            </CardBody>
-                                        </Card>
-                                        {forModification() ? (
-                                            <div
-                                                style={{ marginBottom: "10px" }}
-                                            >
-                                                <Autocomplete
-                                                    label="old first question"
-                                                    className="max-w-2xl"
-                                                    selectedKey={
-                                                        myFirstQuestionNo
-                                                    }
-                                                    defaultSelectedKey={
-                                                        myFirstQuestionNo
-                                                    }
-                                                >
-                                                    {questions.map((item) => (
-                                                        <AutocompleteItem
-                                                            key={item.idx}
-                                                            value={
-                                                                item.question
-                                                            }
-                                                        >
-                                                            {item.question}
-                                                        </AutocompleteItem>
-                                                    ))}
-                                                </Autocomplete>
-
-                                                <Passwd
-                                                    id="id_private_question1_answer_old"
-                                                    label="old first question's answer"
-                                                    hint="input old first question's answer"
-                                                    onMyBlur={
-                                                        handleQuestion1AnswerBlur
-                                                    }
-                                                ></Passwd>
-                                            </div>
-                                        ) : null}
+                                    {!bigBrotherAccountCreated() ? (
+                                        <Passwd
+                                            id="id_private_pin_2"
+                                            label="pin code"
+                                            hint="input private pin code again"
+                                            onMyBlur={handlePinBlur}
+                                        ></Passwd>
+                                    ) : null}
+                                </div>
+                                <Divider
+                                    style={{
+                                        marginTop: "10px",
+                                        color: "black",
+                                        height: "5px",
+                                    }}
+                                ></Divider>
+                                <Card
+                                    style={{
+                                        width: "300px",
+                                        marginTop: "5px",
+                                        marginBottom: "5px",
+                                        fontWeight: "bold",
+                                        backgroundColor: "LightBlue",
+                                    }}
+                                >
+                                    <CardBody>
+                                        <p>First Private Question:</p>
+                                    </CardBody>
+                                </Card>
+                                {forModification() ? (
+                                    <div style={{ marginBottom: "10px" }}>
                                         <Autocomplete
-                                            label="Choose the first question"
+                                            label="old first question"
                                             className="max-w-2xl"
-                                            onSelectionChange={
-                                                onSelectionChange1
-                                            }
                                             selectedKey={myFirstQuestionNo}
                                             defaultSelectedKey={
                                                 myFirstQuestionNo
@@ -671,87 +629,72 @@ export function PrivateInfo({
                                                 </AutocompleteItem>
                                             ))}
                                         </Autocomplete>
-                                        <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
-                                            <Passwd
-                                                id="id_private_question1_answer_1"
-                                                label="first question's answer"
-                                                hint="input first question's answer"
-                                                onMyBlur={
-                                                    handleQuestion1AnswerBlur
-                                                }
-                                            ></Passwd>
-                                            {!bigBrotherAccountCreated() ? (
-                                                <Passwd
-                                                    id="id_private_question1_answer_2"
-                                                    label="first question's answer"
-                                                    hint="input first question's answer again"
-                                                    onMyBlur={
-                                                        handleQuestion1AnswerBlur
-                                                    }
-                                                ></Passwd>
-                                            ) : null}
-                                        </div>
-                                        <Divider
-                                            style={{
-                                                marginTop: "10px",
-                                                color: "black",
-                                                height: "5px",
-                                            }}
-                                        ></Divider>
-                                        <Card
-                                            style={{
-                                                width: "300px",
-                                                marginTop: "5px",
-                                                marginBottom: "5px",
-                                                fontWeight: "bold",
-                                                backgroundColor: "LightBlue",
-                                            }}
+
+                                        <Passwd
+                                            id="id_private_question1_answer_old"
+                                            label="old first question's answer"
+                                            hint="input old first question's answer"
+                                            onMyBlur={handleQuestion1AnswerBlur}
+                                        ></Passwd>
+                                    </div>
+                                ) : null}
+                                <Autocomplete
+                                    label="Choose the first question"
+                                    className="max-w-2xl"
+                                    onSelectionChange={onSelectionChange1}
+                                    selectedKey={myFirstQuestionNo}
+                                    defaultSelectedKey={myFirstQuestionNo}
+                                >
+                                    {questions.map((item) => (
+                                        <AutocompleteItem
+                                            key={item.idx}
+                                            value={item.question}
                                         >
-                                            <CardBody>
-                                                <p>Second Private Question:</p>
-                                            </CardBody>
-                                        </Card>
-                                        {forModification() ? (
-                                            <div
-                                                style={{ marginBottom: "10px" }}
-                                            >
-                                                <Autocomplete
-                                                    label="old second question"
-                                                    className="max-w-2xl"
-                                                    selectedKey={
-                                                        mySecondQuestionNo
-                                                    }
-                                                    defaultSelectedKey={
-                                                        mySecondQuestionNo
-                                                    }
-                                                >
-                                                    {questions.map((item) => (
-                                                        <AutocompleteItem
-                                                            key={item.idx}
-                                                            value={
-                                                                item.question
-                                                            }
-                                                        >
-                                                            {item.question}
-                                                        </AutocompleteItem>
-                                                    ))}
-                                                </Autocomplete>
-                                                <Passwd
-                                                    id="id_private_question2_answer_old"
-                                                    label="old second question's answer"
-                                                    hint="input old second question's answer"
-                                                    onMyBlur={
-                                                        handleQuestion2AnswerBlur
-                                                    }
-                                                ></Passwd>
-                                            </div>
-                                        ) : null}
+                                            {item.question}
+                                        </AutocompleteItem>
+                                    ))}
+                                </Autocomplete>
+                                <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
+                                    <Passwd
+                                        id="id_private_question1_answer_1"
+                                        label="first question's answer"
+                                        hint="input first question's answer"
+                                        onMyBlur={handleQuestion1AnswerBlur}
+                                    ></Passwd>
+                                    {!bigBrotherAccountCreated() ? (
+                                        <Passwd
+                                            id="id_private_question1_answer_2"
+                                            label="first question's answer"
+                                            hint="input first question's answer again"
+                                            onMyBlur={handleQuestion1AnswerBlur}
+                                        ></Passwd>
+                                    ) : null}
+                                </div>
+                                <Divider
+                                    style={{
+                                        marginTop: "10px",
+                                        color: "black",
+                                        height: "5px",
+                                    }}
+                                ></Divider>
+                                <Card
+                                    style={{
+                                        width: "300px",
+                                        marginTop: "5px",
+                                        marginBottom: "5px",
+                                        fontWeight: "bold",
+                                        backgroundColor: "LightBlue",
+                                    }}
+                                >
+                                    <CardBody>
+                                        <p>Second Private Question:</p>
+                                    </CardBody>
+                                </Card>
+                                {forModification() ? (
+                                    <div style={{ marginBottom: "10px" }}>
                                         <Autocomplete
-                                            label="Choose the second question"
+                                            label="old second question"
                                             className="max-w-2xl"
-                                            onSelectionChange={
-                                                onSelectionChange2
-                                            }
                                             selectedKey={mySecondQuestionNo}
                                             defaultSelectedKey={
                                                 mySecondQuestionNo
@@ -766,67 +709,80 @@ export function PrivateInfo({
                                                 </AutocompleteItem>
                                             ))}
                                         </Autocomplete>
-                                        <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
-                                            <Passwd
-                                                id="id_private_question2_answer_1"
-                                                label="second question's answer"
-                                                hint="input second question's answer"
-                                                onMyBlur={
-                                                    handleQuestion2AnswerBlur
-                                                }
-                                            ></Passwd>
-                                            {!bigBrotherAccountCreated() ? (
-                                                <Passwd
-                                                    id="id_private_question2_answer_2"
-                                                    label="second question's answer"
-                                                    hint="input second question's answer again"
-                                                    onMyBlur={
-                                                        handleQuestion2AnswerBlur
-                                                    }
-                                                ></Passwd>
-                                            ) : null}
-                                        </div>
-                                        <>
-                                            {/*todo need show multi chain when modifying....*/}
-                                            <MultiChainForModify />
-                                            <SubmitMessage
-                                                email={userProp.state.email}
-                                                verifyingContract={
-                                                    userProp.state
-                                                        .selectedAccountAddr
-                                                }
-                                                chainObj={chainObj}
-                                                bigBrotherAccountCreated={bigBrotherAccountCreated()}
-                                                resetAfterFirstConfirmed={
-                                                    resetAfterFirstConfirmed
-                                                }
-                                                currentPriInfoRef={
-                                                    currentPriInfoRef
-                                                }
-                                                updateFillInOk={updateFillInOk}
-                                                forModification={forModification()}
-                                                submitOpType={submitOpType}
-                                                updateSubmitOpType={
-                                                    updateSubmitOpType
-                                                }
-                                            />
-                                        </>
+                                        <Passwd
+                                            id="id_private_question2_answer_old"
+                                            label="old second question's answer"
+                                            hint="input old second question's answer"
+                                            onMyBlur={handleQuestion2AnswerBlur}
+                                        ></Passwd>
                                     </div>
-                                ) : (
-                                    <div></div>
-                                )}
-
-                                <Divider
-                                    style={{
-                                        marginTop: "10px",
-                                        color: "black",
-                                        height: "10px",
-                                    }}
-                                ></Divider>
+                                ) : null}
+                                <Autocomplete
+                                    label="Choose the second question"
+                                    className="max-w-2xl"
+                                    onSelectionChange={onSelectionChange2}
+                                    selectedKey={mySecondQuestionNo}
+                                    defaultSelectedKey={mySecondQuestionNo}
+                                >
+                                    {questions.map((item) => (
+                                        <AutocompleteItem
+                                            key={item.idx}
+                                            value={item.question}
+                                        >
+                                            {item.question}
+                                        </AutocompleteItem>
+                                    ))}
+                                </Autocomplete>
+                                <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
+                                    <Passwd
+                                        id="id_private_question2_answer_1"
+                                        label="second question's answer"
+                                        hint="input second question's answer"
+                                        onMyBlur={handleQuestion2AnswerBlur}
+                                    ></Passwd>
+                                    {!bigBrotherAccountCreated() ? (
+                                        <Passwd
+                                            id="id_private_question2_answer_2"
+                                            label="second question's answer"
+                                            hint="input second question's answer again"
+                                            onMyBlur={handleQuestion2AnswerBlur}
+                                        ></Passwd>
+                                    ) : null}
+                                </div>
+                                <>
+                                    {/*todo need show multi chain when modifying....*/}
+                                    <MultiChainForModify />
+                                    <SubmitMessage
+                                        email={userProp.state.email}
+                                        verifyingContract={
+                                            userProp.state.selectedAccountAddr
+                                        }
+                                        chainObj={chainObj}
+                                        bigBrotherAccountCreated={bigBrotherAccountCreated()}
+                                        resetAfterFirstConfirmed={
+                                            resetAfterFirstConfirmed
+                                        }
+                                        currentPriInfoRef={currentPriInfoRef}
+                                        updateFillInOk={updateFillInOk}
+                                        forModification={forModification()}
+                                        submitOpType={submitOpType}
+                                        updateSubmitOpType={updateSubmitOpType}
+                                    />
+                                </>
                             </div>
-                        </CardBody>
-                    </AccordionItem>
-                </Accordion>
+                        ) : (
+                            <div></div>
+                        )}
+
+                        <Divider
+                            style={{
+                                marginTop: "10px",
+                                color: "black",
+                                height: "10px",
+                            }}
+                        ></Divider>
+                    </div>
+                </CardBody>
             </Card>
         </>
     );

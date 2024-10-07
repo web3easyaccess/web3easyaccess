@@ -10,18 +10,26 @@ import { getPasswdAccount } from "@/app/lib/client/keyTools";
 
 import { PrivateInfoType } from "@/app/lib/client/keyTools";
 
-import { readFileSync } from "fs";
+import { bytesToHex, hexToBytes } from "viem";
+import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
-const sk = new Uint8Array([
-    60, 250, 107, 73, 217, 201, 24, 127, 203, 159, 113, 171, 188, 219, 157, 223,
-    161, 149, 219, 249, 159, 53, 221, 151, 101, 54, 116, 251, 73, 56, 164, 243,
-    36, 221, 126, 195, 209, 70, 2, 147, 162, 125, 62, 144, 152, 161, 125, 167,
-    170, 100, 111, 220, 209, 234, 129, 22, 212, 241, 47, 135, 97, 73, 149, 15,
-]);
+// const sk = new Uint8Array([
+//     60, 250, 107, 73, 217, 201, 24, 127, 203, 159, 113, 171, 188, 219, 157, 223,
+//     161, 149, 219, 249, 159, 53, 221, 151, 101, 54, 116, 251, 73, 56, 164, 243,
+//     36, 221, 126, 195, 209, 70, 2, 147, 162, 125, 62, 144, 152, 161, 125, 167,
+//     170, 100, 111, 220, 209, 234, 129, 22, 212, 241, 47, 135, 97, 73, 149, 15,
+// ]);
+const privateKeyBase58 = process.env.CHAIN_PRIVATE_KEY_SOLANA_TEST;
 
-const serverSidePayer = Keypair.fromSecretKey(sk);
+const serverSidePayer = Keypair.fromSecretKey(
+    bs58.decode(privateKeyBase58)
+);
 
-export async function serverSign(serializedTxJson: string) {
+export async function getServerSidePubKeyBase58() {
+    return serverSidePayer.publicKey.toBase58();
+}
+
+export async function serverSideSign(serializedTxJson: string) {
     console.log("serverSign.... shoud be log in server side.");
 
     const serializedTx: Buffer = JSON.parse(serializedTxJson);

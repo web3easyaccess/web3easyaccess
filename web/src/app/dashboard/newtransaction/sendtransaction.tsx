@@ -399,6 +399,9 @@ export default function SendTransaction({
     };
 
     const [privateinfoHidden, setPrivateinfoHidden] = useState(false);
+    const updatePrivateinfoHidden = (hidden: boolean) => {
+        setPrivateinfoHidden(hidden);
+    };
 
     const [buttonText, setButtonText] = useState("Send ETH");
 
@@ -1325,6 +1328,7 @@ export default function SendTransaction({
                     updateFillInOk={updateFillInOk}
                     privateinfoHidden={privateinfoHidden}
                     accountAddrList={accountAddrList}
+                    updatePrivateinfoHidden={updatePrivateinfoHidden}
                 ></PrivateInfo>
             </div>
             <div
@@ -1793,6 +1797,7 @@ async function estimateTransFee(
         if (Number(myDetectEstimatedFee) > Number(detectRes.realEstimatedFee)) {
             break;
         } else {
+            console.log("Infinity ... detectRes:", detectRes);
             myDetectEstimatedFee = BigInt(
                 Number(detectRes.realEstimatedFee) +
                     Number(
