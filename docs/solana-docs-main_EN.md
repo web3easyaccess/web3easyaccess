@@ -37,7 +37,7 @@ The system's primary processing logic consists of the following points:
 1. This system preserves the core attribute of blockchain technology: decentralization. This means that the system does not maintain a centralized database of users' private information. Consequently, if a user forgets their password, they will permanently lose access to their account. However, a future account guardianship feature will allow users to designate trusted individuals, such as friends or family, to regain control of the account.
 2. User email addresses cannot be used for password recovery.
 
-### What is the payment method for gas fees
+### What is the payment method for Transaction network fees
 
 -   The fee for each transaction is calculated automatically by the system and included as a parameter in the user contract. The fee is deducted from the user's account upon transaction execution.
 
