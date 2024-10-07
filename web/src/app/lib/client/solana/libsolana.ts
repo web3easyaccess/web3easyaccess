@@ -484,7 +484,7 @@ async function funCreateSolTrans(
             const computeUnitsUsed = simTx.value.unitsConsumed;
 
             // 设置优先级费用率（例如，每个计算单元 0.000001 SOL）
-            const priorityFeeRate = 1; // 0.00000000002 * web3.LAMPORTS_PER_SOL;
+            const priorityFeeRate = 0; // 0.00000000002 * web3.LAMPORTS_PER_SOL;
 
             // 计算优先级费用
             const priorityFee = computeUnitsUsed * priorityFeeRate;
