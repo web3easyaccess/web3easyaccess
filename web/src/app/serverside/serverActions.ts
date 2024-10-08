@@ -12,7 +12,6 @@ import { newAccount, newAccountAndTransferETH } from "./blockchain/chainWrite";
 
 import {
     generateRandomDigitInteger,
-    generateRandomString,
 } from "../lib/myRandom";
 
 import { queryEthBalance } from "../serverside/blockchain/queryAccountInfo";
@@ -81,6 +80,7 @@ export async function checkEmail(
             return JSON.stringify({ success: true, msg: "[existing]" });
         }
         //
+
         const sixNum = generateRandomDigitInteger().toString();
 
         await asyncSendMail(email, sixNum); // ignore tmp.

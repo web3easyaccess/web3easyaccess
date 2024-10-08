@@ -530,7 +530,7 @@ export function PrivateInfo({
                         size="sm"
                         color="warning"
                     >
-                        Hide
+                        Hidden
                     </Switch>
                 </CardHeader>
                 <Divider />

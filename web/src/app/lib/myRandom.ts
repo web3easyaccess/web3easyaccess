@@ -1,7 +1,7 @@
 export function generateRandomDigitInteger() {
-    const min = 10000000; // Minimum 6-digit integer
-    const max = 99999999; // Maximum 6-digit integer
-    const ll = 8;
+    const min = 100000; // Minimum 6-digit integer
+    const max = 999999; // Maximum 6-digit integer
+    const ll = 6;
 
     // Generate a random number between min and max
     const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
@@ -27,5 +27,6 @@ export function generateRandomString() {
     for (let i = 0; i < ll; i++) {
         n += t.charAt(Math.floor(Math.random() * a));
     }
+    console.log("generateRandomString,888?666?:", n);
     return n;
 }
