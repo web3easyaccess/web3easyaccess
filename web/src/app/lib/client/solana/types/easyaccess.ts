@@ -52,8 +52,7 @@ export type Easyaccess = {
           }
         },
         {
-          "name": "bigBrotherAcct",
-          "writable": true
+          "name": "bigBrotherAcct"
         }
       ],
       "args": [
@@ -175,8 +174,7 @@ export type Easyaccess = {
           "writable": true
         },
         {
-          "name": "bigBrotherAcct",
-          "writable": true
+          "name": "bigBrotherAcct"
         },
         {
           "name": "systemProgram",

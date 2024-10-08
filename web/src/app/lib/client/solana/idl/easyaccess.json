@@ -46,8 +46,7 @@
           }
         },
         {
-          "name": "big_brother_acct",
-          "writable": true
+          "name": "big_brother_acct"
         }
       ],
       "args": [
@@ -169,8 +168,7 @@
           "writable": true
         },
         {
-          "name": "big_brother_acct",
-          "writable": true
+          "name": "big_brother_acct"
         },
         {
           "name": "system_program",

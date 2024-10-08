@@ -110,26 +110,13 @@ pub mod easyaccess {
             panic!("passwd addr permit error"); 
         }
         
-        // todo : this overwrite is invalid, should fix in future....
+        // 
         user_acct.passwd_addr = ctx.accounts.new_passwd_acct.key().to_string();
         user_acct.question_nos = question_nos;
         
 
         let from_pubkey = user_acct.to_account_info();
         let to_pubkey2 = ctx.accounts.payer_acct.to_account_info();
-
-        // let mut account_data = &from_pubkey.try_borrow_mut_data()?[..];
-        // let mut acct: AcctEntity = AcctEntity::try_deserialize(&mut account_data)?;
-        // msg!("1,{}",acct.passwd_addr);
-        // acct.passwd_addr = ctx.accounts.new_passwd_acct.key().to_string();
-        // let mut w = vec![];
-        // acct.try_serialize(&mut w).unwrap();
-
-        // msg!("2,{}",acct.passwd_addr);
-        // // panic!("xxxx");
-        // from_pubkey.try_borrow_mut_data() = w.to_ascii_lowercase();
-
-
         
 
         // https://solanacookbook.com/references/programs.html#how-to-transfer-sol-in-a-program
@@ -256,7 +243,7 @@ pub struct ChangeAcctPasswd<'info> {
     #[account(mut, seeds = [&owner_id], bump = user_acct.bump)]
     pub user_acct: Account<'info, AcctEntity>,
 
-    #[account(mut, seeds = [&owner_id[..30],&[0,0]], bump)]
+    #[account(seeds = [&owner_id[..30],&[0,0]], bump)]
     pub big_brother_acct: Account<'info, AcctEntity>,
 }
 
@@ -276,10 +263,21 @@ pub struct TransferAcctLamports<'info> {
     #[account(mut)]
     pub to_account: AccountInfo<'info>,
 
-    #[account(mut, seeds = [&owner_id[..30],&[0,0]], bump)]
+    #[account(seeds = [&owner_id[..30],&[0,0]], bump)]
     pub big_brother_acct: Account<'info, AcctEntity>,
     
     pub system_program: Program<'info, System>,
 }
 
-// solana program extend BA3YWB1TPRqMcKjMRBugDqjcowNiZJb4FcPwjWfg9aCD 20000
+// extend:
+//      solana program extend BA3YWB1TPRqMcKjMRBugDqjcowNiZJb4FcPwjWfg9aCD 20000
+// 
+/*
+
+has error: Recover the intermediate account's ephemeral keypair file with
+`solana-keygen recover` and the following 12-word seed phrase:....
+do:
+    solana-keygen recover -o recover.json
+    solana program close recover.json
+    anchor deploy --provider.cluster devnet
+*/

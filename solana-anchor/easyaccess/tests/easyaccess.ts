@@ -40,7 +40,10 @@ const privk1 = new Uint8Array([
     133, 138, 19, 47, 222, 91, 147, 62, 43
 ]);
 
+// mTNZwZ27rbcov4LrKGcmvugvGhr3U2tGhVwGjGXznQK
 const passwdAcct0 = web3.Keypair.fromSecretKey(privk0);
+
+// AGrimcRE763rd22xYb5JiutsaFbfEPHaZh4MSEoSW2Zp
 const passwdAcct1 = web3.Keypair.fromSecretKey(privk1);
 console.log("passwdAcct0:", passwdAcct0.publicKey.toBase58());
 console.log("passwdAcct1:", passwdAcct1.publicKey.toBase58());
@@ -225,12 +228,18 @@ describe("easyaccess", () => {
 
 
 
-        let questionNos2 = "++++GVkX1/9hml4Tf3VLEBNhUoJ5vzRZkX4UfEE2bE=";
+        let questionNos2 = "+++++++++++++++++++++++UoJ5vzRZkX4UfEE2bE=";
         // change password.
         let passwd = (await program.account.acctEntity.fetch(acctPDA0)).passwdAddr;
         let qs = (await program.account.acctEntity.fetch(acctPDA0)).questionNos;
         console.log("passwd,before change:", passwd);
         console.log("passwd,before change2:", qs);
+        airdropTransfer(payer.publicKey, 1);
+        airdropTransfer(passwdAcct0.publicKey, 1);
+        airdropTransfer(passwdAcct1.publicKey, 1);
+        airdropTransfer(acctPDA0, 1);
+        await new Promise(r => setTimeout(r, 1800));
+
         await program.methods.changeAcctPasswdAddr(
             Buffer.from(ownerId0),
             questionNos2, new BN(10))
