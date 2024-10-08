@@ -247,97 +247,12 @@ describe("easyaccess", () => {
         balance0 = await connection.getBalance(acctPDA0);
         passwd = (await program.account.acctEntity.fetch(acctPDA0)).passwdAddr;
         qs = (await program.account.acctEntity.fetch(acctPDA0)).questionNos;
-        console.log("passwd,after  change:", passwd);
+        console.log("passwd,after  change:", passwd);  // here is line 250
         console.log("passwd,after change2:", qs, balance0);
 
         return;
 
-        const [acctPDA2, acctBump2] = PublicKey.findProgramAddressSync(
-            [
-                ownerId2,
-                // anchor.utils.bytes.utf8.encode(ownerId),
-                // payer.publicKey.toBuffer(),
-            ],
-            program.programId
-        );
-
-
-        return;
-
-        expect(addrOnChain).to.equal(
-            passwdAddr1
-        )
-
-        let passwdAddrSign: string = passwdAddr1;
-
-        await program.methods
-            .changeAcctPasswdAddr(ownerId, passwdAddr2)
-            .accounts({
-                payerAcct: payer.publicKey,
-                userPasswdAcct: payer.publicKey,
-                useracct: acctPDA,
-            })
-            .rpc()
-
-        const addrOnChain2 = (await program.account.acctEntity.fetch(acctPDA)).passwdAddr;
-        console.log("passwdAddr on chain2:", addrOnChain2);
-        //   expect(addrOnChain2).to.equal(
-        //       passwdAddr2  // 4mkgCymBNuDYnjdPrdjaQVifSfn4JkdZ2R3nb8CwjJkr
-        //   )
-
-        console.log("1sol=", LAMPORTS_PER_SOL);
-        await airdropTransfer(acctPDA, 2);
-
-        const toAccount = new PublicKey("47DkNqiKdH7XwpkNQm9u6seByzcHb1rztXYrF7Egfkbg");
-
-        let walletBalance = await connection.getBalance(payer.publicKey);
-        let pdaBalance = await connection.getBalance(acctPDA);
-        let toAccountBalance = await connection.getBalance(toAccount);
-
-        console.log(`before transfer, walletBalance=${walletBalance}, pdaBalance=${pdaBalance}, toAccountBalance=${toAccountBalance}`);
-
-        passwdAddrSign = passwdAddr2;
-        const lamports = new BN(2 * LAMPORTS_PER_SOL);
-        console.log("my lamports:", lamports, typeof lamports);
-
-        let mPayer = web3.Keypair.fromSecretKey(sk);
-
-
-
-        const signature = await program.methods.transferAcctLamports(ownerId, lamports)
-            .accounts({
-                walletAcct: payer.publicKey,
-                passwdAcct: payer.publicKey, // mPayer.publicKey,
-                fromAcct: acctPDA,
-                toAccount: toAccount,
-            })
-            .rpc();
-        console.log("transferAcctLamports, signature");
-        await connection.confirmTransaction(signature, { commitment: 'confirmed' });
-
-        await new Promise(r => setTimeout(r, 1000));
-
-        walletBalance = await connection.getBalance(payer.publicKey);
-        pdaBalance = await connection.getBalance(acctPDA);
-        toAccountBalance = await connection.getBalance(toAccount);
-
-        console.log(`after- transfer, walletBalance=${walletBalance}, pdaBalance=${pdaBalance}, toAccountBalance=${toAccountBalance}`);
-
-
-        const fromAcctOnChain = (await program.account.acctEntity.fetch(acctPDA)).ownerId;
-        console.log("fromAcctOnChain on chain3333:", fromAcctOnChain);
-        expect(ownerId).to.equal(
-            ownerId
-        )
     })
 
-
-
-
 });
-
-
-
-
-
 

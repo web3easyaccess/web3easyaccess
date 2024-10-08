@@ -1,0 +1,12 @@
+cp -r programs/  /home/zht/d_zht/github/web3easyaccess/20240928/web3easyaccess/solana-anchor/easyaccess/
+cp -r tests/  /home/zht/d_zht/github/web3easyaccess/20240928/web3easyaccess/solana-anchor/easyaccess/
+cp -r migrations/   /home/zht/d_zht/github/web3easyaccess/20240928/web3easyaccess/solana-anchor/easyaccess/
+cp *.toml /home/zht/d_zht/github/web3easyaccess/20240928/web3easyaccess/solana-anchor/easyaccess/
+cp *.txt /home/zht/d_zht/github/web3easyaccess/20240928/web3easyaccess/solana-anchor/easyaccess/
+cp *.json /home/zht/d_zht/github/web3easyaccess/20240928/web3easyaccess/solana-anchor/easyaccess/
+
+
+cp target/idl/easyaccess.json /home/zht/d_zht/github/web3easyaccess/20240928/web3easyaccess/web/src/app/lib/client/solana/idl/
+cp target/types/easyaccess.ts /home/zht/d_zht/github/web3easyaccess/20240928/web3easyaccess/web/src/app/lib/client/solana/types/
+
+cp copy2src /home/zht/d_zht/github/web3easyaccess/20240928/web3easyaccess/solana-anchor/easyaccess/

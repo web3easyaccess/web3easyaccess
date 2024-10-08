@@ -7,7 +7,9 @@ import { getChainObj } from "./myChain";
 // DEFAULT_ANVIL_CHAIN, MORPH_TEST_CHAIN
 export function chainPublicClient(chainCode, factoryAddr) {
     const chainObj = getChainObj(chainCode);
-
+    if (factoryAddr == undefined || factoryAddr == null || factoryAddr == "") {
+        throw new Error("factory environment is not set.chainCode=", chainCode);
+    }
     // const currentRpcUrl = chainObj.rpcUrls.default.http[0]; //process.env.RPC_URL;
     // if (typeof currentRpcUrl === "undefined" || currentRpcUrl === undefined) {
     //     throw new Error("RpcUrl NOT DEFINED!");
