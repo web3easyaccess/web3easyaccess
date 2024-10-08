@@ -6,7 +6,7 @@
 
 ### [docs/solana-docs-main_EN.md](https://github.com/web3easyaccess/web3easyaccess/blob/main/docs/solana-docs-main_EN.md)
 
-### [SOLANA anchor code](https://github.com/web3easyaccess/web3easyaccess/blob/main/solana-anchor/easyaccess)
+### [SOLANA anchor source](https://github.com/web3easyaccess/web3easyaccess/blob/main/solana-anchor/easyaccess)
 
 ## --------------------------------------------------
 
@@ -14,6 +14,6 @@
 
 ### [docs/docs-main_EN.md](https://github.com/web3easyaccess/web3easyaccess/blob/main/docs/docs-main_EN.md)
 
-### [EVM contract code](https://github.com/web3easyaccess/web3easyaccess/blob/main/contract)
+### [EVM contract source](https://github.com/web3easyaccess/web3easyaccess/blob/main/contract)
 
 ##
