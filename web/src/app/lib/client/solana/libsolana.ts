@@ -14,6 +14,8 @@ import type { Easyaccess } from "./types/easyaccess";
 
 import { getMnemonic, getPasswdAccount, PrivateInfoType } from "../keyTools";
 
+import { formatTimestamp } from "@/app/lib/chainQuery";
+
 import { getServerSidePubKeyBase58, serverSideSign } from "../../../lib/server/solana/libsolanaserver";
 import { getChainObj } from "../../myChain";
 
@@ -58,6 +60,91 @@ const getConnection = (chainCode: ChainCode) => {
     );
     return connection;
 };
+
+
+
+export async function queryTransactions(chainCode: ChainCode, pubKeyBase58: string) {
+
+
+    const apiUrl = getChainObj(chainCode).explorerApiUrl; // process.env.MORPH_EXPLORER_API_URL
+
+    const transAll = await fetch(
+        apiUrl,
+        {
+            method: "POST",
+            body: JSON.stringify({
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "getSignaturesForAddress",
+                "params": [
+                    "AompEk8ZGRwTmUwR41kRkSPJddsZeSsXMuGUJeRSixXt",
+                    {
+                        "limit": 20
+                    }
+                ]
+            }),
+            headers: {
+                "Content-Type": " application/json"
+            }
+        }
+    );
+    console.log("xxxx123:");
+    const resultData = [];
+
+    const txAll = await transAll.json();
+
+    txAll.result.forEach(async (e: { "": any; }) => {
+        console.log(e.blockTime, e.signature);
+
+        const txDetail = await fetch(
+            apiUrl,
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "getTransaction",
+                    "params": [
+                        e.signature,
+                        "json"
+                    ]
+                }),
+                headers: {
+                    "Content-Type": " application/json"
+                }
+            }
+        );
+        const detail = await txDetail.json();
+        const postBalances = detail.result.meta.postBalances;
+        const preBalances = detail.result.meta.preBalances;
+        const accountKeys = detail.result.transaction.message.accountKeys;
+        let change = 0;
+        for (let k = 0; k < accountKeys.length; k++) {
+            if (accountKeys[k] == pubKeyBase58) { // factory
+                change = postBalances[k] - preBalances[k];
+                break;
+            }
+            // 
+
+        }
+        const aRow = {
+            timestamp: formatTimestamp(e.blockTime),
+            block_number: e.blockTime,
+            result: e.err == null || e.err == "" ? "success" : "fail",
+            to: change >= 0 ? pubKeyBase58 : "",
+            hash: e.signature,
+            gas_price: 0,
+            gas_used: 0,
+            gas_limit: 0,
+            l1_fee: 0, //
+            from: change < 0 ? pubKeyBase58 : "",
+            value: Math.abs(change) / web3.LAMPORTS_PER_SOL,
+        };
+        resultData.push(aRow);
+    });
+
+    return resultData;
+}
 
 export async function queryQuestionIdsEnc(
     chainCode: string,
@@ -108,6 +195,13 @@ export const queryAccount = async (
     factoryAddr: string,
     ownerId: String
 ) => {
+    if (factoryAddr == "" || factoryAddr == null || factoryAddr == undefined || factoryAddr.startsWith("0x")) {
+        return {
+            accountAddr: "",
+            created: false,
+            passwdAddr: "",
+        };
+    }
     const acctPDA = genPda(chainCode, factoryAddr, ownerId);
     console.log("solana,queryAccount,ownerId:", ownerId);
     console.log("solana,queryAccount2:", acctPDA.toBase58());
@@ -484,7 +578,7 @@ async function funCreateSolTrans(
             const computeUnitsUsed = simTx.value.unitsConsumed;
 
             // 设置优先级费用率（例如，每个计算单元 0.000001 SOL）
-            const priorityFeeRate = 0; // 0.00000000002 * web3.LAMPORTS_PER_SOL;
+            const priorityFeeRate = 0.5; // 0.00000000002 * web3.LAMPORTS_PER_SOL;
 
             // 计算优先级费用
             const priorityFee = computeUnitsUsed * priorityFeeRate;

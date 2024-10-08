@@ -201,7 +201,7 @@ const solanaDevnet = defineChain({
             blockCreated: 1,
         },
     },
-    explorerApiUrl: "https://12345test/api/v2",
+    explorerApiUrl: "https://api.devnet.solana.com",
     testnet: true,
 });
 

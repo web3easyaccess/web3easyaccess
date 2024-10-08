@@ -876,12 +876,16 @@ export default function SendTransaction({
                 userProp.serverSidePropState.factoryAddr,
                 getOwnerId()
             );
+
             console.log(
                 "my Account for new transaction2:",
                 acct,
                 getOwnerId(),
                 userProp.state.bigBrotherOwnerId
             );
+            if (acct.accountAddr == "") {
+                return;
+            }
             if (acct.accountAddr != userProp.state.selectedAccountAddr) {
                 console.log(
                     "develop error!",

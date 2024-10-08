@@ -374,6 +374,9 @@ export default function SendChgPrivateInfo({
                 getOwnerId(),
                 userProp.state.bigBrotherOwnerId
             );
+            if (acct.accountAddr == "") {
+                return;
+            }
             if (acct.accountAddr != userProp.state.selectedAccountAddr) {
                 console.log(
                     "develop error!",

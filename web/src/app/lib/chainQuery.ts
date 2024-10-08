@@ -53,9 +53,8 @@ export function formatUnits(value: bigint, decimals: number) {
         display.slice(display.length - decimals),
     ];
     fraction = fraction.replace(/(0+)$/, "");
-    return `${negative ? "-" : ""}${integer || "0"}${
-        fraction ? `.${fraction}` : ""
-    }`;
+    return `${negative ? "-" : ""}${integer || "0"}${fraction ? `.${fraction}` : ""
+        }`;
 }
 
 /**
@@ -183,7 +182,13 @@ export async function queryAccount(
         );
         return rtn;
     }
-
+    if (!factoryAddr.startsWith("0x")) {
+        return {
+            accountAddr: "",
+            created: false,
+            passwdAddr: "",
+        };
+    }
     if (!ownerId.startsWith("0x")) {
         ownerId = "0x" + ownerId;
     }
@@ -256,7 +261,7 @@ export async function queryAccount(
     } catch (e) {
         console.log(
             "==================queryAccount error======================, ownerId=" +
-                ownerId,
+            ownerId,
             e
         );
 
@@ -293,7 +298,7 @@ export async function queryQuestionIdsEnc(
     } catch (e) {
         console.log(
             "==================queryQuestionIdsEnc error======================, accountAddr=" +
-                accountAddr,
+            accountAddr,
             e
         );
         throw new Error("queryQuestionIdsEnc error!");
@@ -373,7 +378,7 @@ export async function queryTokenDetail(
     } catch (e) {
         console.log(
             "==================queryTokenDetail error======================, tokenAddress=" +
-                tokenAddress,
+            tokenAddress,
             e
         );
         return {
@@ -456,7 +461,7 @@ export async function queryNftDetail(
     } catch (e) {
         console.log(
             "==================queryNftDetail error======================, nftAddress=" +
-                nftAddress,
+            nftAddress,
             e
         );
         return {
@@ -513,7 +518,7 @@ export async function queryNftsOwnerUri(
     } catch (e) {
         console.log(
             "==================queryNftsOwner error======================, nftAddress=" +
-                nftAddress,
+            nftAddress,
             e
         );
         return { ownerAddr: "0x0000", tokenUri: "" };
@@ -624,7 +629,7 @@ export async function queryW3eapBalance(
     } catch (e) {
         console.log(
             "==================queryW3eapBalance error======================2, accountAddr=" +
-                addr,
+            addr,
             e
         );
         if (
@@ -678,7 +683,7 @@ export async function queryfreeGasFeeAmount(
     } catch (e) {
         console.log(
             "==================queryW3eapBalance error======================1, accountAddr=" +
-                addr,
+            addr,
             e
         );
         if (
@@ -800,7 +805,7 @@ export async function queryAssets(
     } catch (e) {
         console.log(
             "==================queryAssets error======================, accountAddr=" +
-                addr,
+            addr,
             e
         );
         // throw new Error("queryAssets error!");
@@ -821,8 +826,10 @@ export async function queryTransactions(
         return res;
     }
     // //
+    console.log("queryTransactions-queryTransactions:", chainCode);
     if (chainCode.indexOf("SOLANA") >= 0) {
-        return [];
+        const res = await libsolana.queryTransactions(chainCodeFromString(chainCode), addr);
+        return res;
     }
 
     if (isMorphNet(chainCode)) {
