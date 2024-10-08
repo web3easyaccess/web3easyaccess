@@ -606,6 +606,7 @@ function CreateTransaction({
 
             if (
                 receiverAddr == null ||
+                receiverAddr == undefined ||
                 receiverAddr.trim().length != 42 ||
                 receiverAddr.trim().startsWith("0x") == false
             ) {

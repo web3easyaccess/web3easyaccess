@@ -174,6 +174,14 @@ export async function queryAccount(
         ownerId
     );
 
+    if (factoryAddr == undefined || ownerId == undefined) {
+        return {
+            accountAddr: "",
+            created: false,
+            passwdAddr: "",
+        };
+    }
+
     if (chainCode.toString().indexOf("SOLANA") >= 0) {
         const rtn = await libsolana.queryAccount(
             chainCode,
@@ -532,7 +540,7 @@ export async function queryEthBalance(
 ) {
     if (
         chainCode == undefined ||
-        addr == undefined ||
+        addr == undefined || factoryAddr == undefined ||
         addr == popularAddr.ZERO_ADDR
     ) {
         return "0.0";
@@ -592,7 +600,7 @@ export async function queryW3eapBalance(
 ) {
     if (
         chainCode == undefined ||
-        addr == undefined ||
+        addr == undefined || factoryAddr == undefined ||
         addr == popularAddr.ZERO_ADDR
     ) {
         return "0.0";
@@ -650,7 +658,7 @@ export async function queryfreeGasFeeAmount(
 ) {
     if (
         chainCode == undefined ||
-        addr == undefined ||
+        addr == undefined || factoryAddr == undefined ||
         addr == popularAddr.ZERO_ADDR
     ) {
         return "0.0";
@@ -710,7 +718,9 @@ export async function queryAssets(
         );
     }
 
-    if (!addr.startsWith("0x")) {
+
+
+    if (addr == undefined || !addr.startsWith("0x")) {
         return [
             {
                 token_address: "",
