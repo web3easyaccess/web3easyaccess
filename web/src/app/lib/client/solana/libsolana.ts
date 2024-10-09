@@ -64,49 +64,23 @@ const getConnection = (chainCode: ChainCode) => {
 
 
 export async function queryTransactions(chainCode: ChainCode, pubKeyBase58: string) {
-
-
-    const apiUrl = getChainObj(chainCode).explorerApiUrl; // process.env.MORPH_EXPLORER_API_URL
-
-    const transAll = await fetch(
-        apiUrl,
-        {
-            method: "POST",
-            body: JSON.stringify({
-                "jsonrpc": "2.0",
-                "id": 1,
-                "method": "getSignaturesForAddress",
-                "params": [
-                    "AompEk8ZGRwTmUwR41kRkSPJddsZeSsXMuGUJeRSixXt",
-                    {
-                        "limit": 20
-                    }
-                ]
-            }),
-            headers: {
-                "Content-Type": " application/json"
-            }
-        }
-    );
-    console.log("xxxx123:");
     const resultData = [];
+    try {
+        const apiUrl = getChainObj(chainCode).explorerApiUrl; // process.env.MORPH_EXPLORER_API_URL
 
-    const txAll = await transAll.json();
-
-    txAll.result.forEach(async (e: { "": any; }) => {
-        console.log(e.blockTime, e.signature);
-
-        const txDetail = await fetch(
+        const transAll = await fetch(
             apiUrl,
             {
                 method: "POST",
                 body: JSON.stringify({
                     "jsonrpc": "2.0",
                     "id": 1,
-                    "method": "getTransaction",
+                    "method": "getSignaturesForAddress",
                     "params": [
-                        e.signature,
-                        "json"
+                        "AompEk8ZGRwTmUwR41kRkSPJddsZeSsXMuGUJeRSixXt",
+                        {
+                            "limit": 20
+                        }
                     ]
                 }),
                 headers: {
@@ -114,35 +88,64 @@ export async function queryTransactions(chainCode: ChainCode, pubKeyBase58: stri
                 }
             }
         );
-        const detail = await txDetail.json();
-        const postBalances = detail.result.meta.postBalances;
-        const preBalances = detail.result.meta.preBalances;
-        const accountKeys = detail.result.transaction.message.accountKeys;
-        let change = 0;
-        for (let k = 0; k < accountKeys.length; k++) {
-            if (accountKeys[k] == pubKeyBase58) { // factory
-                change = postBalances[k] - preBalances[k];
-                break;
+        console.log("xxxx123:");
+
+        const txAll = await transAll.json();
+
+        txAll.result.forEach(async (e: { "": any; }) => {
+            console.log(e.blockTime, e.signature);
+
+            const txDetail = await fetch(
+                apiUrl,
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        "jsonrpc": "2.0",
+                        "id": 1,
+                        "method": "getTransaction",
+                        "params": [
+                            e.signature,
+                            "json"
+                        ]
+                    }),
+                    headers: {
+                        "Content-Type": " application/json"
+                    }
+                }
+            );
+            const detail = await txDetail.json();
+            const postBalances = detail.result.meta.postBalances;
+            const preBalances = detail.result.meta.preBalances;
+            const accountKeys = detail.result.transaction.message.accountKeys;
+            let change = 0;
+            for (let k = 0; k < accountKeys.length; k++) {
+                if (accountKeys[k] == pubKeyBase58) { // factory
+                    change = postBalances[k] - preBalances[k];
+                    break;
+                }
+                // 
+
             }
-            // 
+            const aRow = {
+                timestamp: formatTimestamp(e.blockTime),
+                block_number: e.blockTime,
+                result: e.err == null || e.err == "" ? "success" : "fail",
+                to: change >= 0 ? pubKeyBase58 : "",
+                hash: e.signature,
+                gas_price: 0,
+                gas_used: 0,
+                gas_limit: 0,
+                l1_fee: 0, //
+                from: change < 0 ? pubKeyBase58 : "",
+                value: Math.abs(change) / web3.LAMPORTS_PER_SOL,
+            };
+            resultData.push(aRow);
+        });
 
-        }
-        const aRow = {
-            timestamp: formatTimestamp(e.blockTime),
-            block_number: e.blockTime,
-            result: e.err == null || e.err == "" ? "success" : "fail",
-            to: change >= 0 ? pubKeyBase58 : "",
-            hash: e.signature,
-            gas_price: 0,
-            gas_used: 0,
-            gas_limit: 0,
-            l1_fee: 0, //
-            from: change < 0 ? pubKeyBase58 : "",
-            value: Math.abs(change) / web3.LAMPORTS_PER_SOL,
-        };
-        resultData.push(aRow);
-    });
-
+        return resultData;
+    } catch (e) {
+        console.log("solana query, warn:", e);
+    }
     return resultData;
 }
 
@@ -477,20 +480,38 @@ async function funCreateSolTrans(
             }
             let build;
             if (transType == "NEW") {
-                build = program.methods
-                    .createAcct(
-                        Buffer.from(hexToBytes(ownerId)),
-                        questionNos,
-                        new anchor.BN(amountInLamports),
-                        new anchor.BN(transferFeeInLamports)
-                    )
-                    .accounts({
-                        payerAcct: serverSidePubKey,
-                        userPasswdAcct: passwdKeypair.publicKey,
-                        userAcct: acctPDA,
-                        toAccount: toAccount,
-                        SystemProgram: web3.SystemProgram,
-                    });
+                if (ownerId == bigBrotherOwnerId) {
+                    build = program.methods
+                        .createFirstAcct(
+                            Buffer.from(hexToBytes(ownerId)),
+                            questionNos,
+                            new anchor.BN(amountInLamports),
+                            new anchor.BN(transferFeeInLamports)
+                        )
+                        .accounts({
+                            payerAcct: serverSidePubKey,
+                            userPasswdAcct: passwdKeypair.publicKey,
+                            userAcct: acctPDA,
+                            toAccount: toAccount,
+                            SystemProgram: web3.SystemProgram,
+                        });
+                } else {
+                    build = program.methods
+                        .createOtherAcct(
+                            Buffer.from(hexToBytes(ownerId)),
+                            questionNos,
+                            new anchor.BN(amountInLamports),
+                            new anchor.BN(transferFeeInLamports)
+                        )
+                        .accounts({
+                            payerAcct: serverSidePubKey,
+                            userPasswdAcct: passwdKeypair.publicKey,
+                            userAcct: acctPDA,
+                            toAccount: toAccount,
+                            bigBrotherAcct: bigBrotherAcctPDA,
+                            SystemProgram: web3.SystemProgram,
+                        });
+                }
             } else if (transType == "TRANSFER") {
                 if (fromAcctAddr != acctPDA.toBase58()) {
                     console.log(

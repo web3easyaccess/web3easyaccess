@@ -71,19 +71,19 @@ export type Easyaccess = {
       ]
     },
     {
-      "name": "createAcct",
+      "name": "createFirstAcct",
       "docs": [
         "* lamports: transfer amount in lamports\n     * trans_fee_lamports: transaction's fee, which should be minus from entity account, and add to payer.\n     * the ownerId must endsWith 0x0000"
       ],
       "discriminator": [
-        249,
-        106,
-        189,
-        96,
-        83,
-        99,
-        15,
-        113
+        131,
+        206,
+        113,
+        124,
+        9,
+        152,
+        116,
+        217
       ],
       "accounts": [
         {
@@ -110,6 +110,71 @@ export type Easyaccess = {
         {
           "name": "toAccount",
           "writable": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "ownerId",
+          "type": "bytes"
+        },
+        {
+          "name": "questionNos",
+          "type": "string"
+        },
+        {
+          "name": "lamports",
+          "type": "u64"
+        },
+        {
+          "name": "transFeeLamports",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "createOtherAcct",
+      "discriminator": [
+        88,
+        3,
+        252,
+        204,
+        138,
+        167,
+        40,
+        104
+      ],
+      "accounts": [
+        {
+          "name": "payerAcct",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "userPasswdAcct",
+          "signer": true
+        },
+        {
+          "name": "userAcct",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "ownerId"
+              }
+            ]
+          }
+        },
+        {
+          "name": "toAccount",
+          "writable": true
+        },
+        {
+          "name": "bigBrotherAcct"
         },
         {
           "name": "systemProgram",

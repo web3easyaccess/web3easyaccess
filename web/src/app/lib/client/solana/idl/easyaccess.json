@@ -65,19 +65,19 @@
       ]
     },
     {
-      "name": "create_acct",
+      "name": "create_first_acct",
       "docs": [
         "* lamports: transfer amount in lamports\n     * trans_fee_lamports: transaction's fee, which should be minus from entity account, and add to payer.\n     * the ownerId must endsWith 0x0000"
       ],
       "discriminator": [
-        249,
-        106,
-        189,
-        96,
-        83,
-        99,
-        15,
-        113
+        131,
+        206,
+        113,
+        124,
+        9,
+        152,
+        116,
+        217
       ],
       "accounts": [
         {
@@ -104,6 +104,71 @@
         {
           "name": "to_account",
           "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "owner_id",
+          "type": "bytes"
+        },
+        {
+          "name": "question_nos",
+          "type": "string"
+        },
+        {
+          "name": "lamports",
+          "type": "u64"
+        },
+        {
+          "name": "trans_fee_lamports",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "create_other_acct",
+      "discriminator": [
+        88,
+        3,
+        252,
+        204,
+        138,
+        167,
+        40,
+        104
+      ],
+      "accounts": [
+        {
+          "name": "payer_acct",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user_passwd_acct",
+          "signer": true
+        },
+        {
+          "name": "user_acct",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "owner_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "to_account",
+          "writable": true
+        },
+        {
+          "name": "big_brother_acct"
         },
         {
           "name": "system_program",

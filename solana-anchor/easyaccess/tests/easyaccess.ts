@@ -51,6 +51,7 @@ console.log("passwdAcct1:", passwdAcct1.publicKey.toBase58());
 const provider = anchor.AnchorProvider.env()
 anchor.setProvider(provider)
 
+// 47DkNqiKdH7XwpkNQm9u6seByzcHb1rztXYrF7Egfkbg
 const payer = provider.wallet;
 console.log("payer:", payer.publicKey.toBase58());
 
@@ -127,7 +128,7 @@ describe("easyaccess", () => {
         await airdropTransfer(acctPDA0, 3);
         const questionNos = "U2FsdGVkX1/9hml4Tf3VLEBNhUoJ5vzRZkX4UfEE2bE=";
         //  AompEk8ZGRwTmUwR41kRkSPJddsZeSsXMuGUJeRSixXt
-        await program.methods.createAcct(
+        await program.methods.createFirstAcct(
             Buffer.from(ownerId0), questionNos,
             new BN(1 * LAMPORTS_PER_SOL), new BN(10))
             .accounts({
@@ -176,15 +177,16 @@ describe("easyaccess", () => {
         console.log("balance,after- transfer,0 & 1:", balance0, ",", balance1);
 
         // create account 1
-        await program.methods.createAcct(
+        await program.methods.createOtherAcct(
             Buffer.from(ownerId1), questionNos,
             new BN(0 * LAMPORTS_PER_SOL), new BN(10))
             .accounts({
                 payerAcct: payer.publicKey,
-                userPasswdAcct: passwdAcct0,
+                userPasswdAcct: passwdAcct0.publicKey,
                 userAcct: acctPDA1,
                 toAccount: acctPDA1,
-            })
+                bigBrotherAcct: acctPDA0
+            }).signers([passwdAcct0])
             .rpc()
         await new Promise(r => setTimeout(r, 800));
         console.log("passwdAddr:xxxxxxx224b,acctPDA in client3333:", acctPDA1);
