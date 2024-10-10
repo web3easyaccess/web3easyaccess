@@ -14,7 +14,7 @@ const DEFAULT_DATA: CookieData = {
 };
 
 const COOKIE_KEY = "w3ea_data";
-const MAX_AGE = 3600 * 12;
+const MAX_AGE = 3600 * 24 * 7;
 
 const COOKIE_KEY_CHAIN = "w3ea_data_chain";
 const COOKIE_KEY_CHAIN_ID = "w3ea_data_chain_id";

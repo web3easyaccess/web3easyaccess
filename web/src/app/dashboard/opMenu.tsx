@@ -222,10 +222,13 @@ export function ShowMain({
                 forTransaction={false}
             />
         );
+    } else if (selectedMenu == Menu.ExploreDapps) {
+        console.log("selectedMenu1111111xxxx:", selectedMenu);
+        return <ExploreDapps userProp={userProp} />;
     } else {
         return (
             <div>
-                <p>Coming soon!</p>
+                <p>Coming soon!!!</p>
             </div>
         );
     }
