@@ -34,7 +34,7 @@ export default function AccountPicker() {
       data-testid="account-picker"
     >
       <option value={0}>Account 1</option>
-      <option value={1}>Account 2</option>
+      {/* <option value={1}>Account 2</option>  // w3ea comments */}
     </select>
   )
 }

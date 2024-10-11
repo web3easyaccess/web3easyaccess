@@ -44,6 +44,22 @@ export default function HomePage() {
       <Text h4 css={{ marginBottom: '$5' }}>
         Mainnets
       </Text>
+
+      {Object.entries(EIP155_TEST_CHAINS)
+        .filter(r => r[0] == 'eip155:11155111')
+        .map(([caip10, { name, logo, rgb }]) => (
+          <AccountCard
+            key={name}
+            name={name}
+            logo={logo}
+            rgb={rgb}
+            address={eip155Address}
+            chainId={caip10.toString()}
+            data-testid={'chain-card-' + caip10.toString()}
+          />
+        ))}
+
+      {/*     // w3ea comments:
       {Object.entries(EIP155_MAINNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (
         <AccountCard
           key={name}
@@ -262,7 +278,7 @@ export default function HomePage() {
             />
           ))}
         </Fragment>
-      ) : null}
+      ) : null} */}
     </Fragment>
   )
 }

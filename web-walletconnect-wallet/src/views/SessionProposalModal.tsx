@@ -117,71 +117,72 @@ export default function SessionProposalModal() {
               .slice(0, addressesToApprove ?? eip155Addresses.length)
           )
           .flat()
-      },
-      cosmos: {
-        chains: cosmosChains,
-        methods: cosmosMethods,
-        events: [],
-        accounts: cosmosChains
-          .map(chain => cosmosAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      kadena: {
-        chains: kadenaChains,
-        methods: kadenaMethods,
-        events: [],
-        accounts: kadenaChains
-          .map(chain => kadenaAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      mvx: {
-        chains: multiversxChains,
-        methods: multiversxMethods,
-        events: [],
-        accounts: multiversxChains
-          .map(chain => multiversxAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      near: {
-        chains: nearChains,
-        methods: nearMethods,
-        events: ['accountsChanged', 'chainChanged'],
-        accounts: nearChains
-          .map(chain => nearAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      polkadot: {
-        chains: polkadotChains,
-        methods: polkadotMethods,
-        events: [],
-        accounts: polkadotChains
-          .map(chain => polkadotAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      solana: {
-        chains: solanaChains,
-        methods: solanaMethods,
-        events: [],
-        accounts: solanaChains
-          .map(chain => solanaAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      tezos: {
-        chains: tezosChains,
-        methods: tezosMethods,
-        events: [],
-        accounts: tezosChains
-          .map(chain => tezosAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      tron: {
-        chains: tronChains,
-        methods: tronMethods,
-        events: [],
-        accounts: tronChains
-          .map(chain => tronAddresses.map(address => `${chain}:${address}`))
-          .flat()
       }
+      // w3ea comments:
+      //   cosmos: {
+      //     chains: cosmosChains,
+      //     methods: cosmosMethods,
+      //     events: [],
+      //     accounts: cosmosChains
+      //       .map(chain => cosmosAddresses.map(address => `${chain}:${address}`))
+      //       .flat()
+      //   },
+      //   kadena: {
+      //     chains: kadenaChains,
+      //     methods: kadenaMethods,
+      //     events: [],
+      //     accounts: kadenaChains
+      //       .map(chain => kadenaAddresses.map(address => `${chain}:${address}`))
+      //       .flat()
+      //   },
+      //   mvx: {
+      //     chains: multiversxChains,
+      //     methods: multiversxMethods,
+      //     events: [],
+      //     accounts: multiversxChains
+      //       .map(chain => multiversxAddresses.map(address => `${chain}:${address}`))
+      //       .flat()
+      //   },
+      //   near: {
+      //     chains: nearChains,
+      //     methods: nearMethods,
+      //     events: ['accountsChanged', 'chainChanged'],
+      //     accounts: nearChains
+      //       .map(chain => nearAddresses.map(address => `${chain}:${address}`))
+      //       .flat()
+      //   },
+      //   polkadot: {
+      //     chains: polkadotChains,
+      //     methods: polkadotMethods,
+      //     events: [],
+      //     accounts: polkadotChains
+      //       .map(chain => polkadotAddresses.map(address => `${chain}:${address}`))
+      //       .flat()
+      //   },
+      //   solana: {
+      //     chains: solanaChains,
+      //     methods: solanaMethods,
+      //     events: [],
+      //     accounts: solanaChains
+      //       .map(chain => solanaAddresses.map(address => `${chain}:${address}`))
+      //       .flat()
+      //   },
+      //   tezos: {
+      //     chains: tezosChains,
+      //     methods: tezosMethods,
+      //     events: [],
+      //     accounts: tezosChains
+      //       .map(chain => tezosAddresses.map(address => `${chain}:${address}`))
+      //       .flat()
+      //   },
+      //   tron: {
+      //     chains: tronChains,
+      //     methods: tronMethods,
+      //     events: [],
+      //     accounts: tronChains
+      //       .map(chain => tronAddresses.map(address => `${chain}:${address}`))
+      //       .flat()
+      //   }
     }
   }, [])
   console.log('supportedNamespaces', supportedNamespaces, eip155Addresses)
