@@ -18,9 +18,6 @@ import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { useRouter } from 'next/router'
 import ChainAbstractionBalanceCard from '@/components/ChainAbstractionBalanceCard'
 
-import W3eaRecever from '@/w3ea/w3eaReceiver'
-import { getChain } from '@/w3ea/ChainsData'
-
 export default function HomePage() {
   const {
     testNets,
@@ -38,10 +35,6 @@ export default function HomePage() {
   } = useSnapshot(SettingsStore.state)
   const { getAvailableSmartAccounts } = useSmartAccounts()
   const { push } = useRouter()
-
-  const w3eaChain = getChain()
-  const w3eaAddress = eip155Address
-
   return (
     <Fragment>
       <PageHeader title="Accounts">
@@ -51,31 +44,6 @@ export default function HomePage() {
       <Text h4 css={{ marginBottom: '$5' }}>
         Mainnets
       </Text>
-
-      <AccountCard
-        key={w3eaChain.name}
-        name={w3eaChain.name}
-        logo={w3eaChain.logo}
-        rgb={w3eaChain.rgb}
-        address={w3eaAddress}
-        chainId={w3eaChain.chainKey}
-        data-testid={'chain-card-' + w3eaChain.chainKey}
-      />
-
-      {Object.entries(EIP155_TEST_CHAINS)
-        .filter(a => a[0] == 'eip155:11155111')
-        .map(([caip10, { name, logo, rgb }]) => (
-          <AccountCard
-            key={name}
-            name={name}
-            logo={logo}
-            rgb={rgb}
-            address={eip155Address}
-            chainId={caip10.toString()}
-            data-testid={'chain-card-' + caip10.toString()}
-          />
-        ))}
-
       {Object.entries(EIP155_MAINNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (
         <AccountCard
           key={name}
@@ -295,7 +263,6 @@ export default function HomePage() {
           ))}
         </Fragment>
       ) : null}
-      <W3eaRecever></W3eaRecever>
     </Fragment>
   )
 }

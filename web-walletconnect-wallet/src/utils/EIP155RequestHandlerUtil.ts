@@ -1,6 +1,5 @@
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS, TEIP155Chain } from '@/data/EIP155Data'
 import { getWallet } from '@/utils/EIP155WalletUtil'
-import { getW3eaWallet } from '@/w3ea/web3easyaccess'
 import { getSignParamsMessage, getSignTypedDataParamsData } from '@/utils/HelperUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
@@ -12,14 +11,12 @@ import SettingsStore from '@/store/SettingsStore'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
 export async function approveEIP155Request(requestEvent: RequestEventArgs) {
-    console.log("w3ea,approveEIP5792Request,xyz,requestEvent:", requestEvent);
   const { params, id } = requestEvent
   const { chainId, request } = params
 
   SettingsStore.setActiveChainId(chainId)
 
-    console.log('w3ea,approveEIP155Request, call getW3eaWallet.')
-    const wallet = await getW3eaWallet(params); // getWallet(params)
+  const wallet = await getWallet(params)
 
   switch (request.method) {
     case EIP155_SIGNING_METHODS.PERSONAL_SIGN:

@@ -7,7 +7,6 @@ import CloseIcon from '@mui/icons-material/Close'
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
-import { getW3eaAddresses } from '@/w3ea/web3easyaccess'
 import { polkadotAddresses } from '@/utils/PolkadotWalletUtil'
 import { multiversxAddresses } from '@/utils/MultiversxWalletUtil'
 import { tronAddresses } from '@/utils/TronWalletUtil'
@@ -112,11 +111,10 @@ export default function SessionProposalModal() {
         methods: eip155Methods.concat(eip5792Methods).concat(eip7715Methods),
         events: ['accountsChanged', 'chainChanged'],
         accounts: eip155Chains
-          .map(
-            chain =>
-              getW3eaAddresses() // eip155Addresses
+          .map(chain =>
+            eip155Addresses
               .map(account => `${chain}:${account}`)
-                .slice(0, addressesToApprove ?? getW3eaAddresses().length) // eip155Addresses.length)
+              .slice(0, addressesToApprove ?? eip155Addresses.length)
           )
           .flat()
       },
@@ -187,7 +185,6 @@ export default function SessionProposalModal() {
     }
   }, [])
   console.log('supportedNamespaces', supportedNamespaces, eip155Addresses)
-  console.log('supportedNamespaces & w3eaAddresses:', supportedNamespaces, getW3eaAddresses())
 
   const requestedChains = useMemo(() => {
     if (!proposal) return []
@@ -244,7 +241,7 @@ export default function SessionProposalModal() {
     if (!namespace) return 'N/A'
     switch (namespace) {
       case 'eip155':
-        return getW3eaAddresses()[0] // eip155Addresses[0]
+        return eip155Addresses[0]
       case 'cosmos':
         return cosmosAddresses[0]
       case 'kadena':

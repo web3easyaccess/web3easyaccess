@@ -14,7 +14,6 @@ import {
   supportedAssets
 } from '@/utils/MultibridgeUtil'
 import { getWallet } from '@/utils/EIP155WalletUtil'
-import { getW3eaWallet } from '@/w3ea/web3easyaccess'
 
 import { styledToast } from '@/utils/HelperUtil'
 import { approveEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
@@ -48,8 +47,7 @@ export default function MultibridgeRequestModal({
       throw new Error('Bridging request is unavailable')
     }
 
-    console.log('w3ea,multibridgeRequestModal call getW3eaWallet.')
-    const wallet = await getW3eaWallet(params) // await getWallet(params)
+    const wallet = await getWallet(params)
 
     const asset = getAssetByContractAddress(bridgingRequest.transfer.contract)
     if (!asset) {

@@ -45,8 +45,8 @@ export default function SessionAuthenticateModal() {
 
   useEffect(() => {
     if (!authRequest?.params?.authPayload) return
-    console.log('authRequest,w3ea,', authRequest)
-    console.log('supportedChains,w3ea,', supportedChains)
+    console.log('authRequest', authRequest)
+    console.log('supportedChains', supportedChains)
     const newAuthPayload = populateAuthPayload({
       authPayload: authRequest?.params?.authPayload,
       chains: supportedChains,
@@ -73,7 +73,6 @@ export default function SessionAuthenticateModal() {
       }
     } else if (signStrategy === 2) {
       const messagesToSign: any[] = []
-      console.log('w3ea,newAuthPayload.chains.')
       newAuthPayload.chains.forEach((chain: string) => {
         const iss = `${chain}:${address}`
         const message = web3wallet.engine.signClient.formatAuthMessage({
@@ -94,7 +93,6 @@ export default function SessionAuthenticateModal() {
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
     try {
-      console.log('w3ea,onApprove,messages:', messages)
       if (messages.length) {
         const signedAuths = []
         for (const message of messages) {
@@ -116,7 +114,6 @@ export default function SessionAuthenticateModal() {
         })
         SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
       }
-      console.log('w3ea,onApprove,messages2:', messages)
     } catch (e) {
       styledToast((e as Error).message, 'error')
     } finally {

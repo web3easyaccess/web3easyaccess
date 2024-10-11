@@ -19,10 +19,8 @@ import { formatJsonRpcError } from '@json-rpc-tools/utils'
 import { approveEIP5792Request } from '@/utils/EIP5792RequestHandlerUtils'
 import EIP155Lib from '@/lib/EIP155Lib'
 import { getWallet } from '@/utils/EIP155WalletUtil'
-import { getW3eaWallet } from '@/w3ea/web3easyaccess'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import { refreshSessionsList } from '@/pages/wc'
-
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   /******************************************************************************
@@ -54,9 +52,6 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       const requestSession = web3wallet.engine.signClient.session.get(topic)
       // set the verify context so it can be displayed in the projectInfoCard
       SettingsStore.setCurrentRequestVerifyContext(verifyContext)
-            console.log("w3ea,session_request, request:", request);
-            console.log("w3ea,session_request, requestEvent:", requestEvent);
-            console.log("w3ea,session_request, requestSession:", requestSession);
       switch (request.method) {
         case EIP155_SIGNING_METHODS.ETH_SIGN:
         case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
@@ -89,8 +84,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
           })
 
         case EIP5792_METHODS.WALLET_SEND_CALLS: {
-                    console.log('w3ea,event EIP5792_METHODS.WALLET_SEND_CALLS, call getW3eaWallet.')
-                    const wallet = await getW3eaWallet(params); // getWallet(params)
+          const wallet = await getWallet(params)
           if (wallet instanceof EIP155Lib) {
             /**
              * Not Supporting for batch calls on EOA for now.
@@ -172,8 +166,6 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
    * Set up WalletConnect event listeners
    *****************************************************************************/
   useEffect(() => {
-        console.log("w3ea, Set up WalletConnect event listeners1:", initialized);
-        console.log("w3ea, Set up WalletConnect event listeners2:", web3wallet);
     if (initialized && web3wallet) {
       //sign
       web3wallet.on('session_proposal', onSessionProposal)
