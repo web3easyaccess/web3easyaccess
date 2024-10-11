@@ -115,7 +115,7 @@ export default function SessionProposalModal() {
           .map(
             chain =>
               getW3eaAddresses() // eip155Addresses
-                .map(account => `${chain}:${account}`)
+              .map(account => `${chain}:${account}`)
                 .slice(0, addressesToApprove ?? getW3eaAddresses().length) // eip155Addresses.length)
           )
           .flat()
