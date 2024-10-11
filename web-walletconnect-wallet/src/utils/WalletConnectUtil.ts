@@ -11,10 +11,10 @@ export async function createWeb3Wallet(relayerRegionURL: string) {
   web3wallet = await Web3Wallet.init({
     core,
     metadata: {
-      name: 'React Wallet Example',
-      description: 'React Wallet for WalletConnect',
-      url: 'https://walletconnect.com/',
-      icons: ['https://avatars.githubusercontent.com/u/37784886']
+            name: 'W3EA Wallet',//'React Wallet Example',
+            description: 'Web3EasyAccess Wallet for WalletConnect',
+            url: 'https://web3easyaccess.link/',
+            icons: ['https://raw.githubusercontent.com/web3easyaccess/web3easyaccess/refs/heads/main/web/src/app/ico/favicon.png']
     }
   })
 
@@ -33,6 +33,7 @@ export async function updateSignClientChainId(chainId: string, address: string) 
   const sessions = web3wallet.getActiveSessions()
   if (!sessions) return
   const namespace = chainId.split(':')[0]
+    console.log("w3ea,updateSignClientChainId.");
   Object.values(sessions).forEach(async session => {
     await web3wallet.updateSession({
       topic: session.topic,

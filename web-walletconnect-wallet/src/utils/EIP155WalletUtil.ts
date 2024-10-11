@@ -14,6 +14,12 @@ let address2: string
  * Utilities
  */
 export function createOrRestoreEIP155Wallet() {
+    // w3ea web3easyaccess  set to null
+    localStorage.setItem('EIP155_MNEMONIC_1', "")
+    localStorage.setItem('EIP155_MNEMONIC_2', "")
+    return {}
+
+
   const mnemonic1 = localStorage.getItem('EIP155_MNEMONIC_1')
   const mnemonic2 = localStorage.getItem('EIP155_MNEMONIC_2')
 
@@ -28,6 +34,7 @@ export function createOrRestoreEIP155Wallet() {
     localStorage.setItem('EIP155_MNEMONIC_1', wallet1.getMnemonic())
     localStorage.setItem('EIP155_MNEMONIC_2', wallet2.getMnemonic())
   }
+
 
   address1 = wallet1.getAddress()
   address2 = wallet2.getAddress()
@@ -48,6 +55,7 @@ export function createOrRestoreEIP155Wallet() {
  * Get wallet for the address in params
  */
 export const getWallet = async (params: any) => {
+    console.log("w3ea,getWallet in eip155WalletUtil,params:", params);
   const eoaWallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, params)]
   if (eoaWallet) {
     return eoaWallet

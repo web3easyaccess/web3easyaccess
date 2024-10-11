@@ -28,6 +28,7 @@ export default function App({ Component, pageProps }: AppProps) {
       styledToast('Network connection lost.', 'error')
     })
   }, [initialized])
+
   return (
     <NextUIProvider theme={createTheme({ type: 'dark' })}>
       <Layout initialized={initialized}>
