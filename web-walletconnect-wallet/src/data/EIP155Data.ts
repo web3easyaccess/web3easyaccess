@@ -25,15 +25,6 @@ export type EIP155Chain = {
 
 
 export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
-    'eip155:11155111': {
-        chainId: 11155111,
-        name: 'W3EA Ethereum Sepolia',
-        logo: '/chain-logos/eip155-1.png',
-        rgb: '99, 125, 234',
-        rpc: 'https://rpc2.sepolia.org',
-        namespace: 'eip155',
-        smartAccountEnabled: true
-    },
     'eip155:1': {
         chainId: 1,
         name: 'Ethereum',

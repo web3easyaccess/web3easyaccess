@@ -172,6 +172,8 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
      * Set up WalletConnect event listeners
      *****************************************************************************/
     useEffect(() => {
+        console.log("w3ea, Set up WalletConnect event listeners1:", initialized);
+        console.log("w3ea, Set up WalletConnect event listeners2:", web3wallet);
         if (initialized && web3wallet) {
             //sign
             web3wallet.on('session_proposal', onSessionProposal)

@@ -2,6 +2,7 @@
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { UserProperty } from "../storage/LocalStore";
 import { Button } from "@nextui-org/react";
+import { getChainObj } from "../lib/myChain";
 
 export default function Exploredapps({
     userProp,
@@ -22,10 +23,16 @@ export default function Exploredapps({
 }) {
     useEffect(() => {}, []);
 
+    const chainObj = getChainObj(userProp.ref.current.selectedChainCode);
+    const chainKey = "eip155:" + chainObj.id; // todo ,for evm now.
+    const accountAddr = userProp.ref.current.selectedAccountAddr;
+
+    const walleconnectHost = "http://localhost:3001"; // process.env.CHILD_W3EA_WALLETCONNECT_HOST
+
     const childOK = useRef(false);
     //回调函数
     function receiveMessageFromChild(event) {
-        if (event.origin == "http://localhost:3001") {
+        if (event.origin == walleconnectHost) {
             console.log(
                 "我是parent,我接收到 walletconnect的消息: ",
                 event.data
@@ -47,24 +54,18 @@ export default function Exploredapps({
             return;
         }
 
-        const thisValue =
-            userProp.ref.current.selectedChainCode +
-            ":" +
-            userProp.ref.current.selectedAccountAddr;
+        const thisValue = chainKey + ":" + accountAddr;
         if (lastWriteValue.current != thisValue) {
             //必须是iframe加载完成后才可以向子域发送数据
             const childFrameObj = document.getElementById("w3eaWalletconnect");
             msgIndex.current = msgIndex.current + 1;
             const data = {
                 msgIdx: msgIndex.current,
-                address: userProp.ref.current.selectedAccountAddr,
-                chainCode: userProp.ref.current.selectedChainCode,
+                address: accountAddr,
+                chainKey: chainKey,
             };
-            console.log("writeWalletConnectData....:");
-            childFrameObj.contentWindow.postMessage(
-                data,
-                "http://localhost:3001"
-            ); //window.postMessage
+            console.log("writeWalletConnectData....:", data, walleconnectHost);
+            childFrameObj.contentWindow.postMessage(data, walleconnectHost); //window.postMessage
             lastWriteValue.current = thisValue;
         }
     };
@@ -81,7 +82,7 @@ export default function Exploredapps({
                     title="w3eaWalletconnect"
                     width="800"
                     height="500"
-                    src="http://localhost:3001/"
+                    src={walleconnectHost}
                 ></iframe>
             </div>
         );

@@ -11,10 +11,6 @@ import { RELAYER_EVENTS } from '@walletconnect/core'
 import { AppProps } from 'next/app'
 import '../../public/main.css'
 import { styledToast } from '@/utils/HelperUtil'
-import { useState } from 'react'
-
-import { receiverData } from '@/w3ea/web3easyaccess'
-let receivedMsgIdx = 0
 
 export default function App({ Component, pageProps }: AppProps) {
   // Step 1 - Initialize wallets and wallet connect client

@@ -4,7 +4,7 @@ import { W3eaWallet } from './W3eaWallet';
 
 export let wallet: W3eaWallet; // EIP155Lib;
 
-export let receiverData = { address: "0x0000", chainCode: "" }
+export let receiverData = { address: "0x0000", chainKey: "" }
 
 export const getW3eaAddresses = () => {
     return [receiverData.address];
@@ -42,7 +42,3 @@ export const getW3eaWallet = async (params: any) => {
     return wallet;
 }
 
-
-export function getChain() {
-    ;
-}
