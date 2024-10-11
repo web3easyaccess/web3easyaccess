@@ -3,7 +3,7 @@ import { smartAccountWallets } from './SmartAccountUtil'
 import { getWalletAddressFromParams } from './HelperUtil'
 
 export let wallet1: EIP155Lib
-export let wallet2: EIP155Lib
+// export let wallet2: EIP155Lib
 export let eip155Wallets: Record<string, EIP155Lib>
 export let eip155Addresses: string[]
 
@@ -14,6 +14,7 @@ let address2: string
  * Utilities
  */
 export function createOrRestoreEIP155Wallet() {
+<<<<<<< HEAD
     // w3ea web3easyaccess  set to null
     localStorage.setItem('EIP155_MNEMONIC_1', "")
     localStorage.setItem('EIP155_MNEMONIC_2', "")
@@ -22,77 +23,94 @@ export function createOrRestoreEIP155Wallet() {
 
   const mnemonic1 = localStorage.getItem('EIP155_MNEMONIC_1')
   const mnemonic2 = localStorage.getItem('EIP155_MNEMONIC_2')
+=======
+    const mnemonic1 = localStorage.getItem('EIP155_MNEMONIC_1')
+    const mnemonic2 = localStorage.getItem('EIP155_MNEMONIC_2')
+>>>>>>> Branch_69124a60_walletconnect-raw
 
-  if (mnemonic1 && mnemonic2) {
-    wallet1 = EIP155Lib.init({ mnemonic: mnemonic1 })
-    wallet2 = EIP155Lib.init({ mnemonic: mnemonic2 })
-  } else {
-    wallet1 = EIP155Lib.init({})
-    wallet2 = EIP155Lib.init({})
+    if (mnemonic1 && mnemonic2) {
+        wallet1 = EIP155Lib.init({ mnemonic: mnemonic1 })
+        // wallet2 = EIP155Lib.init({ mnemonic: mnemonic2 }) // w3ea comments
+    } else {
+        wallet1 = EIP155Lib.init({})
+        // wallet2 = EIP155Lib.init({}) // w3ea comments
 
-    // Don't store mnemonic in local storage in a production project!
-    localStorage.setItem('EIP155_MNEMONIC_1', wallet1.getMnemonic())
-    localStorage.setItem('EIP155_MNEMONIC_2', wallet2.getMnemonic())
-  }
+        // Don't store mnemonic in local storage in a production project!
+        localStorage.setItem('EIP155_MNEMONIC_1', wallet1.getMnemonic())
+        // localStorage.setItem('EIP155_MNEMONIC_2', wallet2.getMnemonic()) // w3ea comments
+    }
 
+<<<<<<< HEAD
 
   address1 = wallet1.getAddress()
   address2 = wallet2.getAddress()
+=======
+    address1 = wallet1.getAddress()
+    //caddress2 = wallet2.getAddress()
+>>>>>>> Branch_69124a60_walletconnect-raw
 
-  eip155Wallets = {
-    [address1]: wallet1,
-    [address2]: wallet2
-  }
-  eip155Addresses = Object.keys(eip155Wallets)
+    eip155Wallets = {
+        [address1]: wallet1,
+        // [address2]: wallet2 // w3ea comments
+    }
+    eip155Addresses = Object.keys(eip155Wallets)
 
-  return {
-    eip155Wallets,
-    eip155Addresses
-  }
+    return {
+        eip155Wallets,
+        eip155Addresses
+    }
 }
 
 /**
  * Get wallet for the address in params
  */
 export const getWallet = async (params: any) => {
+<<<<<<< HEAD
     console.log("w3ea,getWallet in eip155WalletUtil,params:", params);
   const eoaWallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, params)]
   if (eoaWallet) {
     return eoaWallet
   }
+=======
+    throw new Error("w3ea, web3easyaccess, set to invalid!");
+    const eoaWallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, params)]
+    if (eoaWallet) {
+        return eoaWallet
+    }
+>>>>>>> Branch_69124a60_walletconnect-raw
 
-  /**
-   * Smart accounts
-   */
-  const chainId = params?.chainId?.split(':')[1]
-  console.log('Chain ID', { chainId })
-  console.log('PARAMS', { params })
+    /**
+     * Smart accounts
+     */
+    const chainId = params?.chainId?.split(':')[1]
+    console.log('Chain ID', { chainId })
+    console.log('PARAMS', { params })
 
-  const address = getWalletAddressFromParams(
-    Object.keys(smartAccountWallets)
-      .filter(key => {
-        const parts = key.split(':')
-        return parts[0] === chainId
-      })
-      .map(key => {
-        return key.split(':')[1]
-      }),
-    params
-  )
-  if (!address) {
-    console.log('Library not initialized for requested address', {
-      address,
-      values: Object.keys(smartAccountWallets)
+    const address = getWalletAddressFromParams(
+        Object.keys(smartAccountWallets)
+            .filter(key => {
+                const parts = key.split(':')
+                return parts[0] === chainId
+            })
+            .map(key => {
+                return key.split(':')[1]
+            }),
+        params
+    )
+    if (!address) {
+        console.log('Library not initialized for requested address1', {
+            address,
+            values: Object.keys(smartAccountWallets)
+        })
+        throw new Error('Library not initialized for requested address1')
+    }
+    const lib = smartAccountWallets[`${chainId}:${address}`]
+    if (lib) {
+        return lib
+    }
+    console.log('Library not found', {
+        target: `${chainId}:address`,
+        values: Object.keys(smartAccountWallets)
     })
-    throw new Error('Library not initialized for requested address')
-  }
-  const lib = smartAccountWallets[`${chainId}:${address}`]
-  if (lib) {
-    return lib
-  }
-  console.log('Library not found', {
-    target: `${chainId}:address`,
-    values: Object.keys(smartAccountWallets)
-  })
-  throw new Error('Cannot find wallet for requested address')
+    throw new Error('Cannot find wallet for requested address')
 }

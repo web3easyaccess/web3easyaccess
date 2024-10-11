@@ -1,5 +1,6 @@
 import SettingsStore from '@/store/SettingsStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
+import { getW3eaAddress } from '@/w3ea/web3easyaccess'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { nearAddresses } from '@/utils/NearWalletUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
@@ -16,6 +17,7 @@ export default function AccountPicker() {
     const account = Number(value)
     console.log('account', account)
     SettingsStore.setAccount(account)
+    SettingsStore.setW3eaAddress(getW3eaAddress())
     SettingsStore.setEIP155Address(eip155Addresses[account])
     SettingsStore.setCosmosAddress(cosmosAddresses[account])
     SettingsStore.setSolanaAddress(solanaAddresses[account])
@@ -34,7 +36,7 @@ export default function AccountPicker() {
       data-testid="account-picker"
     >
       <option value={0}>Account 1</option>
-      <option value={1}>Account 2</option>
+      {/* <option value={1}>Account 2</option>  // w3ea comments */}
     </select>
   )
 }

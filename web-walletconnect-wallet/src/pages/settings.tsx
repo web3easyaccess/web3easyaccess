@@ -12,11 +12,13 @@ import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
 import packageJSON from '../../package.json'
 import { tezosWallets } from '@/utils/TezosWalletUtil'
+import { loadW3eaWallet } from '@/w3ea/web3easyaccess'
 
 export default function SettingsPage() {
   const {
     testNets,
     smartAccountSponsorshipEnabled,
+    w3eaAddress,
     eip155Address,
     cosmosAddress,
     solanaAddress,
@@ -194,8 +196,13 @@ export default function SettingsPage() {
       <Text h4 css={{ marginTop: '$5', marginBottom: '$5' }}>
         EIP155 Mnemonic
       </Text>
+
       <Card bordered borderWeight="light" css={{ minHeight: '100px' }}>
         <Text css={{ fontFamily: '$mono' }}>{eip155Wallets[eip155Address].getMnemonic()}</Text>
+      </Card>
+
+      <Card bordered borderWeight="light" css={{ minHeight: '100px' }}>
+        <Text css={{ fontFamily: '$mono' }}>{'w3ea loadW3eaWallet has not Mnemonic'}</Text>
       </Card>
 
       <Text h4 css={{ marginTop: '$10', marginBottom: '$5' }}>

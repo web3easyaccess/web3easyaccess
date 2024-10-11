@@ -39,6 +39,7 @@ import { EIP5792_METHODS } from '@/data/EIP5792Data'
 import { getWalletCapabilities } from '@/utils/EIP5792WalletUtil'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import { useRouter } from 'next/router'
+import { getW3eaAddress } from '@/w3ea/web3easyaccess'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -106,6 +107,7 @@ export default function SessionProposalModal() {
     const tronChains = Object.keys(TRON_CHAINS)
     const tronMethods = Object.values(TRON_SIGNING_METHODS)
 
+    const myAddresses = eip155Addresses.concat(getW3eaAddress())
     return {
       eip155: {
         chains: eip155Chains,
@@ -114,80 +116,91 @@ export default function SessionProposalModal() {
         accounts: eip155Chains
           .map(
             chain =>
+<<<<<<< HEAD
               getW3eaAddresses() // eip155Addresses
               .map(account => `${chain}:${account}`)
                 .slice(0, addressesToApprove ?? getW3eaAddresses().length) // eip155Addresses.length)
+=======
+              myAddresses // eip155Addresses
+                .map(account => `${chain}:${account}`)
+                .slice(0, addressesToApprove ?? myAddresses.length) // eip155Addresses.length)
+>>>>>>> Branch_69124a60_walletconnect-raw
           )
           .flat()
-      },
-      cosmos: {
-        chains: cosmosChains,
-        methods: cosmosMethods,
-        events: [],
-        accounts: cosmosChains
-          .map(chain => cosmosAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      kadena: {
-        chains: kadenaChains,
-        methods: kadenaMethods,
-        events: [],
-        accounts: kadenaChains
-          .map(chain => kadenaAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      mvx: {
-        chains: multiversxChains,
-        methods: multiversxMethods,
-        events: [],
-        accounts: multiversxChains
-          .map(chain => multiversxAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      near: {
-        chains: nearChains,
-        methods: nearMethods,
-        events: ['accountsChanged', 'chainChanged'],
-        accounts: nearChains
-          .map(chain => nearAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      polkadot: {
-        chains: polkadotChains,
-        methods: polkadotMethods,
-        events: [],
-        accounts: polkadotChains
-          .map(chain => polkadotAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      solana: {
-        chains: solanaChains,
-        methods: solanaMethods,
-        events: [],
-        accounts: solanaChains
-          .map(chain => solanaAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      tezos: {
-        chains: tezosChains,
-        methods: tezosMethods,
-        events: [],
-        accounts: tezosChains
-          .map(chain => tezosAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      tron: {
-        chains: tronChains,
-        methods: tronMethods,
-        events: [],
-        accounts: tronChains
-          .map(chain => tronAddresses.map(address => `${chain}:${address}`))
-          .flat()
       }
+      // w3ea comments:
+      //   cosmos: {
+      //     chains: cosmosChains,
+      //     methods: cosmosMethods,
+      //     events: [],
+      //     accounts: cosmosChains
+      //       .map(chain => cosmosAddresses.map(address => `${chain}:${address}`))
+      //       .flat()
+      //   },
+      //   kadena: {
+      //     chains: kadenaChains,
+      //     methods: kadenaMethods,
+      //     events: [],
+      //     accounts: kadenaChains
+      //       .map(chain => kadenaAddresses.map(address => `${chain}:${address}`))
+      //       .flat()
+      //   },
+      //   mvx: {
+      //     chains: multiversxChains,
+      //     methods: multiversxMethods,
+      //     events: [],
+      //     accounts: multiversxChains
+      //       .map(chain => multiversxAddresses.map(address => `${chain}:${address}`))
+      //       .flat()
+      //   },
+      //   near: {
+      //     chains: nearChains,
+      //     methods: nearMethods,
+      //     events: ['accountsChanged', 'chainChanged'],
+      //     accounts: nearChains
+      //       .map(chain => nearAddresses.map(address => `${chain}:${address}`))
+      //       .flat()
+      //   },
+      //   polkadot: {
+      //     chains: polkadotChains,
+      //     methods: polkadotMethods,
+      //     events: [],
+      //     accounts: polkadotChains
+      //       .map(chain => polkadotAddresses.map(address => `${chain}:${address}`))
+      //       .flat()
+      //   },
+      //   solana: {
+      //     chains: solanaChains,
+      //     methods: solanaMethods,
+      //     events: [],
+      //     accounts: solanaChains
+      //       .map(chain => solanaAddresses.map(address => `${chain}:${address}`))
+      //       .flat()
+      //   },
+      //   tezos: {
+      //     chains: tezosChains,
+      //     methods: tezosMethods,
+      //     events: [],
+      //     accounts: tezosChains
+      //       .map(chain => tezosAddresses.map(address => `${chain}:${address}`))
+      //       .flat()
+      //   },
+      //   tron: {
+      //     chains: tronChains,
+      //     methods: tronMethods,
+      //     events: [],
+      //     accounts: tronChains
+      //       .map(chain => tronAddresses.map(address => `${chain}:${address}`))
+      //       .flat()
+      //   }
     }
   }, [])
   console.log('supportedNamespaces', supportedNamespaces, eip155Addresses)
+<<<<<<< HEAD
   console.log('supportedNamespaces & w3eaAddresses:', supportedNamespaces, getW3eaAddresses())
+=======
+  console.log('supportedNamespaces2', supportedNamespaces, getW3eaAddress())
+>>>>>>> Branch_69124a60_walletconnect-raw
 
   const requestedChains = useMemo(() => {
     if (!proposal) return []
@@ -244,7 +257,11 @@ export default function SessionProposalModal() {
     if (!namespace) return 'N/A'
     switch (namespace) {
       case 'eip155':
+<<<<<<< HEAD
         return getW3eaAddresses()[0] // eip155Addresses[0]
+=======
+        return getW3eaAddress() // eip155Addresses[0]
+>>>>>>> Branch_69124a60_walletconnect-raw
       case 'cosmos':
         return cosmosAddresses[0]
       case 'kadena':

@@ -10,6 +10,7 @@ import { useSnapshot } from 'valtio'
 import { Hex } from 'viem'
 
 export default function ChainAbstractionBalanceCard() {
+  const { w3eaAddress } = useSnapshot(SettingsStore.state)
   const { eip155Address } = useSnapshot(SettingsStore.state)
   const [balances, setBalances] = useState<Record<string, Record<string, number>>>({})
   const [totalBalance, setTotalBalance] = useState<Record<string, number>>({})
@@ -17,7 +18,7 @@ export default function ChainAbstractionBalanceCard() {
   useEffect(() => {
     const fetchAllBalances = async () => {
       setLoading(true)
-
+      // w3ea, ignore w3ea balacne here.
       const fetchedBalances: Record<string, any> = {}
       for (const asset of Object.keys(multibridgeSupportedAssets)) {
         const assetBalances: Record<string, number> = {}

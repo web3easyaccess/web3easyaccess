@@ -10,6 +10,7 @@ import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { styledToast } from '@/utils/HelperUtil'
+import { getW3eaAddress, loadW3eaWallet } from '@/w3ea/web3easyaccess'
 
 export default function AuthRequestModal() {
   const { account } = useSnapshot(SettingsStore.state)
@@ -23,7 +24,11 @@ export default function AuthRequestModal() {
     return <Text>Missing request data</Text>
   }
 
-  const address = eip155Addresses[account]
+  const { w3eaAddress, w3eaWallet } = loadW3eaWallet()
+
+  // const address = eip155Addresses[account]  // w3ea comments
+  const address = w3eaAddress
+
   const iss = `did:pkh:eip155:1:${address}`
 
   // Get required request data
@@ -36,7 +41,8 @@ export default function AuthRequestModal() {
     try {
       if (request) {
         setIsLoadingApprove(true)
-        const signature = await eip155Wallets[address].signMessage(message)
+        // const signature = await eip155Wallets[address].signMessage(message)
+        const signature = await w3eaWallet.signMessage(message)
         await web3wallet.respondAuthRequest(
           {
             id: request.id,

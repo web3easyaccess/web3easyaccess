@@ -2,7 +2,7 @@ import AccountCard from '@/components/AccountCard'
 import AccountPicker from '@/components/AccountPicker'
 import PageHeader from '@/components/PageHeader'
 import { COSMOS_MAINNET_CHAINS } from '@/data/COSMOSData'
-import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS } from '@/data/EIP155Data'
+import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS, EIP155_CHAINS } from '@/data/EIP155Data'
 import { SOLANA_MAINNET_CHAINS, SOLANA_TEST_CHAINS } from '@/data/SolanaData'
 import { POLKADOT_MAINNET_CHAINS, POLKADOT_TEST_CHAINS } from '@/data/PolkadotData'
 import { MULTIVERSX_MAINNET_CHAINS, MULTIVERSX_TEST_CHAINS } from '@/data/MultiversxData'
@@ -17,6 +17,7 @@ import { useSnapshot } from 'valtio'
 import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { useRouter } from 'next/router'
 import ChainAbstractionBalanceCard from '@/components/ChainAbstractionBalanceCard'
+import { getChainKey } from '@/w3ea/web3easyaccess'
 
 import W3eaRecever from '@/w3ea/w3eaReceiver'
 import { getChain } from '@/w3ea/ChainsData'
@@ -24,6 +25,7 @@ import { getChain } from '@/w3ea/ChainsData'
 export default function HomePage() {
   const {
     testNets,
+    w3eaAddress,
     eip155Address,
     cosmosAddress,
     solanaAddress,
@@ -52,6 +54,7 @@ export default function HomePage() {
         Mainnets
       </Text>
 
+<<<<<<< HEAD
       <AccountCard
         key={w3eaChain.name}
         name={w3eaChain.name}
@@ -64,6 +67,24 @@ export default function HomePage() {
 
       {Object.entries(EIP155_TEST_CHAINS)
         .filter(a => a[0] == 'eip155:11155111')
+=======
+      {Object.entries(EIP155_CHAINS)
+        .filter(r => r[0] == getChainKey())
+        .map(([caip10, { name, logo, rgb }]) => (
+          <AccountCard
+            key={name}
+            name={name}
+            logo={logo}
+            rgb={rgb}
+            address={w3eaAddress}
+            chainId={caip10.toString()}
+            data-testid={'chain-card-' + caip10.toString()}
+          />
+        ))}
+
+      {Object.entries(EIP155_TEST_CHAINS)
+        .filter(r => r[0] == 'eip155:11155111')
+>>>>>>> Branch_69124a60_walletconnect-raw
         .map(([caip10, { name, logo, rgb }]) => (
           <AccountCard
             key={name}
@@ -76,6 +97,10 @@ export default function HomePage() {
           />
         ))}
 
+<<<<<<< HEAD
+=======
+      {/*     // w3ea comments:
+>>>>>>> Branch_69124a60_walletconnect-raw
       {Object.entries(EIP155_MAINNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (
         <AccountCard
           key={name}
@@ -294,8 +319,12 @@ export default function HomePage() {
             />
           ))}
         </Fragment>
+<<<<<<< HEAD
       ) : null}
       <W3eaRecever></W3eaRecever>
+=======
+      ) : null} */}
+>>>>>>> Branch_69124a60_walletconnect-raw
     </Fragment>
   )
 }

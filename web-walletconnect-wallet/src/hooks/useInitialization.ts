@@ -12,10 +12,12 @@ import { createOrRestoreKadenaWallet } from '@/utils/KadenaWalletUtil'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import useSmartAccounts from './useSmartAccounts'
+import { loadW3eaWallet } from '@/w3ea/web3easyaccess'
 
 import * as web3easyaccess from "@/w3ea/web3easyaccess";
 
 export default function useInitialization() {
+<<<<<<< HEAD
   const [initialized, setInitialized] = useState(false)
     console.log("w3ea,useInitialization called...");
 
@@ -61,17 +63,51 @@ export default function useInitialization() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [relayerRegionURL])
+=======
+    const [initialized, setInitialized] = useState(false)
+    const prevRelayerURLValue = useRef<string>('')
 
-  // restart transport if relayer region changes
-  const onRelayerRegionChange = useCallback(() => {
-    try {
-      web3wallet?.core?.relayer.restartTransport(relayerRegionURL)
-      prevRelayerURLValue.current = relayerRegionURL
-    } catch (err: unknown) {
-      alert(err)
-    }
-  }, [relayerRegionURL])
+    const { relayerRegionURL } = useSnapshot(SettingsStore.state)
+    const { initializeSmartAccounts } = useSmartAccounts()
 
+    const onInitialize = useCallback(async () => {
+        try {
+            const { w3eaAddress, w3eaWallet } = loadW3eaWallet()
+            const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
+            // w3ea comments:
+            //   const { cosmosAddresses } = await createOrRestoreCosmosWallet()
+            //   const { solanaAddresses } = await createOrRestoreSolanaWallet()
+            //   const { polkadotAddresses } = await createOrRestorePolkadotWallet()
+            //   const { nearAddresses } = await createOrRestoreNearWallet()
+            //   const { multiversxAddresses } = await createOrRestoreMultiversxWallet()
+            //   const { tronAddresses } = await createOrRestoreTronWallet()
+            //   const { tezosAddresses } = await createOrRestoreTezosWallet()
+            //   const { kadenaAddresses } = await createOrRestoreKadenaWallet()
+            //   await initializeSmartAccounts(eip155Wallets[eip155Addresses[0]].getPrivateKey())
+
+            SettingsStore.setW3eaAddress(w3eaAddress)
+>>>>>>> Branch_69124a60_walletconnect-raw
+
+            SettingsStore.setEIP155Address(eip155Addresses[0])
+            // w3ea comments:
+            // SettingsStore.setCosmosAddress(cosmosAddresses[0])
+            // SettingsStore.setSolanaAddress(solanaAddresses[0])
+            // SettingsStore.setPolkadotAddress(polkadotAddresses[0])
+            // SettingsStore.setNearAddress(nearAddresses[0])
+            // SettingsStore.setMultiversxAddress(multiversxAddresses[0])
+            // SettingsStore.setTronAddress(tronAddresses[0])
+            // SettingsStore.setTezosAddress(tezosAddresses[0])
+            // SettingsStore.setKadenaAddress(kadenaAddresses[0])
+            await createWeb3Wallet(relayerRegionURL)
+            setInitialized(true)
+        } catch (err: unknown) {
+            console.error('Initialization failed', err)
+            alert(err)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [relayerRegionURL])
+
+<<<<<<< HEAD
   useEffect(() => {
         console.log("before onInitialize...before w3eaAddress:", prevW3eaAddressValue.current);
         console.log("before onInitialize...w3eaAddress:", w3eaAddress, ",initialized=", initialized);
@@ -83,6 +119,26 @@ export default function useInitialization() {
     }
     }, [initialized, onInitialize, relayerRegionURL, onRelayerRegionChange, w3eaAddress])
 
+=======
+    // restart transport if relayer region changes
+    const onRelayerRegionChange = useCallback(() => {
+        try {
+            web3wallet?.core?.relayer.restartTransport(relayerRegionURL)
+            prevRelayerURLValue.current = relayerRegionURL
+        } catch (err: unknown) {
+            alert(err)
+        }
+    }, [relayerRegionURL])
+>>>>>>> Branch_69124a60_walletconnect-raw
 
-  return initialized
+    useEffect(() => {
+        if (!initialized) {
+            onInitialize()
+        }
+        if (prevRelayerURLValue.current !== relayerRegionURL) {
+            onRelayerRegionChange()
+        }
+    }, [initialized, onInitialize, relayerRegionURL, onRelayerRegionChange])
+
+    return initialized
 }

@@ -14,6 +14,7 @@ import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { styledToast } from '@/utils/HelperUtil'
+import { getW3eaAddress, loadW3eaWallet } from '@/w3ea/web3easyaccess'
 
 export default function SessionAuthenticateModal() {
   // Get request and wallet data from store
@@ -28,7 +29,10 @@ export default function SessionAuthenticateModal() {
   const [signStrategy, setSignStrategy] = useState(1)
   // Ensure request and wallet are defined
 
-  const address = eip155Addresses[account]
+  const { w3eaWallet, w3eaAddress } = loadW3eaWallet()
+
+  // const address = eip155Addresses[account]   // w3ea comments
+  const address = w3eaAddress
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const getMessageToSign = useCallback(
@@ -98,7 +102,9 @@ export default function SessionAuthenticateModal() {
       if (messages.length) {
         const signedAuths = []
         for (const message of messages) {
-          const signature = await eip155Wallets[address].signMessage(message.message)
+          // w3ea comments
+          // const signature = await eip155Wallets[address].signMessage(message.message)
+          const signature = await w3eaWallet.signMessage(message.message)
           const signedCacao = buildAuthObject(
             message.authPayload,
             {
