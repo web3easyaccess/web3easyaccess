@@ -20,34 +20,6 @@ const MODULE_MANAGEMENT_ENABLED_KEY = 'MODULE_MANAGEMENT'
  * Types
  */
 interface State {
-<<<<<<< HEAD
-  testNets: boolean
-  account: number
-    w3eaAddress: string
-  eip155Address: string
-  cosmosAddress: string
-  solanaAddress: string
-  polkadotAddress: string
-  nearAddress: string
-  multiversxAddress: string
-  tronAddress: string
-  tezosAddress: string
-  kadenaAddress: string
-  kernelSmartAccountAddress: string
-  safeSmartAccountAddress: string
-  biconomySmartAccountAddress: string
-  relayerRegionURL: string
-  activeChainId: string
-  currentRequestVerifyContext?: Verify.Context
-  sessions: SessionTypes.Struct[]
-  smartAccountSponsorshipEnabled: boolean
-  smartAccountEnabled: boolean
-  kernelSmartAccountEnabled: boolean
-  safeSmartAccountEnabled: boolean
-  biconomySmartAccountEnabled: boolean
-  moduleManagementEnabled: boolean
-  chainAbstractionEnabled: boolean
-=======
     testNets: boolean
     account: number
     w3eaAddress: string
@@ -74,59 +46,12 @@ interface State {
     biconomySmartAccountEnabled: boolean
     moduleManagementEnabled: boolean
     chainAbstractionEnabled: boolean
->>>>>>> Branch_69124a60_walletconnect-raw
 }
 
 /**
  * State
  */
 const state = proxy<State>({
-<<<<<<< HEAD
-  testNets:
-    typeof localStorage !== 'undefined'
-      ? Boolean(localStorage.getItem(TEST_NETS_ENABLED_KEY))
-      : true,
-  account: 0,
-  activeChainId: '1',
-    w3eaAddress: '',
-  eip155Address: '',
-  cosmosAddress: '',
-  solanaAddress: '',
-  polkadotAddress: '',
-  nearAddress: '',
-  multiversxAddress: '',
-  tronAddress: '',
-  tezosAddress: '',
-  kadenaAddress: '',
-  kernelSmartAccountAddress: '',
-  safeSmartAccountAddress: '',
-  biconomySmartAccountAddress: '',
-  relayerRegionURL: '',
-  sessions: [],
-  smartAccountSponsorshipEnabled: false,
-  smartAccountEnabled:
-    typeof localStorage !== 'undefined'
-      ? Boolean(localStorage.getItem(SMART_ACCOUNTS_ENABLED_KEY))
-      : false,
-  kernelSmartAccountEnabled:
-    typeof localStorage !== 'undefined'
-      ? Boolean(localStorage.getItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY))
-      : false,
-  safeSmartAccountEnabled:
-    typeof localStorage !== 'undefined'
-      ? Boolean(localStorage.getItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY))
-      : false,
-  biconomySmartAccountEnabled:
-    typeof localStorage !== 'undefined'
-      ? Boolean(localStorage.getItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY))
-      : false,
-  moduleManagementEnabled:
-    typeof localStorage !== 'undefined'
-      ? Boolean(localStorage.getItem(MODULE_MANAGEMENT_ENABLED_KEY))
-      : false,
-  chainAbstractionEnabled:
-    typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(CA_ENABLED_KEY)) : false
-=======
     testNets:
         typeof localStorage !== 'undefined'
             ? Boolean(localStorage.getItem(TEST_NETS_ENABLED_KEY))
@@ -171,7 +96,6 @@ const state = proxy<State>({
             : false,
     chainAbstractionEnabled:
         typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(CA_ENABLED_KEY)) : false
->>>>>>> Branch_69124a60_walletconnect-raw
 })
 
 /**
@@ -184,20 +108,9 @@ const SettingsStore = {
         state.account = value
     },
 
-<<<<<<< HEAD
-
     setW3eaAddress(w3eaAddress: string) {
         state.w3eaAddress = w3eaAddress
     },
-
-  setEIP155Address(eip155Address: string) {
-    state.eip155Address = eip155Address
-  },
-=======
-    setW3eaAddress(w3eaAddress: string) {
-        state.w3eaAddress = w3eaAddress
-    },
->>>>>>> Branch_69124a60_walletconnect-raw
 
     setEIP155Address(eip155Address: string) {
         state.eip155Address = eip155Address

@@ -14,19 +14,8 @@ let address2: string
  * Utilities
  */
 export function createOrRestoreEIP155Wallet() {
-<<<<<<< HEAD
-    // w3ea web3easyaccess  set to null
-    localStorage.setItem('EIP155_MNEMONIC_1', "")
-    localStorage.setItem('EIP155_MNEMONIC_2', "")
-    return {}
-
-
-  const mnemonic1 = localStorage.getItem('EIP155_MNEMONIC_1')
-  const mnemonic2 = localStorage.getItem('EIP155_MNEMONIC_2')
-=======
     const mnemonic1 = localStorage.getItem('EIP155_MNEMONIC_1')
     const mnemonic2 = localStorage.getItem('EIP155_MNEMONIC_2')
->>>>>>> Branch_69124a60_walletconnect-raw
 
     if (mnemonic1 && mnemonic2) {
         wallet1 = EIP155Lib.init({ mnemonic: mnemonic1 })
@@ -40,14 +29,8 @@ export function createOrRestoreEIP155Wallet() {
         // localStorage.setItem('EIP155_MNEMONIC_2', wallet2.getMnemonic()) // w3ea comments
     }
 
-<<<<<<< HEAD
-
-  address1 = wallet1.getAddress()
-  address2 = wallet2.getAddress()
-=======
     address1 = wallet1.getAddress()
     //caddress2 = wallet2.getAddress()
->>>>>>> Branch_69124a60_walletconnect-raw
 
     eip155Wallets = {
         [address1]: wallet1,
@@ -65,19 +48,11 @@ export function createOrRestoreEIP155Wallet() {
  * Get wallet for the address in params
  */
 export const getWallet = async (params: any) => {
-<<<<<<< HEAD
-    console.log("w3ea,getWallet in eip155WalletUtil,params:", params);
-  const eoaWallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, params)]
-  if (eoaWallet) {
-    return eoaWallet
-  }
-=======
     throw new Error("w3ea, web3easyaccess, set to invalid!");
     const eoaWallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, params)]
     if (eoaWallet) {
         return eoaWallet
     }
->>>>>>> Branch_69124a60_walletconnect-raw
 
     /**
      * Smart accounts

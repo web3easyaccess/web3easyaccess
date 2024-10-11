@@ -8,7 +8,6 @@ import {
 
 export function getWalletCapabilities(addresses: string[]) {
   const walletCapabilities: GetCapabilitiesResult = {}
-    console.log("w3ea,getWalletCapabilities.");
   addresses.forEach(address => {
     const namespacesAddress = address.split(':')
     // address will be the last index element whether

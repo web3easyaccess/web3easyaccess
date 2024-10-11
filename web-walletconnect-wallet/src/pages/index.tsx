@@ -19,9 +19,6 @@ import { useRouter } from 'next/router'
 import ChainAbstractionBalanceCard from '@/components/ChainAbstractionBalanceCard'
 import { getChainKey } from '@/w3ea/web3easyaccess'
 
-import W3eaRecever from '@/w3ea/w3eaReceiver'
-import { getChain } from '@/w3ea/ChainsData'
-
 export default function HomePage() {
   const {
     testNets,
@@ -40,10 +37,6 @@ export default function HomePage() {
   } = useSnapshot(SettingsStore.state)
   const { getAvailableSmartAccounts } = useSmartAccounts()
   const { push } = useRouter()
-
-  const w3eaChain = getChain()
-  const w3eaAddress = eip155Address
-
   return (
     <Fragment>
       <PageHeader title="Accounts">
@@ -54,20 +47,6 @@ export default function HomePage() {
         Mainnets
       </Text>
 
-<<<<<<< HEAD
-      <AccountCard
-        key={w3eaChain.name}
-        name={w3eaChain.name}
-        logo={w3eaChain.logo}
-        rgb={w3eaChain.rgb}
-        address={w3eaAddress}
-        chainId={w3eaChain.chainKey}
-        data-testid={'chain-card-' + w3eaChain.chainKey}
-      />
-
-      {Object.entries(EIP155_TEST_CHAINS)
-        .filter(a => a[0] == 'eip155:11155111')
-=======
       {Object.entries(EIP155_CHAINS)
         .filter(r => r[0] == getChainKey())
         .map(([caip10, { name, logo, rgb }]) => (
@@ -84,7 +63,6 @@ export default function HomePage() {
 
       {Object.entries(EIP155_TEST_CHAINS)
         .filter(r => r[0] == 'eip155:11155111')
->>>>>>> Branch_69124a60_walletconnect-raw
         .map(([caip10, { name, logo, rgb }]) => (
           <AccountCard
             key={name}
@@ -97,10 +75,7 @@ export default function HomePage() {
           />
         ))}
 
-<<<<<<< HEAD
-=======
       {/*     // w3ea comments:
->>>>>>> Branch_69124a60_walletconnect-raw
       {Object.entries(EIP155_MAINNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (
         <AccountCard
           key={name}
@@ -319,12 +294,7 @@ export default function HomePage() {
             />
           ))}
         </Fragment>
-<<<<<<< HEAD
-      ) : null}
-      <W3eaRecever></W3eaRecever>
-=======
       ) : null} */}
->>>>>>> Branch_69124a60_walletconnect-raw
     </Fragment>
   )
 }

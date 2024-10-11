@@ -138,7 +138,7 @@ export async function createOrRestoreSafeSmartAccount(privateKey: string) {
   if (libs.length === 0) {
     throw new Error('No safe smart account initialized')
   }
-    console.log("w3ea,createOrRestoreSafeSmartAccount.");
+
   libs.forEach(lib => {
     const address = lib.getAddress()
     const key = `${lib.chain.id}:${address}`
@@ -160,7 +160,6 @@ export function removeSmartAccount(address: string) {
   }
 }
 export function removeSmartAccounts(addresses: string[]) {
-    console.log("w3ea,removeSmartAccounts.");
   addresses.forEach(address => {
     if (smartAccountWallets[address]) {
       delete smartAccountWallets[address]

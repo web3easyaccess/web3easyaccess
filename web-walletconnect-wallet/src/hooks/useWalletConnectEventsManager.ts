@@ -19,11 +19,9 @@ import { formatJsonRpcError } from '@json-rpc-tools/utils'
 import { approveEIP5792Request } from '@/utils/EIP5792RequestHandlerUtils'
 import EIP155Lib from '@/lib/EIP155Lib'
 import { getWallet } from '@/utils/EIP155WalletUtil'
-import { getW3eaWallet } from '@/w3ea/web3easyaccess'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import { refreshSessionsList } from '@/pages/wc'
 import { loadW3eaWallet } from '@/w3ea/web3easyaccess'
-
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
     /******************************************************************************
@@ -45,25 +43,6 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         ModalStore.open('AuthRequestModal', { request })
     }, [])
 
-<<<<<<< HEAD
-  /******************************************************************************
-   * 3. Open request handling modal based on method that was used
-   *****************************************************************************/
-  const onSessionRequest = useCallback(
-    async (requestEvent: SignClientTypes.EventArguments['session_request']) => {
-      const { topic, params, verifyContext, id } = requestEvent
-      const { request } = params
-      const requestSession = web3wallet.engine.signClient.session.get(topic)
-      // set the verify context so it can be displayed in the projectInfoCard
-      SettingsStore.setCurrentRequestVerifyContext(verifyContext)
-            console.log("w3ea,session_request, request:", request);
-            console.log("w3ea,session_request, requestEvent:", requestEvent);
-            console.log("w3ea,session_request, requestSession:", requestSession);
-      switch (request.method) {
-        case EIP155_SIGNING_METHODS.ETH_SIGN:
-        case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
-          return ModalStore.open('SessionSignModal', { requestEvent, requestSession })
-=======
     /******************************************************************************
      * 3. Open request handling modal based on method that was used
      *****************************************************************************/
@@ -78,7 +57,6 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
                 case EIP155_SIGNING_METHODS.ETH_SIGN:
                 case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
                     return ModalStore.open('SessionSignModal', { requestEvent, requestSession })
->>>>>>> Branch_69124a60_walletconnect-raw
 
                 case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA:
                 case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3:
@@ -106,20 +84,6 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
                         response: formatJsonRpcError(id, "Wallet currently don't show call status.")
                     })
 
-<<<<<<< HEAD
-        case EIP5792_METHODS.WALLET_SEND_CALLS: {
-                    console.log('w3ea,event EIP5792_METHODS.WALLET_SEND_CALLS, call getW3eaWallet.')
-                    const wallet = await getW3eaWallet(params); // getWallet(params)
-          if (wallet instanceof EIP155Lib) {
-            /**
-             * Not Supporting for batch calls on EOA for now.
-             * if EOA, we can submit call one by one, but need to have a data structure
-             * to return bundle id, for all the calls,
-             */
-            return await web3wallet.respondSessionRequest({
-              topic,
-              response: formatJsonRpcError(id, "Wallet currently don't support batch call for EOA")
-=======
                 case EIP5792_METHODS.WALLET_SEND_CALLS: {
                     // const wallet = await getWallet(params)  // w3ea comments
                     const { w3eaAddress, w3eaWallet: wallet } = loadW3eaWallet();
@@ -218,101 +182,10 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
             web3wallet.on('session_delete', data => {
                 console.log('session_delete event received', data)
                 refreshSessionsList()
->>>>>>> Branch_69124a60_walletconnect-raw
             })
             web3wallet.on('session_authenticate', onSessionAuthenticate)
             // load sessions on init
             refreshSessionsList()
         }
-<<<<<<< HEAD
-
-        case COSMOS_SIGNING_METHODS.COSMOS_SIGN_DIRECT:
-        case COSMOS_SIGNING_METHODS.COSMOS_SIGN_AMINO:
-          return ModalStore.open('SessionSignCosmosModal', { requestEvent, requestSession })
-
-        case SOLANA_SIGNING_METHODS.SOLANA_SIGN_MESSAGE:
-        case SOLANA_SIGNING_METHODS.SOLANA_SIGN_TRANSACTION:
-        case SOLANA_SIGNING_METHODS.SOLANA_SIGN_AND_SEND_TRANSACTION:
-        case SOLANA_SIGNING_METHODS.SOLANA_SIGN_ALL_TRANSACTIONS:
-          return ModalStore.open('SessionSignSolanaModal', { requestEvent, requestSession })
-
-        case POLKADOT_SIGNING_METHODS.POLKADOT_SIGN_MESSAGE:
-        case POLKADOT_SIGNING_METHODS.POLKADOT_SIGN_TRANSACTION:
-          return ModalStore.open('SessionSignPolkadotModal', { requestEvent, requestSession })
-
-        case NEAR_SIGNING_METHODS.NEAR_SIGN_IN:
-        case NEAR_SIGNING_METHODS.NEAR_SIGN_OUT:
-        case NEAR_SIGNING_METHODS.NEAR_SIGN_TRANSACTION:
-        case NEAR_SIGNING_METHODS.NEAR_SIGN_AND_SEND_TRANSACTION:
-        case NEAR_SIGNING_METHODS.NEAR_SIGN_TRANSACTIONS:
-        case NEAR_SIGNING_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS:
-        case NEAR_SIGNING_METHODS.NEAR_VERIFY_OWNER:
-        case NEAR_SIGNING_METHODS.NEAR_SIGN_MESSAGE:
-          return ModalStore.open('SessionSignNearModal', { requestEvent, requestSession })
-
-        case MULTIVERSX_SIGNING_METHODS.MULTIVERSX_SIGN_MESSAGE:
-        case MULTIVERSX_SIGNING_METHODS.MULTIVERSX_SIGN_TRANSACTION:
-        case MULTIVERSX_SIGNING_METHODS.MULTIVERSX_SIGN_TRANSACTIONS:
-        case MULTIVERSX_SIGNING_METHODS.MULTIVERSX_SIGN_LOGIN_TOKEN:
-        case MULTIVERSX_SIGNING_METHODS.MULTIVERSX_SIGN_NATIVE_AUTH_TOKEN:
-          return ModalStore.open('SessionSignMultiversxModal', { requestEvent, requestSession })
-
-        case NEAR_SIGNING_METHODS.NEAR_GET_ACCOUNTS:
-          return web3wallet.respondSessionRequest({
-            topic,
-            response: await approveNearRequest(requestEvent)
-          })
-
-        case TRON_SIGNING_METHODS.TRON_SIGN_MESSAGE:
-        case TRON_SIGNING_METHODS.TRON_SIGN_TRANSACTION:
-          return ModalStore.open('SessionSignTronModal', { requestEvent, requestSession })
-        case TEZOS_SIGNING_METHODS.TEZOS_GET_ACCOUNTS:
-        case TEZOS_SIGNING_METHODS.TEZOS_SEND:
-        case TEZOS_SIGNING_METHODS.TEZOS_SIGN:
-          return ModalStore.open('SessionSignTezosModal', { requestEvent, requestSession })
-        case KADENA_SIGNING_METHODS.KADENA_GET_ACCOUNTS:
-        case KADENA_SIGNING_METHODS.KADENA_SIGN:
-        case KADENA_SIGNING_METHODS.KADENA_QUICKSIGN:
-          return ModalStore.open('SessionSignKadenaModal', { requestEvent, requestSession })
-        default:
-          return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  )
-
-  const onSessionAuthenticate = useCallback(
-    (authRequest: SignClientTypes.EventArguments['session_authenticate']) => {
-      ModalStore.open('SessionAuthenticateModal', { authRequest })
-    },
-    []
-  )
-
-  /******************************************************************************
-   * Set up WalletConnect event listeners
-   *****************************************************************************/
-  useEffect(() => {
-        console.log("w3ea, Set up WalletConnect event listeners1:", initialized);
-        console.log("w3ea, Set up WalletConnect event listeners2:", web3wallet);
-    if (initialized && web3wallet) {
-      //sign
-      web3wallet.on('session_proposal', onSessionProposal)
-      web3wallet.on('session_request', onSessionRequest)
-      // auth
-      web3wallet.on('auth_request', onAuthRequest)
-      // TODOs
-      web3wallet.engine.signClient.events.on('session_ping', data => console.log('ping', data))
-      web3wallet.on('session_delete', data => {
-        console.log('session_delete event received', data)
-        refreshSessionsList()
-      })
-      web3wallet.on('session_authenticate', onSessionAuthenticate)
-      // load sessions on init
-      refreshSessionsList()
-    }
-  }, [initialized, onAuthRequest, onSessionAuthenticate, onSessionProposal, onSessionRequest])
-=======
     }, [initialized, onAuthRequest, onSessionAuthenticate, onSessionProposal, onSessionRequest])
->>>>>>> Branch_69124a60_walletconnect-raw
 }

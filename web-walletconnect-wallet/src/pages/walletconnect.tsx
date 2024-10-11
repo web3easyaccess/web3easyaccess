@@ -16,7 +16,6 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
     const { topic: pairingTopic } = parseUri(uri)
     // if for some reason, the proposal is not received, we need to close the modal when the pairing expires (5mins)
     const pairingExpiredListener = ({ topic }: { topic: string }) => {
-      console.log('w3ea, pairingExpiredListener, topic:', topic)
       if (pairingTopic === topic) {
         styledToast('Pairing expired. Please try again with new Connection URI', 'error')
         ModalStore.close()
@@ -28,7 +27,6 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
     })
     try {
       setLoading(true)
-      console.log('w3ea, setLoading.')
       web3wallet.core.pairing.events.on('pairing_expire', pairingExpiredListener)
       await web3wallet.pair({ uri })
     } catch (error) {

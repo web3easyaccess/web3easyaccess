@@ -9,8 +9,6 @@ import {
     supportedEIP5792CapabilitiesForSCA
 } from '@/data/EIP5792Data'
 import { getWallet } from '@/utils/EIP155WalletUtil'
-import { getW3eaWallet } from '@/w3ea/web3easyaccess'
-
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
@@ -62,43 +60,6 @@ const getCallsReceipt = async (getCallParams: GetCallsParams) => {
 }
 
 export async function approveEIP5792Request(requestEvent: RequestEventArgs) {
-<<<<<<< HEAD
-    console.log("w3ea,approveEIP5792Request,requestEvent:", requestEvent);
-  const { params, id } = requestEvent
-  const { chainId, request } = params
-  SettingsStore.setActiveChainId(chainId)
-  switch (request.method) {
-    case EIP5792_METHODS.WALLET_GET_CAPABILITIES: {
-            console.log('w3ea,approveEIP155Request,zzz, call getW3eaWallet.')
-            const wallet = await getW3eaWallet(params); // getWallet(params)
-      if (wallet instanceof EIP155Lib)
-        return formatJsonRpcResult<GetCapabilitiesResult>(id, supportedEIP5792CapabilitiesForEOA)
-
-      return formatJsonRpcResult<GetCapabilitiesResult>(id, supportedEIP5792CapabilitiesForSCA)
-    }
-    case EIP5792_METHODS.WALLET_GET_CALLS_STATUS: {
-      try {
-        const getCallParams = request.params[0] as GetCallsParams
-        const receipt = await getCallsReceipt(getCallParams)
-        return formatJsonRpcResult(id, receipt)
-      } catch (error: any) {
-        console.error(error)
-        alert(error.message)
-        return formatJsonRpcError(id, error.message)
-      }
-    }
-
-    case EIP5792_METHODS.WALLET_SHOW_CALLS_STATUS: {
-      // TODO: Added support for show calls status
-      return formatJsonRpcError(id, 'Not supported.')
-    }
-    case EIP5792_METHODS.WALLET_SEND_CALLS: {
-      try {
-                console.log('w3ea,EIP5792_METHODS.WALLET_SEND_CALLS,zzz, call getW3eaWallet.')
-                const wallet = await getW3eaWallet(params); // getWallet(params)
-        if (wallet instanceof EIP155Lib) {
-          return formatJsonRpcError(id, "Wallet currently don't support batch call for EOA")
-=======
     const { params, id } = requestEvent
     const { chainId, request } = params
     SettingsStore.setActiveChainId(chainId)
@@ -110,7 +71,6 @@ export async function approveEIP5792Request(requestEvent: RequestEventArgs) {
                 return formatJsonRpcResult<GetCapabilitiesResult>(id, supportedEIP5792CapabilitiesForEOA)
 
             return formatJsonRpcResult<GetCapabilitiesResult>(id, supportedEIP5792CapabilitiesForSCA)
->>>>>>> Branch_69124a60_walletconnect-raw
         }
         case EIP5792_METHODS.WALLET_GET_CALLS_STATUS: {
             try {
