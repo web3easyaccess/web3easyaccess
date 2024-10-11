@@ -2,7 +2,7 @@ import AccountCard from '@/components/AccountCard'
 import AccountPicker from '@/components/AccountPicker'
 import PageHeader from '@/components/PageHeader'
 import { COSMOS_MAINNET_CHAINS } from '@/data/COSMOSData'
-import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS } from '@/data/EIP155Data'
+import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS, EIP155_CHAINS } from '@/data/EIP155Data'
 import { SOLANA_MAINNET_CHAINS, SOLANA_TEST_CHAINS } from '@/data/SolanaData'
 import { POLKADOT_MAINNET_CHAINS, POLKADOT_TEST_CHAINS } from '@/data/PolkadotData'
 import { MULTIVERSX_MAINNET_CHAINS, MULTIVERSX_TEST_CHAINS } from '@/data/MultiversxData'
@@ -17,10 +17,12 @@ import { useSnapshot } from 'valtio'
 import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { useRouter } from 'next/router'
 import ChainAbstractionBalanceCard from '@/components/ChainAbstractionBalanceCard'
+import { getChainKey } from '@/w3ea/web3easyaccess'
 
 export default function HomePage() {
   const {
     testNets,
+    w3eaAddress,
     eip155Address,
     cosmosAddress,
     solanaAddress,
@@ -44,6 +46,20 @@ export default function HomePage() {
       <Text h4 css={{ marginBottom: '$5' }}>
         Mainnets
       </Text>
+
+      {Object.entries(EIP155_CHAINS)
+        .filter(r => r[0] == getChainKey())
+        .map(([caip10, { name, logo, rgb }]) => (
+          <AccountCard
+            key={name}
+            name={name}
+            logo={logo}
+            rgb={rgb}
+            address={w3eaAddress}
+            chainId={caip10.toString()}
+            data-testid={'chain-card-' + caip10.toString()}
+          />
+        ))}
 
       {Object.entries(EIP155_TEST_CHAINS)
         .filter(r => r[0] == 'eip155:11155111')

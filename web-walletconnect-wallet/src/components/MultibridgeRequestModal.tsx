@@ -47,6 +47,7 @@ export default function MultibridgeRequestModal({
       throw new Error('Bridging request is unavailable')
     }
 
+    console.log('w3ea, MultibridgeRequestModal, getWallet')
     const wallet = await getWallet(params)
 
     const asset = getAssetByContractAddress(bridgingRequest.transfer.contract)

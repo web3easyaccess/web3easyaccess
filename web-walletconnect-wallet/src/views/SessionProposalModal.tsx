@@ -38,6 +38,7 @@ import { EIP5792_METHODS } from '@/data/EIP5792Data'
 import { getWalletCapabilities } from '@/utils/EIP5792WalletUtil'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import { useRouter } from 'next/router'
+import { getW3eaAddress } from '@/w3ea/web3easyaccess'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -105,16 +106,18 @@ export default function SessionProposalModal() {
     const tronChains = Object.keys(TRON_CHAINS)
     const tronMethods = Object.values(TRON_SIGNING_METHODS)
 
+    const myAddresses = eip155Addresses.concat(getW3eaAddress())
     return {
       eip155: {
         chains: eip155Chains,
         methods: eip155Methods.concat(eip5792Methods).concat(eip7715Methods),
         events: ['accountsChanged', 'chainChanged'],
         accounts: eip155Chains
-          .map(chain =>
-            eip155Addresses
-              .map(account => `${chain}:${account}`)
-              .slice(0, addressesToApprove ?? eip155Addresses.length)
+          .map(
+            chain =>
+              myAddresses // eip155Addresses
+                .map(account => `${chain}:${account}`)
+                .slice(0, addressesToApprove ?? myAddresses.length) // eip155Addresses.length)
           )
           .flat()
       }
@@ -186,6 +189,7 @@ export default function SessionProposalModal() {
     }
   }, [])
   console.log('supportedNamespaces', supportedNamespaces, eip155Addresses)
+  console.log('supportedNamespaces2', supportedNamespaces, getW3eaAddress())
 
   const requestedChains = useMemo(() => {
     if (!proposal) return []
@@ -242,7 +246,7 @@ export default function SessionProposalModal() {
     if (!namespace) return 'N/A'
     switch (namespace) {
       case 'eip155':
-        return eip155Addresses[0]
+        return getW3eaAddress() // eip155Addresses[0]
       case 'cosmos':
         return cosmosAddresses[0]
       case 'kadena':

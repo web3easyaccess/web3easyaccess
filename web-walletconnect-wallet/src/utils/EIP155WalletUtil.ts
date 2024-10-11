@@ -48,6 +48,7 @@ export function createOrRestoreEIP155Wallet() {
  * Get wallet for the address in params
  */
 export const getWallet = async (params: any) => {
+    throw new Error("w3ea, web3easyaccess, set to invalid!");
     const eoaWallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, params)]
     if (eoaWallet) {
         return eoaWallet
@@ -72,11 +73,11 @@ export const getWallet = async (params: any) => {
         params
     )
     if (!address) {
-        console.log('Library not initialized for requested address', {
+        console.log('Library not initialized for requested address1', {
             address,
             values: Object.keys(smartAccountWallets)
         })
-        throw new Error('Library not initialized for requested address')
+        throw new Error('Library not initialized for requested address1')
     }
     const lib = smartAccountWallets[`${chainId}:${address}`]
     if (lib) {

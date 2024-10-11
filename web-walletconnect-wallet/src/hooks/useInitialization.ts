@@ -12,6 +12,7 @@ import { createOrRestoreKadenaWallet } from '@/utils/KadenaWalletUtil'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import useSmartAccounts from './useSmartAccounts'
+import { loadW3eaWallet } from '@/w3ea/web3easyaccess'
 
 export default function useInitialization() {
     const [initialized, setInitialized] = useState(false)
@@ -22,6 +23,7 @@ export default function useInitialization() {
 
     const onInitialize = useCallback(async () => {
         try {
+            const { w3eaAddress, w3eaWallet } = loadW3eaWallet()
             const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
             // w3ea comments:
             //   const { cosmosAddresses } = await createOrRestoreCosmosWallet()
@@ -33,6 +35,8 @@ export default function useInitialization() {
             //   const { tezosAddresses } = await createOrRestoreTezosWallet()
             //   const { kadenaAddresses } = await createOrRestoreKadenaWallet()
             //   await initializeSmartAccounts(eip155Wallets[eip155Addresses[0]].getPrivateKey())
+
+            SettingsStore.setW3eaAddress(w3eaAddress)
 
             SettingsStore.setEIP155Address(eip155Addresses[0])
             // w3ea comments:
