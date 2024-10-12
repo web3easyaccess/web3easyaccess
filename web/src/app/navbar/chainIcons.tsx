@@ -222,20 +222,19 @@ export const ChainIcons = ({
             </Tooltip>
             {/* </Badge> */}
 
+            <Tooltip content="MorphL2 testnet">
+                <Avatar
+                    src="/chain/morphl2test.png"
+                    size={morphl2testState.size}
+                    isBordered={morphl2testState.bordered}
+                    onClick={() => {
+                        handleClick(ChainCode.MORPH_TEST_CHAIN);
+                    }}
+                    color="primary"
+                    radius="sm"
+                />
+            </Tooltip>
             <div style={{ display: "none" }}>
-                <Tooltip content="MorphL2 testnet">
-                    <Avatar
-                        src="/chain/morphl2test.png"
-                        size={morphl2testState.size}
-                        isBordered={morphl2testState.bordered}
-                        onClick={() => {
-                            handleClick(ChainCode.MORPH_TEST_CHAIN);
-                        }}
-                        color="primary"
-                        radius="sm"
-                    />
-                </Tooltip>
-
                 <Tooltip content="anvil testnet">
                     <Avatar
                         src="/chain/anvil.png"

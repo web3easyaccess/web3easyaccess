@@ -1,4 +1,20 @@
 "use client";
+
+type Message = {
+    msgType:
+        | "childReady"
+        | "initializeChild"
+        | "signMessage"
+        | "signTransaction";
+    chainKey: string;
+    address: string;
+    msgIdx: number;
+    msg: {
+        chatId: string;
+        content: any;
+    };
+};
+
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { UserProperty } from "../storage/LocalStore";
 import { Button } from "@nextui-org/react";
@@ -29,18 +45,23 @@ export default function Exploredapps({
 
     const walleconnectHost = "http://localhost:3001"; // process.env.CHILD_W3EA_WALLETCONNECT_HOST
 
-    const childOK = useRef(false);
     //回调函数
-    function receiveMessageFromChild(event) {
+    async function receiveMessageFromChild(event) {
         if (event.origin == walleconnectHost) {
             console.log(
-                "我是parent,我接收到 walletconnect的消息: ",
+                "parent here,receve msg from walletconnect: ",
                 event.data
             );
-            const reportMsg = "child[walletconnect]OK";
-            if (event.data == reportMsg) {
-                childOK.current = true;
-                writeWalletConnectData();
+            const msg: Message = event.data;
+            if (msg.msgType == "childReady") {
+                writeWalletConnectData("initializeChild", "", "");
+            } else if (msg.msgType == "signMessage") {
+                const chatId = msg.msg.chatId;
+                const content = msg.msg.content;
+                const hash = await signMessage(content);
+                writeWalletConnectData("signMessage", chatId, hash);
+            } else {
+                console.log("not supported msg:", msg);
             }
         }
     }
@@ -48,30 +69,54 @@ export default function Exploredapps({
     window.addEventListener("message", receiveMessageFromChild, false);
 
     const msgIndex = useRef(0);
-    const lastWriteValue = useRef("");
-    const writeWalletConnectData = () => {
-        if (childOK.current != true) {
-            return;
-        }
+    const lastMsgIndex = useRef(0);
 
-        const thisValue = chainKey + ":" + accountAddr;
-        if (lastWriteValue.current != thisValue) {
-            //必须是iframe加载完成后才可以向子域发送数据
-            const childFrameObj = document.getElementById("w3eaWalletconnect");
-            msgIndex.current = msgIndex.current + 1;
-            const data = {
-                msgIdx: msgIndex.current,
-                address: accountAddr,
-                chainKey: chainKey,
-            };
-            console.log("writeWalletConnectData....:", data, walleconnectHost);
-            childFrameObj.contentWindow.postMessage(data, walleconnectHost); //window.postMessage
-            lastWriteValue.current = thisValue;
+    const writeWalletConnectData = async (
+        msgType:
+            | "childReady"
+            | "initializeChild"
+            | "signMessage"
+            | "signTransaction",
+        chatId: string,
+        content: any
+    ) => {
+        console.log("writeWalletConnectData,", msgType, chatId, content);
+
+        msgIndex.current = msgIndex.current + 1;
+        const msg: Message = {
+            msgType: msgType,
+            chainKey: chainKey,
+            address: accountAddr,
+            msgIdx: msgIndex.current,
+            msg: {
+                chatId: chatId,
+                content: content,
+            },
+        };
+
+        const childFrameObj = document.getElementById("w3eaWalletconnect");
+
+        console.log("writeWalletConnectData....:", msg, walleconnectHost);
+        console.log("writeWalletConnectData....2:", childFrameObj);
+        let k = 0;
+        for (k = 0; k < 100; k++) {
+            try {
+                console.log("send to child 111.");
+                childFrameObj.contentWindow.postMessage(msg, walleconnectHost); //window.postMessage
+                console.log("send to child 222.");
+                break;
+            } catch (e) {
+                console.log("send to child error, retry.", e);
+                await sleep(100);
+            }
+        }
+        if (k > 90) {
+            console.log("fff.kkkk error!");
         }
     };
 
     useEffect(() => {
-        writeWalletConnectData();
+        writeWalletConnectData("initializeChild", "", "");
     }, [userProp.state]);
 
     const wallet = () => {
@@ -90,3 +135,49 @@ export default function Exploredapps({
 
     return <div>{wallet()}</div>;
 }
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+const signMessage = async (msg: string) => {
+    return "sss:" + msg;
+    // let sign: {
+    //     signature: string;
+    //     eoa: any;
+    //     nonce: string;
+    // } = { signature: "", eoa: "", nonce: "" };
+
+    // let argumentsHash = "";
+    // if (libsolana.isSolana(chainObj.chainCode)) {
+    //     console.log("solana useless!2");
+    //     argumentsHash = "0x0";
+    //     sign.signature = "solana useless!signature.22.";
+    // } else {
+    //     argumentsHash = encodeAbiParameters(
+    //         [
+    //             { name: "funcId", type: "uint256" },
+    //             { name: "to", type: "address" },
+    //             { name: "amount", type: "uint256" },
+    //             { name: "data", type: "bytes" },
+    //             { name: "estimatedFee", type: "uint256" },
+    //         ],
+    //         [BigInt(3), receiverAddr, receiverAmt, receiverData, execCost]
+    //     );
+
+    //     argumentsHash = keccak256(argumentsHash);
+    //     console.log("encodeAbiParameters3333bbb:", argumentsHash);
+    //     let chainId = chainObj.id;
+    //     if (bridgeDirection == "L1ToL2") {
+    //         // L2 is selected, but it need to switch to L1
+    //         chainId = getChainObj(chainObj.l1ChainCode).id;
+    //     }
+    //     let withZeroNonce = !myAccountCreated;
+    //     sign = await signAuth(
+    //         passwdAccount,
+    //         chainId,
+    //         myContractAccount,
+    //         chainObj,
+    //         argumentsHash,
+    //         withZeroNonce
+    //     );
+    // }
+};
