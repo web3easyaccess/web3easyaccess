@@ -15,10 +15,16 @@ type Message = {
     };
 };
 
+import * as libsolana from "@/app/lib/client/solana/libsolana";
+
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { UserProperty } from "../storage/LocalStore";
 import { Button } from "@nextui-org/react";
 import { getChainObj } from "../lib/myChain";
+import { ChainCode } from "../lib/myTypes";
+import { encodeAbiParameters, keccak256, hashMessage } from "viem";
+import { signAuth } from "../lib/client/signAuthTypedData";
+import { getPasswdAccount, PrivateInfoType } from "../lib/client/keyTools";
 
 export default function Exploredapps({
     userProp,
@@ -43,6 +49,17 @@ export default function Exploredapps({
     const chainKey = "eip155:" + chainObj.id; // todo ,for evm now.
     const accountAddr = userProp.ref.current.selectedAccountAddr;
 
+    const tmpPrivateInfo: PrivateInfoType = {
+        email: "zhtkeepup@gmail.com",
+        pin: "zhuhuatongA!23456",
+        question1answer: "zhuyinuo",
+        question2answer: "zhuyinuo",
+        firstQuestionNo: "",
+        secondQuestionNo: "",
+        confirmedSecondary: false,
+    };
+    const passwdAccount = getPasswdAccount(tmpPrivateInfo, chainObj.chainCode);
+
     const walleconnectHost = "http://localhost:3001"; // process.env.CHILD_W3EA_WALLETCONNECT_HOST
 
     //回调函数
@@ -58,7 +75,12 @@ export default function Exploredapps({
             } else if (msg.msgType == "signMessage") {
                 const chatId = msg.msg.chatId;
                 const content = msg.msg.content;
-                const hash = await signMessage(content);
+                const hash = await signMessage(
+                    passwdAccount,
+                    accountAddr,
+                    content,
+                    chainObj
+                );
                 writeWalletConnectData("signMessage", chatId, hash);
             } else {
                 console.log("not supported msg:", msg);
@@ -138,46 +160,46 @@ export default function Exploredapps({
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-const signMessage = async (msg: string) => {
-    return "sss:" + msg;
-    // let sign: {
-    //     signature: string;
-    //     eoa: any;
-    //     nonce: string;
-    // } = { signature: "", eoa: "", nonce: "" };
+const signMessage = async (
+    passwdAccount: any,
+    accountAddr: string,
+    msg: string,
+    chainObj: {
+        id: number;
+        name: string;
+        nativeCurrency: {};
+        rpcUrls: {};
+        blockExplorers: {};
+        contracts: {};
+        testnet: boolean;
+        chainCode: ChainCode;
+        l1ChainCode: ChainCode;
+    }
+) => {
+    let sign: {
+        signature: string;
+        eoa: any;
+        nonce: string;
+    } = { signature: "", eoa: "", nonce: "" };
 
-    // let argumentsHash = "";
-    // if (libsolana.isSolana(chainObj.chainCode)) {
-    //     console.log("solana useless!2");
-    //     argumentsHash = "0x0";
-    //     sign.signature = "solana useless!signature.22.";
-    // } else {
-    //     argumentsHash = encodeAbiParameters(
-    //         [
-    //             { name: "funcId", type: "uint256" },
-    //             { name: "to", type: "address" },
-    //             { name: "amount", type: "uint256" },
-    //             { name: "data", type: "bytes" },
-    //             { name: "estimatedFee", type: "uint256" },
-    //         ],
-    //         [BigInt(3), receiverAddr, receiverAmt, receiverData, execCost]
-    //     );
-
-    //     argumentsHash = keccak256(argumentsHash);
-    //     console.log("encodeAbiParameters3333bbb:", argumentsHash);
-    //     let chainId = chainObj.id;
-    //     if (bridgeDirection == "L1ToL2") {
-    //         // L2 is selected, but it need to switch to L1
-    //         chainId = getChainObj(chainObj.l1ChainCode).id;
-    //     }
-    //     let withZeroNonce = !myAccountCreated;
-    //     sign = await signAuth(
-    //         passwdAccount,
-    //         chainId,
-    //         myContractAccount,
-    //         chainObj,
-    //         argumentsHash,
-    //         withZeroNonce
-    //     );
-    // }
+    let argumentsHash = "";
+    if (libsolana.isSolana(chainObj.chainCode)) {
+        console.log("solana useless!2");
+        argumentsHash = "0x0";
+        sign.signature = "solana useless!signature.22.";
+    } else {
+        argumentsHash = hashMessage(msg);
+        console.log("encodeAbiParameters3333bbb:", argumentsHash);
+        let chainId = "" + chainObj.id;
+        sign = await signAuth(
+            passwdAccount,
+            chainId,
+            accountAddr,
+            chainObj,
+            argumentsHash,
+            false
+        );
+        console.log("signAuth,777,:", sign);
+        return sign.signature;
+    }
 };

@@ -55,7 +55,7 @@ async function _queryNonce(chainCode: string, myAddr: string, myAccount: any) {
     } catch (e) {
         console.log(
             "==================_queryNonce error======================, myAddr=" +
-                myAddr,
+            myAddr,
             e
         );
         throw new Error("_queryNonce error!");
