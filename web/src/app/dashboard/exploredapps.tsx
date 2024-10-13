@@ -23,11 +23,7 @@ import { Button } from "@nextui-org/react";
 import { getChainObj } from "../lib/myChain";
 import { ChainCode } from "../lib/myTypes";
 import { encodeAbiParameters, keccak256, hashMessage } from "viem";
-<<<<<<< HEAD
 import { signAuth, signPersonalMessage } from "../lib/client/signAuthTypedData";
-=======
-import { signAuth } from "../lib/client/signAuthTypedData";
->>>>>>> cf56f8cedf7b2d696452669af0e59eaf6937f5de
 import { getPasswdAccount, PrivateInfoType } from "../lib/client/keyTools";
 
 export default function Exploredapps({
@@ -54,17 +50,10 @@ export default function Exploredapps({
     const accountAddr = userProp.ref.current.selectedAccountAddr;
 
     const tmpPrivateInfo: PrivateInfoType = {
-<<<<<<< HEAD
         email: "",
         pin: "",
         question1answer: "",
         question2answer: "",
-=======
-        email: "zhtkeepup@gmail.com",
-        pin: "zhuhuatongA!23456",
-        question1answer: "zhuyinuo",
-        question2answer: "zhuyinuo",
->>>>>>> cf56f8cedf7b2d696452669af0e59eaf6937f5de
         firstQuestionNo: "",
         secondQuestionNo: "",
         confirmedSecondary: false,
@@ -199,26 +188,14 @@ const signMessage = async (
         argumentsHash = "0x0";
         sign.signature = "solana useless!signature.22.";
     } else {
-<<<<<<< HEAD
         console.log("signPersonalMessage:", msg);
         let chainId = "" + chainObj.id;
         sign = await signPersonalMessage(
-=======
-        argumentsHash = hashMessage(msg);
-        console.log("encodeAbiParameters3333bbb:", argumentsHash);
-        let chainId = "" + chainObj.id;
-        sign = await signAuth(
->>>>>>> cf56f8cedf7b2d696452669af0e59eaf6937f5de
             passwdAccount,
             chainId,
             accountAddr,
             chainObj,
-<<<<<<< HEAD
             msg
-=======
-            argumentsHash,
-            false
->>>>>>> cf56f8cedf7b2d696452669af0e59eaf6937f5de
         );
         console.log("signAuth,777,:", sign);
         return sign.signature;
