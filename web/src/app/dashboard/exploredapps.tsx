@@ -1,8 +1,30 @@
 "use client";
+
+type Message = {
+    msgType:
+        | "childReady"
+        | "initializeChild"
+        | "signMessage"
+        | "signTransaction";
+    chainKey: string;
+    address: string;
+    msgIdx: number;
+    msg: {
+        chatId: string;
+        content: any;
+    };
+};
+
+import * as libsolana from "@/app/lib/client/solana/libsolana";
+
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { UserProperty } from "../storage/LocalStore";
 import { Button } from "@nextui-org/react";
 import { getChainObj } from "../lib/myChain";
+import { ChainCode } from "../lib/myTypes";
+import { encodeAbiParameters, keccak256, hashMessage } from "viem";
+import { signAuth, signPersonalMessage } from "../lib/client/signAuthTypedData";
+import { getPasswdAccount, PrivateInfoType } from "../lib/client/keyTools";
 
 export default function Exploredapps({
     userProp,
@@ -27,20 +49,41 @@ export default function Exploredapps({
     const chainKey = "eip155:" + chainObj.id; // todo ,for evm now.
     const accountAddr = userProp.ref.current.selectedAccountAddr;
 
+    const tmpPrivateInfo: PrivateInfoType = {
+        email: "",
+        pin: "",
+        question1answer: "",
+        question2answer: "",
+        firstQuestionNo: "",
+        secondQuestionNo: "",
+        confirmedSecondary: false,
+    };
+    const passwdAccount = getPasswdAccount(tmpPrivateInfo, chainObj.chainCode);
+
     const walleconnectHost = "http://localhost:3001"; // process.env.CHILD_W3EA_WALLETCONNECT_HOST
 
-    const childOK = useRef(false);
     //回调函数
-    function receiveMessageFromChild(event) {
+    async function receiveMessageFromChild(event) {
         if (event.origin == walleconnectHost) {
             console.log(
-                "我是parent,我接收到 walletconnect的消息: ",
+                "parent here,receve msg from walletconnect: ",
                 event.data
             );
-            const reportMsg = "child[walletconnect]OK";
-            if (event.data == reportMsg) {
-                childOK.current = true;
-                writeWalletConnectData();
+            const msg: Message = event.data;
+            if (msg.msgType == "childReady") {
+                writeWalletConnectData("initializeChild", "", "");
+            } else if (msg.msgType == "signMessage") {
+                const chatId = msg.msg.chatId;
+                const content = msg.msg.content;
+                const hash = await signMessage(
+                    passwdAccount,
+                    accountAddr,
+                    content,
+                    chainObj
+                );
+                writeWalletConnectData("signMessage", chatId, hash);
+            } else {
+                console.log("not supported msg:", msg);
             }
         }
     }
@@ -48,30 +91,54 @@ export default function Exploredapps({
     window.addEventListener("message", receiveMessageFromChild, false);
 
     const msgIndex = useRef(0);
-    const lastWriteValue = useRef("");
-    const writeWalletConnectData = () => {
-        if (childOK.current != true) {
-            return;
-        }
+    const lastMsgIndex = useRef(0);
 
-        const thisValue = chainKey + ":" + accountAddr;
-        if (lastWriteValue.current != thisValue) {
-            //必须是iframe加载完成后才可以向子域发送数据
-            const childFrameObj = document.getElementById("w3eaWalletconnect");
-            msgIndex.current = msgIndex.current + 1;
-            const data = {
-                msgIdx: msgIndex.current,
-                address: accountAddr,
-                chainKey: chainKey,
-            };
-            console.log("writeWalletConnectData....:", data, walleconnectHost);
-            childFrameObj.contentWindow.postMessage(data, walleconnectHost); //window.postMessage
-            lastWriteValue.current = thisValue;
+    const writeWalletConnectData = async (
+        msgType:
+            | "childReady"
+            | "initializeChild"
+            | "signMessage"
+            | "signTransaction",
+        chatId: string,
+        content: any
+    ) => {
+        console.log("writeWalletConnectData,", msgType, chatId, content);
+
+        msgIndex.current = msgIndex.current + 1;
+        const msg: Message = {
+            msgType: msgType,
+            chainKey: chainKey,
+            address: accountAddr,
+            msgIdx: msgIndex.current,
+            msg: {
+                chatId: chatId,
+                content: content,
+            },
+        };
+
+        const childFrameObj = document.getElementById("w3eaWalletconnect");
+
+        console.log("writeWalletConnectData....:", msg, walleconnectHost);
+        console.log("writeWalletConnectData....2:", childFrameObj);
+        let k = 0;
+        for (k = 0; k < 100; k++) {
+            try {
+                console.log("send to child 111.");
+                childFrameObj.contentWindow.postMessage(msg, walleconnectHost); //window.postMessage
+                console.log("send to child 222.");
+                break;
+            } catch (e) {
+                console.log("send to child error, retry.", e);
+                await sleep(100);
+            }
+        }
+        if (k > 90) {
+            console.log("fff.kkkk error!");
         }
     };
 
     useEffect(() => {
-        writeWalletConnectData();
+        writeWalletConnectData("initializeChild", "", "");
     }, [userProp.state]);
 
     const wallet = () => {
@@ -90,3 +157,47 @@ export default function Exploredapps({
 
     return <div>{wallet()}</div>;
 }
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+const signMessage = async (
+    passwdAccount: any,
+    accountAddr: string,
+    msg: string,
+    chainObj: {
+        id: number;
+        name: string;
+        nativeCurrency: {};
+        rpcUrls: {};
+        blockExplorers: {};
+        contracts: {};
+        testnet: boolean;
+        chainCode: ChainCode;
+        l1ChainCode: ChainCode;
+    }
+) => {
+    let sign: {
+        signature: string;
+        eoa: any;
+        nonce: string;
+    } = { signature: "", eoa: "", nonce: "" };
+
+    let argumentsHash = "";
+    if (libsolana.isSolana(chainObj.chainCode)) {
+        console.log("solana useless!2");
+        argumentsHash = "0x0";
+        sign.signature = "solana useless!signature.22.";
+    } else {
+        console.log("signPersonalMessage:", msg);
+        let chainId = "" + chainObj.id;
+        sign = await signPersonalMessage(
+            passwdAccount,
+            chainId,
+            accountAddr,
+            chainObj,
+            msg
+        );
+        console.log("signAuth,777,:", sign);
+        return sign.signature;
+    }
+};

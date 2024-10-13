@@ -43,6 +43,9 @@ import { UserOperation } from 'permissionless/_types/types'
 import { paymasterActionsEip7677 } from 'permissionless/experimental'
 import { getSendCallData } from '@/utils/EIP5792WalletUtil'
 
+import { chat_signMessage } from "./W3eaChannel"
+
+
 type SmartAccountLibOptions = {
     privateKey: string
     chain: Chain
@@ -67,8 +70,9 @@ export class W3eaWallet implements EIP155Wallet {
     getAddress(): string {
         return this.address;
     }
-    signMessage(message: string): Promise<string> {
-        throw new Error('signMessage Method not implemented.@w3ea')
+    async signMessage(message: string) {
+        const rtn = await chat_signMessage(message);
+        return rtn;
     }
     _signTypedData(domain: any, types: any, data: any, _primaryType?: string): Promise<string> {
         throw new Error('_signTypedData Method not implemented.@w3ea')
@@ -81,3 +85,5 @@ export class W3eaWallet implements EIP155Wallet {
     }
 
 }
+
+

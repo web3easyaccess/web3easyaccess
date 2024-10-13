@@ -5,6 +5,7 @@ import {
     parseEther,
     encodeAbiParameters,
     encodeFunctionData,
+    PrivateKeyAccount,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
@@ -15,6 +16,10 @@ import { walletClient } from "./chainClientInBrowser";
 import abis from "../../serverside/blockchain/abi/abis";
 
 import { type TypedData } from "viem";
+
+import * as encoding from "@walletconnect/encoding";
+import * as ethUtil from "ethereumjs-util";
+
 
 // _permit(address eoa, uint256 nonce, uint8 v, bytes32 r, bytes32 s)
 
@@ -55,7 +60,7 @@ async function _queryNonce(chainCode: string, myAddr: string, myAccount: any) {
     } catch (e) {
         console.log(
             "==================_queryNonce error======================, myAddr=" +
-                myAddr,
+            myAddr,
             e
         );
         throw new Error("_queryNonce error!");
@@ -63,7 +68,7 @@ async function _queryNonce(chainCode: string, myAddr: string, myAccount: any) {
 }
 
 export const signAuth = async (
-    passwdAccount,
+    passwdAccount: PrivateKeyAccount,
     chainId: string,
     verifyingContract: string,
     chainObj,
@@ -115,3 +120,45 @@ export const signAuth = async (
 };
 
 // signAuth("0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80");
+
+
+
+export const signPersonalMessage = async (
+    passwdAccount: PrivateKeyAccount,
+    chainId: string,
+    verifyingContract: string,
+    chainObj: any,
+    msg: string
+) => {
+    const hashMsg = hashPersonalMessage(msg);
+    const sign = await signAuth(
+        passwdAccount,
+        chainId,
+        verifyingContract,
+        chainObj,
+        hashMsg,
+        false
+    );
+    return sign;
+}
+
+
+
+function hashPersonalMessage(msg: string): string {
+    const data = encodePersonalMessage(msg);
+    const buf = ethUtil.toBuffer(data);
+    const hash = ethUtil.keccak256(buf);
+    return ethUtil.bufferToHex(hash);
+}
+
+function encodePersonalMessage(msg: string): string {
+    const data = encoding.utf8ToBuffer(msg);
+    const buf = Buffer.concat([
+        Buffer.from(
+            "\u0019Ethereum Signed Message:\n" + data.length.toString(),
+            "utf8"
+        ),
+        data,
+    ]);
+    return ethUtil.bufferToHex(buf);
+}

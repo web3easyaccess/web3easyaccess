@@ -18,6 +18,7 @@ import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { useRouter } from 'next/router'
 import ChainAbstractionBalanceCard from '@/components/ChainAbstractionBalanceCard'
 import { getChainKey } from '@/w3ea/web3easyaccess'
+import W3eaChannel from '@/w3ea/W3eaChannel'
 
 export default function HomePage() {
   const {
@@ -295,6 +296,7 @@ export default function HomePage() {
           ))}
         </Fragment>
       ) : null} */}
+      <W3eaChannel></W3eaChannel>
     </Fragment>
   )
 }
