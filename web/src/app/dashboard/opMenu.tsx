@@ -21,6 +21,7 @@ import Transactions from "./transactions";
 import SendTransaction from "./newtransaction/sendtransaction";
 import SendChgPrivateInfo from "./newtransaction/sendchgprivateinfo";
 import ExploreDapps from "./exploredapps";
+import UpgradeImpl from "./upgradeimpl";
 
 import { useRouter } from "next/navigation";
 
@@ -75,6 +76,9 @@ export default function OpMenu({
         } else if (elementTextContent.indexOf("Dapps") >= 0) {
             updateSelectedMenu(Menu.ExploreDapps);
             // route.push("/dashboard/exploredapps");
+        } else if (elementTextContent.indexOf("Upgrade") >= 0) {
+            updateSelectedMenu(Menu.UpgradeImpl);
+            // route.push("/dashboard/privateinfo");
         }
     };
 
@@ -99,6 +103,8 @@ export default function OpMenu({
             menuText = "Guardian(Not Yet)";
         } else if (menu == Menu.ExploreDapps) {
             menuText = "Explore Dapps";
+        } else if (menu == Menu.UpgradeImpl) {
+            menuText = "Upgrade Impl";
         }
         return menuText;
     };
@@ -153,6 +159,9 @@ export default function OpMenu({
                     <MenuItem menu={Menu.Guardian}></MenuItem>
                 </CardBody>
                 <Divider />
+                <CardBody>
+                    <MenuItem menu={Menu.UpgradeImpl}></MenuItem>
+                </CardBody>
             </Card>
         </div>
     );
@@ -225,6 +234,15 @@ export function ShowMain({
     } else if (selectedMenu == Menu.ExploreDapps) {
         console.log("selectedMenu1111111xxxx:", selectedMenu);
         return <ExploreDapps userProp={userProp} />;
+    } else if (selectedMenu == Menu.UpgradeImpl) {
+        console.log("selectedMenu11111111166:", selectedMenu);
+        return (
+            <UpgradeImpl
+                userProp={userProp}
+                accountAddrList={accountAddrList}
+                forTransaction={false}
+            />
+        );
     } else {
         return (
             <div>

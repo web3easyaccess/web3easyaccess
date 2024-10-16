@@ -341,7 +341,8 @@ export async function createTransaction(
     l1DataFee: bigint,
     preparedMaxFeePerGas: bigint,
     preparedGasPrice: bigint,
-    bridgeDirection: string
+    bridgeDirection: string,
+    upgradeImpl: boolean, // 发送交易的同时升级“合约实现”
 ) {
     detectEstimatedFee = BigInt(detectEstimatedFee);
     l1DataFee = BigInt(l1DataFee);
@@ -367,13 +368,23 @@ export async function createTransaction(
         console.log("L1ToL2,not here.");
         myClient = await chainClient(chainCode);
     }
-
+    console.log("serverside,createTransaction,upgradeImpl=", upgradeImpl);
     try {
-        dataSendToAccount = encodeFunctionData({
-            abi: abis.sendTransaction,
-            functionName: "sendTransaction",
-            args: [to, BigInt(amount), data, costFee, passwdAddr, signature],
-        });
+        if (upgradeImpl) {
+            // upImplAfterSend
+            dataSendToAccount = encodeFunctionData({
+                abi: abis.upImplAfterSend,
+                functionName: "upImplAfterSend",
+                args: [to, BigInt(amount), data, costFee, passwdAddr, signature],
+            });
+        } else {
+            dataSendToAccount = encodeFunctionData({
+                abi: abis.sendTransaction,
+                functionName: "sendTransaction",
+                args: [to, BigInt(amount), data, costFee, passwdAddr, signature],
+            });
+        }
+
 
         console.log(
             "22 total fee = txFee+L1DataFee =",

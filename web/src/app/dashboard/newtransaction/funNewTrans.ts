@@ -78,9 +78,11 @@ export async function createTransaction(
     preparedMaxFeePerGas: bigint,
     preparedGasPrice: bigint,
     bridgeDirection: string,
-    privateInfo: PrivateInfoType
+    privateInfo: PrivateInfoType,
+    upgradeImpl: boolean,
 ) {
     console.log("wrapped createTransaction,chainCode=", chainCode);
+    console.log("clientside,createTransaction,upgradeImpl=", upgradeImpl);
     if (chainCode.indexOf("SOLANA") >= 0) {
         const rtn = await libsolana.createTransaction_onClient(
             chainCode,
@@ -114,7 +116,8 @@ export async function createTransaction(
             l1DataFee,
             preparedMaxFeePerGas,
             preparedGasPrice,
-            bridgeDirection
+            bridgeDirection,
+            upgradeImpl,
         );
         return rtn;
     }

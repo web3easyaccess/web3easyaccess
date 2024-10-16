@@ -79,12 +79,6 @@ import {
 } from "../../lib/chainQuery";
 import { getInputValueById, setInputValueById } from "../../lib/elementById";
 
-import {
-    newAccountAndTransferETH,
-    createTransaction,
-    changePasswdAddr,
-} from "../../serverside/blockchain/chainWrite";
-
 import { PrivateInfo } from "./privateinfo";
 
 import { getChainObj } from "../../lib/myChain";
@@ -744,7 +738,8 @@ export default function SendTransaction({
                             preparedPriceRef,
                             bridgeDirection,
                             currentPriInfoRef,
-                            nativeCoinSymbol
+                            nativeCoinSymbol,
+                            upgradeImpl
                         );
                     } else {
                         // transfer ETH
@@ -761,7 +756,8 @@ export default function SendTransaction({
                             preparedPriceRef,
                             bridgeDirection,
                             currentPriInfoRef,
-                            nativeCoinSymbol
+                            nativeCoinSymbol,
+                            upgradeImpl
                         );
                     }
 
@@ -904,6 +900,18 @@ export default function SendTransaction({
         }
     }, [userProp.state, userProp.serverSidePropState]);
 
+    const [upgradeImpl, setUpgradeImpl] = useState(false);
+    const handleUpgradeImplSelected = (e: any) => {
+        console.log("handleUpgradeImplSelected:", e.target.checked);
+        console.log("handleUpgradeImplSelected1:", upgradeImpl);
+        setUpgradeImpl(e.target.checked);
+    };
+
+    // useEffect(() => {
+    //     console.log("updateInputFillInChange by upgradeImpl");
+    //     updateInputFillInChange();
+    // }, [upgradeImpl, setUpgradeImpl]);
+
     return (
         <>
             <div id="var_tmp" style={{ display: "none" }}>
@@ -944,6 +952,14 @@ export default function SendTransaction({
                                 placeholder="Enter your Receiver Address"
                                 onBlur={updateInputFillInChange}
                             />
+                            <Checkbox
+                                defaultSelected={upgradeImpl}
+                                isSelected={upgradeImpl}
+                                onChange={handleUpgradeImplSelected}
+                                title="Upgrade account functions at the same time"
+                            >
+                                upgrade account
+                            </Checkbox>
                         </div>
                         <div
                             className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"
@@ -1420,6 +1436,7 @@ export default function SendTransaction({
                         readReceiverInfo={readReceiverInfo}
                         factoryAddr={userProp.serverSidePropState.factoryAddr}
                         nativeCoinSymbol={nativeCoinSymbol}
+                        upgradeImpl={upgradeImpl}
                     />
                 </div>
             </div>
@@ -1444,6 +1461,7 @@ function CreateTransaction({
     readReceiverInfo,
     factoryAddr,
     nativeCoinSymbol,
+    upgradeImpl,
 }: {
     myOwnerId: string;
     verifyingContract: string;
@@ -1457,6 +1475,7 @@ function CreateTransaction({
     readReceiverInfo: any;
     factoryAddr: string;
     nativeCoinSymbol: string;
+    upgradeImpl: boolean;
 }) {
     const { pending } = useFormStatus();
 
@@ -1568,7 +1587,8 @@ function CreateTransaction({
                 preparedPriceRef,
                 bridgeDirection,
                 currentPriInfoRef,
-                nativeCoinSymbol
+                nativeCoinSymbol,
+                upgradeImpl
             );
         } else {
             tx = await executeTransaction(
@@ -1584,7 +1604,8 @@ function CreateTransaction({
                 preparedPriceRef,
                 "",
                 currentPriInfoRef,
-                nativeCoinSymbol
+                nativeCoinSymbol,
+                upgradeImpl
             );
         }
 
@@ -1649,7 +1670,8 @@ async function estimateTransFee(
     preparedPriceRef: any,
     bridgeDirection: string,
     currentPriInfoRef: React.MutableRefObject<PrivateInfoType>,
-    nativeCoinSymbol: string
+    nativeCoinSymbol: string,
+    upgradeImpl: boolean
 ) {
     let myDetectEstimatedFee = BigInt(0);
     let myL1DataFee = BigInt(0);
@@ -1685,6 +1707,10 @@ async function estimateTransFee(
             argumentsHash = "0x0";
             sign.signature = "solana useless!signature.";
         } else {
+            let solidityFunctionPermitId = BigInt(3);
+            if (upgradeImpl) {
+                solidityFunctionPermitId = BigInt(4);
+            }
             argumentsHash = encodeAbiParameters(
                 [
                     { name: "funcId", type: "uint256" },
@@ -1693,7 +1719,13 @@ async function estimateTransFee(
                     { name: "data", type: "bytes" },
                     { name: "estimatedFee", type: "uint256" },
                 ],
-                [BigInt(3), receiverAddr, receiverAmt, receiverData, costFee]
+                [
+                    solidityFunctionPermitId,
+                    receiverAddr,
+                    receiverAmt,
+                    receiverData,
+                    costFee,
+                ]
             );
 
             argumentsHash = keccak256(argumentsHash);
@@ -1739,7 +1771,8 @@ async function estimateTransFee(
                 BigInt(0),
                 BigInt(0),
                 bridgeDirection,
-                currentPriInfoRef.current
+                currentPriInfoRef.current,
+                upgradeImpl
             );
         } else {
             console.log(
@@ -1848,7 +1881,8 @@ async function executeTransaction(
     preparedPriceRef: any,
     bridgeDirection: string,
     currentPriInfoRef: React.MutableRefObject<PrivateInfoType>,
-    nativeCoinSymbol: string
+    nativeCoinSymbol: string,
+    upgradeImpl: boolean
 ) {
     let eFee = await estimateTransFee(
         myOwnerId,
@@ -1863,7 +1897,8 @@ async function executeTransaction(
         preparedPriceRef,
         bridgeDirection,
         currentPriInfoRef,
-        nativeCoinSymbol
+        nativeCoinSymbol,
+        upgradeImpl
     );
     console.log("executeTransaction,user realtime fee, when executeing:", eFee);
     if (eFee.feeWei == undefined || eFee.feeWei == 0) {
@@ -1894,6 +1929,10 @@ async function executeTransaction(
         argumentsHash = "0x0";
         sign.signature = "solana useless!signature.22.";
     } else {
+        let solidityFunctionPermitId = BigInt(3);
+        if (upgradeImpl) {
+            solidityFunctionPermitId = BigInt(4);
+        }
         argumentsHash = encodeAbiParameters(
             [
                 { name: "funcId", type: "uint256" },
@@ -1902,7 +1941,13 @@ async function executeTransaction(
                 { name: "data", type: "bytes" },
                 { name: "estimatedFee", type: "uint256" },
             ],
-            [BigInt(3), receiverAddr, receiverAmt, receiverData, execCost]
+            [
+                solidityFunctionPermitId,
+                receiverAddr,
+                receiverAmt,
+                receiverData,
+                execCost,
+            ]
         );
 
         argumentsHash = keccak256(argumentsHash);
@@ -1956,7 +2001,8 @@ async function executeTransaction(
             preparedPriceRef.current.preparedMaxFeePerGas,
             preparedPriceRef.current.preparedGasPrice,
             bridgeDirection,
-            currentPriInfoRef.current
+            currentPriInfoRef.current,
+            upgradeImpl
         );
     } else {
         console.log(

@@ -66,4 +66,8 @@ contract FactoryProxy is ERC1967Proxy {
             super._fallback();
         }
     }
+
+    receive() external payable {
+        require(1 == 0, "not Supported, in FactoryProxy!");
+    }
 }

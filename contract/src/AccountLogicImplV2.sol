@@ -19,9 +19,9 @@ import "./FactoryLogicV1.sol";
 import "./W3EAPoint.sol";
 
 /**
-that must inherit ImplV1 if you written a ImplV2....
+
  */
-contract AccountLogicImplV1 is AccountEntity, IAccountLogic {
+contract AccountLogicImplV2 is AccountEntity, IAccountLogic {
     // Standard Signature Validation Method for Contracts
     // https://eips.ethereum.org/EIPS/eip-1271
     // https://docs.alchemy.com/docs/how-to-make-your-dapp-compatible-with-smart-contract-wallets
@@ -37,10 +37,10 @@ contract AccountLogicImplV1 is AccountEntity, IAccountLogic {
                 : AccountEntity(payable(bigBrotherAccount)).passwdAddr()
         );
 
-        bytes32 structHash = keccak256(abi.encode(PERMIT_TYPEHASH, _hash));
+        // bytes32 structHash = keccak256(abi.encode(PERMIT_TYPEHASH, _hash));
 
         bytes32 structHash = keccak256(
-            abi.encode(PERMIT_TYPEHASH, _passwdAddr, nonce, _argumentsHash)
+            abi.encode(PERMIT_TYPEHASH, myPasswdAddr, nonce, _hash)
         );
 
         bytes32 hash = _hashTypedDataV4(structHash);

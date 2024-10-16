@@ -8,6 +8,8 @@ const chgPasswdAddr = impl.abi.filter((e) => e.name == "chgPasswdAddr");
 
 const sendTransaction = impl.abi.filter((e) => e.name == "sendTransaction");
 
+const upImplAfterSend = impl.abi.filter((e) => e.name == "upImplAfterSend");
+
 const gasFreeAmount = account.abi.filter((e) => e.name == "gasFreeAmount");
 
 const nonce = account.abi.filter((e) => e.name == "nonce");
@@ -62,6 +64,7 @@ export default {
     newAccount,
     newAccountAndSendTrans,
     sendTransaction,
+    upImplAfterSend,
     chgPasswdAddr,
     questionNos,
     passwdAddr,

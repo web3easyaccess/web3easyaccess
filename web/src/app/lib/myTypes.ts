@@ -6,6 +6,7 @@ export enum Menu {
     PrivateSetting,
     ExploreDapps,
     Guardian,
+    UpgradeImpl
 }
 
 export enum ChainCode {
