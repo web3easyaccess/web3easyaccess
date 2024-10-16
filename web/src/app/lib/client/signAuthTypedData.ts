@@ -130,16 +130,23 @@ export const signPersonalMessage = async (
     chainObj: any,
     msg: string
 ) => {
-    const hashMsg = hashPersonalMessage(msg);
+    const msgHash = hashPersonalMessage(msg);
+    console.log("w3ea,msg=>hash.", msg, "=>", msgHash);
     const sign = await signAuth(
         passwdAccount,
         chainId,
         verifyingContract,
         chainObj,
-        hashMsg,
+        msgHash,
         false
     );
-    return sign;
+    sign.msgHash = msgHash;
+    return sign as {
+        signature: string;
+        eoa: `0x${string}`;
+        nonce: string;
+        msgHash: string;
+    };
 }
 
 

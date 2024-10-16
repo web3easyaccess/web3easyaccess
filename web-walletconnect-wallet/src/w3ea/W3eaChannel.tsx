@@ -31,7 +31,7 @@ export default function W3eaChannel() {
       msgType: 'childReady',
       chainKey: '',
       address: '',
-      msgIdx: 0,
+      msgIdx: ++idx2Parent.msgIdx,
       msg: {
         chatId: '',
         content: undefined
@@ -115,6 +115,7 @@ const waitParentMsg = async (chatId: string) => {
 function getRandomInt(max: number) {
   return Math.floor(Math.random() * max)
 }
+const idx2Parent = { msgIdx: 0 }
 
 export const chat_signMessage = async (userMessage: string) => {
   let chatId = new Date().getTime() + '_' + getRandomInt(1000)
@@ -125,7 +126,7 @@ export const chat_signMessage = async (userMessage: string) => {
     msgType: 'signMessage',
     chainKey: '',
     address: '',
-    msgIdx: 0,
+    msgIdx: ++idx2Parent.msgIdx,
     msg: {
       chatId: chatId,
       content: userMessage

@@ -233,7 +233,13 @@ export function ShowMain({
         );
     } else if (selectedMenu == Menu.ExploreDapps) {
         console.log("selectedMenu1111111xxxx:", selectedMenu);
-        return <ExploreDapps userProp={userProp} />;
+        return (
+            <ExploreDapps
+                userProp={userProp}
+                accountAddrList={accountAddrList}
+                forChgPasswd={false}
+            />
+        );
     } else if (selectedMenu == Menu.UpgradeImpl) {
         console.log("selectedMenu11111111166:", selectedMenu);
         return (

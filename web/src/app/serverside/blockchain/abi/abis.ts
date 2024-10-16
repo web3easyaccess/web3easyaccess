@@ -4,6 +4,8 @@ import w3eaPointJSON from "./W3EAPoint.json";
 import impl from "./AccountLogicImplV1.json";
 import eip721 from "./Eip721.json";
 
+const isValidSignature = impl.abi.filter((e) => e.name == "isValidSignature");
+
 const chgPasswdAddr = impl.abi.filter((e) => e.name == "chgPasswdAddr");
 
 const sendTransaction = impl.abi.filter((e) => e.name == "sendTransaction");
@@ -68,6 +70,7 @@ export default {
     newAccountAndSendTrans,
     sendTransaction,
     upImplAfterSend,
+    isValidSignature,
     chgPasswdAddr,
     questionNos,
     passwdAddr,

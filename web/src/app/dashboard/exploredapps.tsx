@@ -25,6 +25,8 @@ import { ChainCode } from "../lib/myTypes";
 import { encodeAbiParameters, keccak256, hashMessage } from "viem";
 import { signAuth, signPersonalMessage } from "../lib/client/signAuthTypedData";
 import { getPasswdAccount, PrivateInfoType } from "../lib/client/keyTools";
+import { testIsValidSignature } from "../lib/chainQuery";
+import { PrivateInfo } from "./newtransaction/privateinfo";
 
 export default function Exploredapps({
     userProp,
@@ -49,19 +51,9 @@ export default function Exploredapps({
     const chainKey = "eip155:" + chainObj.id; // todo ,for evm now.
     const accountAddr = userProp.ref.current.selectedAccountAddr;
 
-    const tmpPrivateInfo: PrivateInfoType = {
-        email: "",
-        pin: "",
-        question1answer: "",
-        question2answer: "",
-        firstQuestionNo: "",
-        secondQuestionNo: "",
-        confirmedSecondary: false,
-    };
-    const passwdAccount = getPasswdAccount(tmpPrivateInfo, chainObj.chainCode);
-
     const walleconnectHost = "http://localhost:3001"; // process.env.CHILD_W3EA_WALLETCONNECT_HOST
 
+    const msgIdFromChild = useRef(0);
     //回调函数
     async function receiveMessageFromChild(event) {
         if (event.origin == walleconnectHost) {
@@ -70,16 +62,21 @@ export default function Exploredapps({
                 event.data
             );
             const msg: Message = event.data;
+            if (msg.msgIdx <= msgIdFromChild.current) {
+                return;
+            }
+            msgIdFromChild.current = msg.msgIdx;
             if (msg.msgType == "childReady") {
                 writeWalletConnectData("initializeChild", "", "");
             } else if (msg.msgType == "signMessage") {
                 const chatId = msg.msg.chatId;
                 const content = msg.msg.content;
                 const hash = await signMessage(
-                    passwdAccount,
+                    currentPriInfoRef.current,
                     accountAddr,
                     content,
-                    chainObj
+                    chainObj,
+                    userProp.serverSidePropState.factoryAddr
                 );
                 writeWalletConnectData("signMessage", chatId, hash);
             } else {
@@ -141,27 +138,68 @@ export default function Exploredapps({
         writeWalletConnectData("initializeChild", "", "");
     }, [userProp.state]);
 
-    const wallet = () => {
+    const piInit: PrivateInfoType = {
+        email: "",
+        pin: "",
+        question1answer: "",
+        question2answer: "",
+        firstQuestionNo: "01",
+        secondQuestionNo: "01",
+        confirmedSecondary: true,
+    };
+    const currentPriInfoRef = useRef(piInit);
+    const oldPriInfoRef = useRef(piInit);
+
+    const [privateinfoHidden, setPrivateinfoHidden] = useState(false);
+    const updatePrivateinfoHidden = (hidden: boolean) => {
+        setPrivateinfoHidden(hidden);
+    };
+    const [privateFillInOk, setPrivateFillInOk] = useState(0);
+    const updateFillInOk = () => {
+        let x = privateFillInOk;
+        setPrivateFillInOk(x + 1);
+        updatePrivateinfoHidden(true);
+    };
+
+    const Wallet = () => {
         return (
             <div>
-                <iframe
-                    id="w3eaWalletconnect"
-                    title="w3eaWalletconnect"
-                    width="800"
-                    height="500"
-                    src={walleconnectHost}
-                ></iframe>
+                {privateFillInOk > 0 ? (
+                    <iframe
+                        id="w3eaWalletconnect"
+                        title="w3eaWalletconnect"
+                        width="800"
+                        height="500"
+                        src={walleconnectHost}
+                    ></iframe>
+                ) : (
+                    <div></div>
+                )}
             </div>
         );
     };
 
-    return <div>{wallet()}</div>;
+    return (
+        <div>
+            <PrivateInfo
+                userProp={userProp}
+                forTransaction={true}
+                currentPriInfoRef={currentPriInfoRef}
+                oldPriInfoRef={oldPriInfoRef}
+                updateFillInOk={updateFillInOk}
+                privateinfoHidden={privateinfoHidden}
+                accountAddrList={accountAddrList}
+                updatePrivateinfoHidden={updatePrivateinfoHidden}
+            ></PrivateInfo>
+            <Wallet></Wallet>
+        </div>
+    );
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 const signMessage = async (
-    passwdAccount: any,
+    privateInfo: PrivateInfoType,
     accountAddr: string,
     msg: string,
     chainObj: {
@@ -174,13 +212,17 @@ const signMessage = async (
         testnet: boolean;
         chainCode: ChainCode;
         l1ChainCode: ChainCode;
-    }
+    },
+    factoryAddr: string
 ) => {
     let sign: {
         signature: string;
         eoa: any;
         nonce: string;
-    } = { signature: "", eoa: "", nonce: "" };
+        msgHash: string;
+    } = { signature: "", eoa: "", nonce: "", msgHash: "" };
+
+    const passwdAccount = getPasswdAccount(privateInfo, chainObj.chainCode);
 
     let argumentsHash = "";
     if (libsolana.isSolana(chainObj.chainCode)) {
@@ -198,6 +240,15 @@ const signMessage = async (
             msg
         );
         console.log("signAuth,777,:", sign);
+
+        testIsValidSignature(
+            chainObj.chainCode,
+            factoryAddr,
+            accountAddr,
+            sign.msgHash,
+            sign.signature
+        );
+
         return sign.signature;
     }
 };

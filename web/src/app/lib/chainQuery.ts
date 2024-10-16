@@ -161,6 +161,44 @@ export async function queryAccountList(
     return acctList;
 }
 
+
+export async function testIsValidSignature(
+    chainCode: string,
+    factoryAddr: string,
+    accountAddr: string,
+    hash: string,
+    signature: string,
+) {
+    try {
+        if (libsolana.isSolana(chainCode)) {
+            throw Error("queryImplMsg, not supported now.");
+        }
+
+        const cpc = chainPublicClient(chainCode, factoryAddr);
+
+
+        // magicValue: "0x1626ba7e",
+        const returnValue = await cpc.publicClient.readContract({
+            account: accountOnlyForRead,
+            address: accountAddr,
+            abi: abis.isValidSignature,
+            functionName: "isValidSignature",
+            args: [hash, signature],
+        });
+
+
+
+        console.log(`testIsValidSignature,returnValue=${returnValue}, magicValue=0x1626ba7e`);
+    } catch (e) {
+        console.log(
+            "==================testIsValidSignature error======================, accountAddr=" +
+            accountAddr,
+            e
+        );
+        // throw new Error("testIsValidSignature error!");
+    }
+}
+
 export async function queryImplMsg(
     chainCode: string,
     factoryAddr: string,
@@ -189,8 +227,9 @@ export async function queryImplMsg(
             args: [],
         });
 
+        const xx = "0x0000000000000000000000008b142090a5aaa9403ef04513101ba709a57160b7";
         return {
-            implAddr: implAddress,
+            implAddr: "0x" + implAddress?.substring(xx.length - 40),
             newImplAddr: newImplAddress,
         };
     } catch (e) {

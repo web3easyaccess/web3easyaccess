@@ -19,7 +19,8 @@ import "./FactoryLogicV1.sol";
 import "./W3EAPoint.sol";
 
 /**
-
+signature: 0xe01ef14da1650a42a150b0abaa69f68694c229fc63ee211fc2c68c1af8d0d4254d04b304261bee5abaa2d69b98e83b01776a26ebf5fa4914f6421d8aadc939881c
+msgHash: 0x88faa215146fc04d6fcadc4cebc734283956b27ec96f060c4302844f314ac3fe
  */
 contract AccountLogicImplV2 is AccountEntity, IAccountLogic {
     // Standard Signature Validation Method for Contracts
