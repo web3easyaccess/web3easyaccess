@@ -12,6 +12,7 @@ import {
     parseEther,
     encodeAbiParameters,
     encodeFunctionData,
+    toHex,
 } from "viem";
 
 import * as libsolana from "./client/solana/libsolana";
@@ -158,6 +159,48 @@ export async function queryAccountList(
     }
 
     return acctList;
+}
+
+export async function queryImplMsg(
+    chainCode: string,
+    factoryAddr: string,
+    accountAddr: string
+) {
+    try {
+        if (libsolana.isSolana(chainCode)) {
+            throw Error("queryImplMsg, not supported now.");
+        }
+
+        const cpc = chainPublicClient(chainCode, factoryAddr);
+        // console.log("rpc:", cpc.rpcUrl);
+        console.log("queryImplMsg:xx,", chainCode, factoryAddr, "acct:", accountAddr);
+        const implAddress = await cpc.publicClient.getStorageAt({
+            account: accountOnlyForRead,
+            address: accountAddr,
+            slot: toHex(2)
+        })
+        console.log("queryImplMsg2:implAddress:", implAddress);
+
+        const newImplAddress = await cpc.publicClient.readContract({
+            account: accountOnlyForRead,
+            address: factoryAddr,
+            abi: abis.accountImpl,
+            functionName: "accountImpl",
+            args: [],
+        });
+
+        return {
+            implAddr: implAddress,
+            newImplAddr: newImplAddress,
+        };
+    } catch (e) {
+        console.log(
+            "==================queryImplMsg error======================, accountAddr=" +
+            accountAddr,
+            e
+        );
+        throw new Error("queryImplMsg error!");
+    }
 }
 
 export async function queryAccount(

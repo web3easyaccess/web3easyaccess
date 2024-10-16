@@ -69,6 +69,7 @@ import { useRouter } from "next/navigation";
 import { getOwnerIdSelfByBigBrother } from "../../lib/client/keyTools";
 import {
     queryAccount,
+    queryImplMsg,
     queryQuestionIdsEnc,
     queryTokenDetail,
     queryNftDetail,
@@ -900,11 +901,30 @@ export default function SendTransaction({
         }
     }, [userProp.state, userProp.serverSidePropState]);
 
+    const [upgradeMsg, setUpgradeMsg] = useState("");
     const [upgradeImpl, setUpgradeImpl] = useState(false);
     const handleUpgradeImplSelected = (e: any) => {
         console.log("handleUpgradeImplSelected:", e.target.checked);
         console.log("handleUpgradeImplSelected1:", upgradeImpl);
         setUpgradeImpl(e.target.checked);
+        if (e.target.checked) {
+            const showImplMsg = async () => {
+                const rr = await queryImplMsg(
+                    userProp.state.selectedChainCode,
+                    userProp.serverSidePropState.factoryAddr,
+                    userProp.state.selectedAccountAddr
+                );
+                setUpgradeMsg(
+                    "current implementation:" +
+                        rr.implAddr +
+                        ". new impl:" +
+                        rr.newImplAddr
+                );
+            };
+            showImplMsg();
+        } else {
+            setUpgradeMsg("");
+        }
     };
 
     // useEffect(() => {
@@ -960,6 +980,9 @@ export default function SendTransaction({
                             >
                                 upgrade account
                             </Checkbox>
+                        </div>
+                        <div>
+                            <p>{upgradeMsg}</p>
                         </div>
                         <div
                             className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4"

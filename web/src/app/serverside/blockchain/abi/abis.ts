@@ -26,6 +26,8 @@ const predictAccountAddress = factory.abi.filter(
 
 const w3eaPoint = factory.abi.filter((e) => e.name == "w3eaPoint");
 
+const accountImpl = factory.abi.filter((e) => e.name == "accountImpl");
+
 const newAccount = factory.abi.filter((e) => e.name == "newAccount");
 
 const newAccountAndSendTrans = factory.abi.filter(
@@ -60,6 +62,7 @@ export default {
     queryAccount,
     predictAccountAddress,
     w3eaPoint,
+    accountImpl,
     gasFreeAmount,
     newAccount,
     newAccountAndSendTrans,
