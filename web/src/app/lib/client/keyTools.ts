@@ -77,7 +77,7 @@ export function getPasswdAccount(
             addressIndex: ADDRESS_INDEX,
         }
     );
-    console.log("passwdAddr:", account.address);
+    console.log("***passwdAddr***:", account.address);
     return account;
 }
 

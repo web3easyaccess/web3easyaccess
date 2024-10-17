@@ -5,7 +5,8 @@ type Message = {
         | "childReady"
         | "initializeChild"
         | "signMessage"
-        | "signTransaction";
+        | "signTransaction"
+        | "sendTransaction";
     chainKey: string;
     address: string;
     msgIdx: number;
@@ -13,6 +14,28 @@ type Message = {
         chatId: string;
         content: any;
     };
+};
+
+export type TransactionRequest = {
+    to?: string;
+    from?: string;
+    nonce?: string;
+
+    gasLimit?: string;
+    gasPrice?: string;
+
+    data?: string;
+    value?: string;
+    chainId?: string;
+
+    type?: string;
+    accessList?: string;
+
+    maxPriorityFeePerGas?: string;
+    maxFeePerGas?: string;
+
+    customData?: Record<string, any>;
+    ccipReadEnabled?: boolean;
 };
 
 import * as libsolana from "@/app/lib/client/solana/libsolana";
@@ -79,6 +102,17 @@ export default function Connect2Dapps({
                     userProp.serverSidePropState.factoryAddr
                 );
                 writeWalletConnectData("signMessage", chatId, hash);
+            } else if (msg.msgType == "sendTransaction") {
+                const chatId = msg.msg.chatId;
+                const txReq = msg.msg.content as TransactionRequest;
+                const hash = await sendTransaction(
+                    currentPriInfoRef.current,
+                    accountAddr,
+                    txReq,
+                    chainObj,
+                    userProp.serverSidePropState.factoryAddr
+                );
+                writeWalletConnectData("signMessage", chatId, hash);
             } else {
                 console.log("not supported msg:", msg);
             }
@@ -113,21 +147,21 @@ export default function Connect2Dapps({
             },
         };
 
-        const childFrameObj = document.getElementById("w3eaWalletconnect");
-
         console.log("writeWalletConnectData....:", msg, walleconnectHost);
-        console.log("writeWalletConnectData....2:", childFrameObj);
+
         let k = 0;
-        for (k = 0; k < 100; k++) {
+        for (k = 0; k < 10 * 60; ) {
+            await sleep(1000);
+            const childFrameObj = document.getElementById("w3eaWalletconnect");
             try {
-                console.log("send to child 111.");
+                console.log("send to child 111.childFrameObj:", childFrameObj);
                 childFrameObj.contentWindow.postMessage(msg, walleconnectHost); //window.postMessage
                 console.log("send to child 222.");
                 break;
             } catch (e) {
                 console.log("send to child error, retry.", e);
-                await sleep(100);
             }
+            k++;
         }
         if (k > 90) {
             console.log("fff.kkkk error!");
@@ -168,7 +202,7 @@ export default function Connect2Dapps({
     const Wallet = () => {
         return (
             <div>
-                {1 == 1 || privateFillInOk > 0 ? (
+                {privateinfoHidden ? (
                     <>
                         <iframe
                             id="w3eaWalletconnect"
@@ -266,3 +300,21 @@ const signMessage = async (
         return sign.signature;
     }
 };
+
+const sendTransaction = async (
+    privateInfo: PrivateInfoType,
+    accountAddr: string,
+    txReq: TransactionRequest,
+    chainObj: {
+        id: number;
+        name: string;
+        nativeCurrency: {};
+        rpcUrls: {};
+        blockExplorers: {};
+        contracts: {};
+        testnet: boolean;
+        chainCode: ChainCode;
+        l1ChainCode: ChainCode;
+    },
+    factoryAddr: string
+) => {};

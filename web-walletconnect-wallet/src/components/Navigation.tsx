@@ -5,11 +5,11 @@ import Link from 'next/link'
 export default function Navigation() {
   return (
     <Row justify="space-between" align="center">
-      <Link href="/" passHref>
+      {/* <Link href="/" passHref>
         <a className="navLink" data-testid="accounts">
           <Image alt="accounts icon" src="/icons/accounts-icon.svg" width={27} height={27} />
         </a>
-      </Link>
+      </Link> */}
 
       <Link href="/sessions" passHref>
         <a className="navLink" data-testid="sessions">
@@ -41,13 +41,11 @@ export default function Navigation() {
         </a>
       </Link>
 
-      {/* href="/settings"  */}
-
-      <Link href="" passHref>
+      {/* <Link href="/settings" passHref>
         <a className="navLink" data-testid="settings">
-          <Image alt="settings icon" src="/icons/settings-icon.svg" width={1} height={1} />
+          <Image alt="settings icon" src="/icons/settings-icon.svg" width={27} height={27} />
         </a>
-      </Link>
+      </Link> */}
     </Row>
   )
 }

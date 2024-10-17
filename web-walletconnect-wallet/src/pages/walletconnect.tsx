@@ -12,6 +12,7 @@ import { useSnapshot } from 'valtio'
 import AccountCard from '@/components/AccountCard'
 import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS, EIP155_CHAINS } from '@/data/EIP155Data'
 import { getChainKey } from '@/w3ea/web3easyaccess'
+import W3eaChannel from '@/w3ea/W3eaChannel'
 
 export default function WalletConnectPage(params: { deepLink?: string }) {
   const { deepLink } = params
@@ -102,7 +103,9 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
             </Button>
           }
         />
-        <div style={{ marginTop: '100px' }}></div>
+
+        <div style={{ marginTop: '40px' }}></div>
+
         {Object.entries(EIP155_CHAINS)
           .filter(r => r[0] == getChainKey())
           .map(([caip10, { name, logo, rgb }]) => (
@@ -116,6 +119,8 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
               data-testid={'chain-card-' + caip10.toString()}
             />
           ))}
+
+        <W3eaChannel></W3eaChannel>
       </>
     </Fragment>
   )

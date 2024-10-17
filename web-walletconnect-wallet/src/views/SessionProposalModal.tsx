@@ -106,7 +106,7 @@ export default function SessionProposalModal() {
     const tronChains = Object.keys(TRON_CHAINS)
     const tronMethods = Object.values(TRON_SIGNING_METHODS)
 
-    const myAddresses = eip155Addresses.concat(getW3eaAddress())
+    const myAddresses = [getW3eaAddress()] // eip155Addresses.concat(getW3eaAddress())
     return {
       eip155: {
         chains: eip155Chains,

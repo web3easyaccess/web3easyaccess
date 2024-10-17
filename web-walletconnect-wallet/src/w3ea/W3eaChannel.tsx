@@ -1,5 +1,5 @@
 type Message = {
-  msgType: 'childReady' | 'initializeChild' | 'signMessage' | 'signTransaction'
+  msgType: 'childReady' | 'initializeChild' | 'signMessage' | 'signTransaction' | 'sendTransaction'
   chainKey: string
   address: string
   msgIdx: number
@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react'
 import { receiverData } from './web3easyaccess'
 
 import SettingsStore from '@/store/SettingsStore'
+import { TransactionRequest } from './W3eaWallet'
 
 const w3eaHost = 'http://localhost:3000' // process.env.PARENT_W3EA_HOST
 
@@ -93,10 +94,12 @@ const receiveMsgFromParent = async (event: { origin: string; data: Message }) =>
 }
 
 const waitParentMsg = async (chatId: string) => {
-  const nnn = 100
+  const timeout_ = 60 * 10
+  const interval_ = 0.1
+  const nnn = timeout_ / interval_
   console.log('in waitParentMsg,,1')
   for (let k = 0; k < nnn; k++) {
-    await sleep(Math.random() * 100)
+    await sleep(interval_ * 1000)
     try {
       const msg = parentMsgBuffer.get(chatId)
       if (msg != '' && msg != null && msg != undefined) {
@@ -136,5 +139,27 @@ export const chat_signMessage = async (userMessage: string) => {
   await sendMsgToParent(msg)
   const signedHash = await waitParentMsg(chatId)
   console.log('chat_signMessage, receive hash from parent:', signedHash)
+  return signedHash
+}
+
+export const chat_sendTransaction = async (userMessage: TransactionRequest) => {
+  let chatId = new Date().getTime() + '_' + getRandomInt(1000)
+
+  parentMsgBuffer.set(chatId, '')
+
+  const msg: Message = {
+    msgType: 'sendTransaction',
+    chainKey: '',
+    address: '',
+    msgIdx: ++idx2Parent.msgIdx,
+    msg: {
+      chatId: chatId,
+      content: userMessage
+    }
+  }
+  console.log('chat_sendTransaction, send msg to parent:', msg)
+  await sendMsgToParent(msg)
+  const signedHash = await waitParentMsg(chatId)
+  console.log('chat_sendTransaction, receive hash from parent:', signedHash)
   return signedHash
 }
