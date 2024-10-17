@@ -76,7 +76,7 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
           or use walletconnect uri
         </Text> */}
 
-        <Text size={14} css={{ textAlign: 'center', marginTop: '$10', marginBottom: '$10' }}>
+        <Text size={14} css={{ textAlign: 'left', marginTop: '$10', marginBottom: '$10' }}>
           In the DApp, select "WalletConnect". In the pop-up window, click "Copy Link". Then paste
           the copied content here and click "connect".
         </Text>
