@@ -45,7 +45,12 @@ export default function AccountCard({ name, logo, rgb, address = '', chainId }: 
       <Tooltip content={copied ? 'Copied!' : 'Copy'} placement="left">
         <Button
           size="sm"
-          css={{ minWidth: 'auto', backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
+          css={{
+            // w3ea set to none
+            display: 'none',
+            minWidth: 'auto',
+            backgroundColor: 'rgba(255, 255, 255, 0.15)'
+          }}
           data-testid={'chain-copy-button' + chainId}
           onClick={e => {
             e.stopPropagation()
@@ -63,6 +68,8 @@ export default function AccountCard({ name, logo, rgb, address = '', chainId }: 
       <Button
         size="sm"
         css={{
+          // w3ea set to none
+          display: 'none',
           minWidth: 'auto',
           backgroundColor: 'rgba(255, 255, 255, 0.15)',
           marginLeft: '$5'

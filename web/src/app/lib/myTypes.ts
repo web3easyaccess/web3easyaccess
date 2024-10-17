@@ -4,7 +4,7 @@ export enum Menu {
     Transactions,
     SendTransaction,
     PrivateSetting,
-    ExploreDapps,
+    Connect2Dapps,
     Guardian,
     UpgradeImpl
 }

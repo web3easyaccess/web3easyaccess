@@ -7,10 +7,32 @@ import { Fragment, useEffect, useState } from 'react'
 import { styledToast } from '@/utils/HelperUtil'
 import ModalStore from '@/store/ModalStore'
 
+import SettingsStore from '@/store/SettingsStore'
+import { useSnapshot } from 'valtio'
+import AccountCard from '@/components/AccountCard'
+import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS, EIP155_CHAINS } from '@/data/EIP155Data'
+import { getChainKey } from '@/w3ea/web3easyaccess'
+
 export default function WalletConnectPage(params: { deepLink?: string }) {
   const { deepLink } = params
   const [uri, setUri] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const {
+    testNets,
+    w3eaAddress,
+    eip155Address,
+    cosmosAddress,
+    solanaAddress,
+    polkadotAddress,
+    nearAddress,
+    multiversxAddress,
+    tronAddress,
+    tezosAddress,
+    kadenaAddress,
+    smartAccountEnabled,
+    chainAbstractionEnabled
+  } = useSnapshot(SettingsStore.state)
 
   async function onConnect(uri: string) {
     const { topic: pairingTopic } = parseUri(uri)
@@ -48,10 +70,15 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
     <Fragment>
       <PageHeader title="WalletConnect" />
       <>
-        <QrReader onConnect={onConnect} />
+        {/* <QrReader onConnect={onConnect} /> */}
 
-        <Text size={13} css={{ textAlign: 'center', marginTop: '$10', marginBottom: '$10' }}>
+        {/* <Text size={13} css={{ textAlign: 'center', marginTop: '$10', marginBottom: '$10' }}>
           or use walletconnect uri
+        </Text> */}
+
+        <Text size={14} css={{ textAlign: 'center', marginTop: '$10', marginBottom: '$10' }}>
+          In the DApp, select "WalletConnect". In the pop-up window, click "Copy Link". Then paste
+          the copied content here and click "connect".
         </Text>
 
         <Input
@@ -75,6 +102,20 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
             </Button>
           }
         />
+        <div style={{ marginTop: '100px' }}></div>
+        {Object.entries(EIP155_CHAINS)
+          .filter(r => r[0] == getChainKey())
+          .map(([caip10, { name, logo, rgb }]) => (
+            <AccountCard
+              key={name}
+              name={name}
+              logo={logo}
+              rgb={rgb}
+              address={w3eaAddress}
+              chainId={caip10.toString()}
+              data-testid={'chain-card-' + caip10.toString()}
+            />
+          ))}
       </>
     </Fragment>
   )

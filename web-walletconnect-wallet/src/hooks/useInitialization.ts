@@ -38,7 +38,7 @@ export default function useInitialization() {
 
             SettingsStore.setW3eaAddress(w3eaAddress)
 
-            SettingsStore.setEIP155Address(eip155Addresses[0])
+            // SettingsStore.setEIP155Address(eip155Addresses[0])
             // w3ea comments:
             // SettingsStore.setCosmosAddress(cosmosAddresses[0])
             // SettingsStore.setSolanaAddress(solanaAddresses[0])

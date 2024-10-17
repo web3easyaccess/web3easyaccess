@@ -41,9 +41,11 @@ export default function Navigation() {
         </a>
       </Link>
 
-      <Link href="/settings" passHref>
+      {/* href="/settings"  */}
+
+      <Link href="" passHref>
         <a className="navLink" data-testid="settings">
-          <Image alt="settings icon" src="/icons/settings-icon.svg" width={27} height={27} />
+          <Image alt="settings icon" src="/icons/settings-icon.svg" width={1} height={1} />
         </a>
       </Link>
     </Row>

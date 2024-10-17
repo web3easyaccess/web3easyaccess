@@ -40,13 +40,13 @@ export default function HomePage() {
   const { push } = useRouter()
   return (
     <Fragment>
-      <PageHeader title="Accounts">
-        <AccountPicker data-testid="account-picker" />
+      <PageHeader title="WalletConnect">
+        {/* <AccountPicker data-testid="account-picker" /> */}
       </PageHeader>
       {chainAbstractionEnabled ? <ChainAbstractionBalanceCard /> : null}
-      <Text h4 css={{ marginBottom: '$5' }}>
+      {/* <Text h4 css={{ marginBottom: '$5' }}>
         Mainnets
-      </Text>
+      </Text> */}
 
       {Object.entries(EIP155_CHAINS)
         .filter(r => r[0] == getChainKey())
@@ -62,7 +62,7 @@ export default function HomePage() {
           />
         ))}
 
-      {Object.entries(EIP155_TEST_CHAINS)
+      {/* {Object.entries(EIP155_TEST_CHAINS)
         .filter(r => r[0] == 'eip155:11155111')
         .map(([caip10, { name, logo, rgb }]) => (
           <AccountCard
@@ -74,7 +74,7 @@ export default function HomePage() {
             chainId={caip10.toString()}
             data-testid={'chain-card-' + caip10.toString()}
           />
-        ))}
+        ))} */}
 
       {/*     // w3ea comments:
       {Object.entries(EIP155_MAINNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (

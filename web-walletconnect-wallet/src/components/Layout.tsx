@@ -65,6 +65,8 @@ export default function Layout({ children, initialized }: Props) {
 
             <Card.Footer
               css={{
+                // w3ea ,set to none
+                display: 'none',
                 height: '85px',
                 minHeight: '85px',
                 position: 'sticky',

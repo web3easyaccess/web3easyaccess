@@ -20,7 +20,7 @@ import Assets from "./assets";
 import Transactions from "./transactions";
 import SendTransaction from "./newtransaction/sendtransaction";
 import SendChgPrivateInfo from "./newtransaction/sendchgprivateinfo";
-import ExploreDapps from "./exploredapps";
+import Connect2Dapps from "./connect2dapps";
 import UpgradeImpl from "./upgradeimpl";
 
 import { useRouter } from "next/navigation";
@@ -74,8 +74,7 @@ export default function OpMenu({
             updateSelectedMenu(Menu.PrivateSetting);
             // route.push("/dashboard/privateinfo");
         } else if (elementTextContent.indexOf("Dapps") >= 0) {
-            updateSelectedMenu(Menu.ExploreDapps);
-            // route.push("/dashboard/exploredapps");
+            updateSelectedMenu(Menu.Connect2Dapps);
         } else if (elementTextContent.indexOf("Upgrade") >= 0) {
             updateSelectedMenu(Menu.UpgradeImpl);
             // route.push("/dashboard/privateinfo");
@@ -101,8 +100,8 @@ export default function OpMenu({
             menuText = "Change PrivateInfo";
         } else if (menu == Menu.Guardian) {
             menuText = "Guardian(Not Yet)";
-        } else if (menu == Menu.ExploreDapps) {
-            menuText = "Explore Dapps";
+        } else if (menu == Menu.Connect2Dapps) {
+            menuText = "Connect to Dapps";
         } else if (menu == Menu.UpgradeImpl) {
             menuText = "Upgrade Impl";
         }
@@ -149,7 +148,7 @@ export default function OpMenu({
                 </CardBody>
                 <Divider />
                 <CardBody>
-                    <MenuItem menu={Menu.ExploreDapps}></MenuItem>
+                    <MenuItem menu={Menu.Connect2Dapps}></MenuItem>
                 </CardBody>
                 <Divider />
                 <CardBody>
@@ -214,8 +213,6 @@ export function ShowMain({
                 accountAddrList={accountAddrList}
             />
         );
-        // } else if (selectedMenu == Menu.ExploreDapps) {
-        //     return <ExploreDapps userProp={userProp} />;
     } else if (selectedMenu == Menu.PrivateSetting) {
         console.log("selectedMenu11111111144:", selectedMenu);
         // alert("coming soon!");
@@ -231,10 +228,10 @@ export function ShowMain({
                 forTransaction={false}
             />
         );
-    } else if (selectedMenu == Menu.ExploreDapps) {
+    } else if (selectedMenu == Menu.Connect2Dapps) {
         console.log("selectedMenu1111111xxxx:", selectedMenu);
         return (
-            <ExploreDapps
+            <Connect2Dapps
                 userProp={userProp}
                 accountAddrList={accountAddrList}
                 forChgPasswd={false}
