@@ -1696,15 +1696,18 @@ async function estimateTransFee(
     nativeCoinSymbol: string,
     upgradeImpl: boolean
 ) {
-    let myDetectEstimatedFee = BigInt(0);
-    let myL1DataFee = BigInt(0);
-    const receiverAmt = parseEther(receiverAmountETH);
     console.log(
         "estimateTransFee...",
         myOwnerId,
         myContractAccount,
-        "myAccountCreated=" + myAccountCreated
+        "myAccountCreated=" + myAccountCreated,
+        "receiverAmountETH=" + receiverAmountETH
     );
+
+    let myDetectEstimatedFee = BigInt(0);
+    let myL1DataFee = BigInt(0);
+    const receiverAmt = parseEther(receiverAmountETH);
+
     let detectRes: {
         realEstimatedFee: bigint;
         l1DataFee: bigint;
@@ -1881,7 +1884,7 @@ async function estimateTransFee(
     };
 }
 
-async function executeTransaction(
+export async function executeTransaction(
     myOwnerId: string,
     myContractAccount: string,
     passwdAccount: any,

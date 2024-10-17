@@ -32,7 +32,7 @@ export default function W3eaChannel() {
       msgType: 'childReady',
       chainKey: '',
       address: '',
-      msgIdx: ++idx2Parent.msgIdx,
+      msgIdx: new Date().getTime(), // ++idx2Parent.msgIdx,
       msg: {
         chatId: '',
         content: undefined
@@ -53,7 +53,7 @@ const sendMsgToParent = async (message: Message) => {
   for (let k = 0; k < nnn; k++) {
     await sleep(100)
     try {
-      parent.postMessage(message, w3eaHost) //window.postMessage
+      parent.postMessage(JSON.stringify(message), w3eaHost) //window.postMessage
       break
     } catch (e) {
       console.log('sendMsgToParent error:', e)
@@ -118,7 +118,7 @@ const waitParentMsg = async (chatId: string) => {
 function getRandomInt(max: number) {
   return Math.floor(Math.random() * max)
 }
-const idx2Parent = { msgIdx: 0 }
+// const idx2Parent = { msgIdx: 0 }
 
 export const chat_signMessage = async (userMessage: string) => {
   let chatId = new Date().getTime() + '_' + getRandomInt(1000)
@@ -129,7 +129,7 @@ export const chat_signMessage = async (userMessage: string) => {
     msgType: 'signMessage',
     chainKey: '',
     address: '',
-    msgIdx: ++idx2Parent.msgIdx,
+    msgIdx: new Date().getTime(), // ++idx2Parent.msgIdx,
     msg: {
       chatId: chatId,
       content: userMessage
@@ -151,7 +151,7 @@ export const chat_sendTransaction = async (userMessage: TransactionRequest) => {
     msgType: 'sendTransaction',
     chainKey: '',
     address: '',
-    msgIdx: ++idx2Parent.msgIdx,
+    msgIdx: new Date().getTime(), // ++idx2Parent.msgIdx,
     msg: {
       chatId: chatId,
       content: userMessage

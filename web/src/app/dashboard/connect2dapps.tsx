@@ -40,16 +40,30 @@ export type TransactionRequest = {
 
 import * as libsolana from "@/app/lib/client/solana/libsolana";
 
+import * as funNewTrans from "@/app/dashboard/newtransaction/funNewTrans";
+
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { UserProperty } from "../storage/LocalStore";
 import { Button, Progress } from "@nextui-org/react";
 import { getChainObj } from "../lib/myChain";
 import { ChainCode } from "../lib/myTypes";
-import { encodeAbiParameters, keccak256, hashMessage } from "viem";
+import {
+    encodeAbiParameters,
+    keccak256,
+    hashMessage,
+    hexToBigInt,
+    parseEther,
+    parseUnits,
+} from "viem";
 import { signAuth, signPersonalMessage } from "../lib/client/signAuthTypedData";
-import { getPasswdAccount, PrivateInfoType } from "../lib/client/keyTools";
+import {
+    getOwnerIdLittleBrother,
+    getPasswdAccount,
+    PrivateInfoType,
+} from "../lib/client/keyTools";
 import { testIsValidSignature } from "../lib/chainQuery";
 import { PrivateInfo } from "./newtransaction/privateinfo";
+import { executeTransaction } from "./newtransaction/sendtransaction";
 
 export default function Connect2Dapps({
     userProp,
@@ -76,6 +90,18 @@ export default function Connect2Dapps({
 
     const walleconnectHost = "http://localhost:3001"; // process.env.CHILD_W3EA_WALLETCONNECT_HOST
 
+    const getOwnerId = () => {
+        return getOwnerIdLittleBrother(
+            userProp.state.bigBrotherOwnerId,
+            userProp.state.selectedOrderNo
+        );
+    };
+
+    const preparedPriceRef = useRef({
+        preparedMaxFeePerGas: undefined,
+        preparedGasPrice: undefined,
+    });
+
     const msgIdFromChild = useRef(0);
     //回调函数
     async function receiveMessageFromChild(event) {
@@ -84,7 +110,7 @@ export default function Connect2Dapps({
                 "parent here,receve msg from walletconnect: ",
                 event.data
             );
-            const msg: Message = event.data;
+            const msg: Message = JSON.parse(event.data);
             if (msg.msgIdx <= msgIdFromChild.current) {
                 return;
             }
@@ -106,13 +132,15 @@ export default function Connect2Dapps({
                 const chatId = msg.msg.chatId;
                 const txReq = msg.msg.content as TransactionRequest;
                 const hash = await sendTransaction(
-                    currentPriInfoRef.current,
+                    currentPriInfoRef,
+                    preparedPriceRef,
                     accountAddr,
                     txReq,
                     chainObj,
-                    userProp.serverSidePropState.factoryAddr
+                    userProp.serverSidePropState.factoryAddr,
+                    getOwnerId()
                 );
-                writeWalletConnectData("signMessage", chatId, hash);
+                writeWalletConnectData("sendTransaction", chatId, hash);
             } else {
                 console.log("not supported msg:", msg);
             }
@@ -121,26 +149,27 @@ export default function Connect2Dapps({
     //监听message事件
     window.addEventListener("message", receiveMessageFromChild, false);
 
-    const msgIndex = useRef(0);
-    const lastMsgIndex = useRef(0);
+    // const msgIndex = useRef(0);
+    // const lastMsgIndex = useRef(0);
 
     const writeWalletConnectData = async (
         msgType:
             | "childReady"
             | "initializeChild"
             | "signMessage"
-            | "signTransaction",
+            | "signTransaction"
+            | "sendTransaction",
         chatId: string,
         content: any
     ) => {
         console.log("writeWalletConnectData,", msgType, chatId, content);
 
-        msgIndex.current = msgIndex.current + 1;
+        // msgIndex.current = msgIndex.current + 1;
         const msg: Message = {
             msgType: msgType,
             chainKey: chainKey,
             address: accountAddr,
-            msgIdx: msgIndex.current,
+            msgIdx: new Date().getTime(), // msgIndex.current,
             msg: {
                 chatId: chatId,
                 content: content,
@@ -302,7 +331,11 @@ const signMessage = async (
 };
 
 const sendTransaction = async (
-    privateInfo: PrivateInfoType,
+    privateInfoRef: MutableRefObject<PrivateInfoType>,
+    preparedPriceRef: MutableRefObject<{
+        preparedMaxFeePerGas: undefined;
+        preparedGasPrice: undefined;
+    }>,
     accountAddr: string,
     txReq: TransactionRequest,
     chainObj: {
@@ -316,5 +349,44 @@ const sendTransaction = async (
         chainCode: ChainCode;
         l1ChainCode: ChainCode;
     },
-    factoryAddr: string
-) => {};
+    factoryAddr: string,
+    ownerId: string
+) => {
+    const passwdAccount = getPasswdAccount(
+        privateInfoRef.current,
+        chainObj.chainCode
+    );
+
+    preparedPriceRef.current = {
+        preparedMaxFeePerGas:
+            txReq.maxFeePerGas == undefined || txReq.maxFeePerGas == ""
+                ? undefined
+                : hexToBigInt(txReq.maxFeePerGas),
+        preparedGasPrice:
+            txReq.gasPrice == undefined || txReq.gasPrice == ""
+                ? undefined
+                : hexToBigInt(txReq.gasPrice),
+    };
+
+    const tx = executeTransaction(
+        ownerId,
+        accountAddr,
+        passwdAccount,
+        txReq.to,
+        "" + Number(hexToBigInt(txReq.value)) / 1e18,
+        txReq.data,
+        chainObj,
+        true,
+        "",
+        preparedPriceRef,
+        "",
+        privateInfoRef,
+        "ETH",
+        false
+    );
+    if (tx.toString().startsWith("ERROR")) {
+        console.log("ERROR,executeTransaction error!.", tx);
+        throw Error("executeTransaction error!");
+    }
+    return tx;
+};
