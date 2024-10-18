@@ -65,7 +65,9 @@ export async function approveEIP5792Request(requestEvent: RequestEventArgs) {
     SettingsStore.setActiveChainId(chainId)
     switch (request.method) {
         case EIP5792_METHODS.WALLET_GET_CAPABILITIES: {
-            console.log('w3ea, WALLET_GET_CAPABILITIES, getWallet')
+            console.log('w3ea,2, WALLET_GET_CAPABILITIES, getWallet');
+            return formatJsonRpcResult<GetCapabilitiesResult>(id, supportedEIP5792CapabilitiesForEOA);
+
             const wallet = await getWallet(params)
             if (wallet instanceof EIP155Lib)
                 return formatJsonRpcResult<GetCapabilitiesResult>(id, supportedEIP5792CapabilitiesForEOA)
