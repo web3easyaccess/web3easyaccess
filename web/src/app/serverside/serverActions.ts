@@ -154,6 +154,7 @@ const THEGRAPH_URLS: { [key: string]: string } = {
     LINEA_TEST_CHAIN: `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/5zap7aqMFgJkErfkhHrngaGs24x5h2YyrWLeni5TkVZL`,
     SEPOLIA_CHAIN: `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/JCzyXC26m46orpfwuY4i4nUWMXk3LAJjGpWoQGw451Lp`,
     NEOX_TEST_CHAIN: `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/o2FaoPpD1KeP8Dk5KnUyGuw7b7tZvvcrTUu3xYuGkez`,
+    ARBITRUM_TEST_CHAIN: ``,
 };
 export async function thegraphQueryOpLog(accountAddr, chainCode) {
     const result: {

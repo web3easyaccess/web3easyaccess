@@ -22,6 +22,8 @@ export async function getFactoryAddr(chainCode: string) {
         return process.env.CHAIN_FACTORY_ADDRESS_SEPOLIA;
     } else if (chainCode == ChainCode.NEOX_TEST_CHAIN.toString()) {
         return process.env.CHAIN_FACTORY_ADDRESS_NEOX_TEST;
+    } else if (chainCode == ChainCode.ARBITRUM_TEST_CHAIN.toString()) {
+        return process.env.CHAIN_FACTORY_ADDRESS_ARBITRUM_TEST;
     } else if (chainCode == "SOLANA_TEST_CHAIN") {
         return process.env.CHAIN_FACTORY_ADDRESS_SOLANA_TEST;
     } else {
@@ -98,8 +100,7 @@ export async function chainClient(_chainCode: string) {
         var a = 1 / 0;
     }
     console.log(
-        `_currentPrivateKey:len:${
-            _currentPrivateKey?.length
+        `_currentPrivateKey:len:${_currentPrivateKey?.length
         },p2:${_currentPrivateKey?.substring(0, 2)}`
     );
     let account = null;

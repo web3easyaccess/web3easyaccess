@@ -19,6 +19,7 @@ export enum ChainCode {
     SEPOLIA_CHAIN = "SEPOLIA_CHAIN",
     SOLANA_TEST_CHAIN = "SOLANA_TEST_CHAIN",
     NEOX_TEST_CHAIN = "NEOX_TEST_CHAIN",
+    ARBITRUM_TEST_CHAIN = "ARBITRUM_TEST_CHAIN",
 }
 
 export function chainCodeFromString(chainCode: string) {
@@ -38,7 +39,10 @@ export function chainCodeFromString(chainCode: string) {
         return ChainCode.SOLANA_TEST_CHAIN;
     } else if (chainCode == "NEOX_TEST_CHAIN") {
         return ChainCode.NEOX_TEST_CHAIN;
-    } else {
+    } else if (chainCode == "ARBITRUM_TEST_CHAIN") {
+        return ChainCode.ARBITRUM_TEST_CHAIN;
+    }
+    else {
         console.log("ERROR.....chainCodeFromString..:", chainCode);
         return ChainCode.UNKNOW;
     }

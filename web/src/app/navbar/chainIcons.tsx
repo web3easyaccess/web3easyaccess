@@ -62,6 +62,7 @@ export const ChainIcons = ({
     const [defaultAnvilState, setDefaultAnvilState] = useState(myDefault);
     const [ethereumMainnetState, setEthereumMainnetState] = useState(myDefault);
     const [neoxtestState, setNeoxtestState] = useState(myDefault);
+    const [arbitrumtestState, setArbitrumtestState] = useState(myDefault);
 
     const [solanatestnetState, setSolanatestnetState] = useState(myDefault);
 
@@ -74,6 +75,7 @@ export const ChainIcons = ({
         setLineatestState(myDefault);
         setSepoliaState(myDefault);
         setNeoxtestState(myDefault);
+        setArbitrumtestState(myDefault);
 
         setSolanatestnetState(myDefault);
         if (cc == ChainCode.MORPH_TEST_CHAIN) {
@@ -90,6 +92,8 @@ export const ChainIcons = ({
             setSepoliaState(myChecked);
         } else if (cc == ChainCode.NEOX_TEST_CHAIN) {
             setNeoxtestState(myChecked);
+        } else if (cc == ChainCode.ARBITRUM_TEST_CHAIN) {
+            setArbitrumtestState(myChecked);
         } else if (cc == ChainCode.SOLANA_TEST_CHAIN) {
             setSolanatestnetState(myChecked);
         }
@@ -155,6 +159,19 @@ export const ChainIcons = ({
         <div className="flex gap-3 items-center" style={{ cursor: "pointer" }}>
             {/* <SetChainForm /> */}
             {/* <Badge content="" color="secondary"> */}
+
+            <Tooltip content="Arbitrum testnet">
+                <Avatar
+                    src="/chain/arbitrumtest.png"
+                    size={arbitrumtestState.size}
+                    isBordered={arbitrumtestState.bordered}
+                    onClick={() => {
+                        handleClick(ChainCode.ARBITRUM_TEST_CHAIN);
+                    }}
+                    color="primary"
+                    radius="sm"
+                />
+            </Tooltip>
 
             <Tooltip content="NeoX testnet">
                 <Avatar
@@ -371,6 +388,21 @@ export const SelectedChainIcon = ({
                     <Tooltip content="NeoX testnet">
                         <Avatar
                             src="/chain/neoxtest.png"
+                            size="sm"
+                            color="primary"
+                            radius="sm"
+                        />
+                    </Tooltip>
+                </Badge>
+            </div>
+        );
+    } else if (myChainCode == ChainCode.ARBITRUM_TEST_CHAIN) {
+        return (
+            <div className="flex gap-3 items-center">
+                <Badge content="" color="secondary">
+                    <Tooltip content="Arbitrum testnet">
+                        <Avatar
+                            src="/chain/arbitrumtest.png"
                             size="sm"
                             color="primary"
                             radius="sm"
