@@ -43,7 +43,7 @@ import * as libsolana from "@/app/lib/client/solana/libsolana";
 import * as funNewTrans from "@/app/dashboard/newtransaction/funNewTrans";
 
 import { MutableRefObject, useEffect, useRef, useState } from "react";
-import { UserProperty } from "../storage/LocalStore";
+import { UserProperty } from "../storage/userPropertyStore";
 import { Button, Progress } from "@nextui-org/react";
 import { getChainObj } from "../lib/myChain";
 import { ChainCode } from "../lib/myTypes";

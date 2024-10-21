@@ -18,7 +18,8 @@ import {
     ChainCode,
     chainCodeFromString,
 } from "../lib/myTypes";
-import LocalStore, { UserProperty } from "../storage/LocalStore";
+import { UserProperty } from "../storage/userPropertyStore";
+import * as userPropertyStore from "../storage/userPropertyStore";
 
 // export function getSessionData(req) {
 //   const encryptedSessionData = cookies().get("session")?.value;
@@ -63,11 +64,11 @@ export default function Dashboard({
     const [selectedMenu, setSelectedMenu] = useState(Menu.OOOO);
     const updateSelectedMenu = (menu: Menu) => {
         setSelectedMenu(menu);
-        LocalStore.setMenu(menu);
+        userPropertyStore.setMenu(menu);
     };
 
     useEffect(() => {
-        const oldMenu: Menu = LocalStore.getMenu();
+        const oldMenu: Menu = userPropertyStore.getMenu();
         setSelectedMenu(oldMenu);
     }, []);
 

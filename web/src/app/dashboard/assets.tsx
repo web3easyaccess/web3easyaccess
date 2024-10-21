@@ -22,7 +22,7 @@ import { useFormState } from "react-dom";
 import { queryAssets } from "../lib/chainQuery";
 
 import { ChainCode, Menu, UserInfo, uiToString } from "../lib/myTypes";
-import { UserProperty } from "../storage/LocalStore";
+import { UserProperty } from "../storage/userPropertyStore";
 
 export default function Assets({
     userProp,

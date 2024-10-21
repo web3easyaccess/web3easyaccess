@@ -1,14 +1,14 @@
 "use client";
 
-import LocalStore from "../storage/LocalStore";
-import { UserProperty } from "../storage/LocalStore";
+import * as userPropertyStore from "../storage/UserPropertyStore";
+import { UserProperty } from "../storage/UserPropertyStore";
 
 import Dashboard from "./dashboard";
 
 import { getFactoryAddr } from "../serverside/blockchain/chainWriteClient";
 import { getW3eapAddr } from "../serverside/blockchain/chainWrite";
 
-import { queryAccount } from "../lib/chainQuery";
+import { queryAccount, queryAccountList } from "../lib/chainQuery";
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 
 import {
@@ -19,150 +19,126 @@ import {
     chainCodeFromString,
 } from "../lib/myTypes";
 
-export default function Page({ email }: { email: string }) {
-    const prop: UserProperty = {
-        bigBrotherOwnerId: "",
-        email: "",
-        emailDisplay: "",
-        selectedChainCode: ChainCode.UNKNOW,
-        selectedAccountInfos: [
-            {
-                chainCode: ChainCode.UNKNOW,
-                selectedOrderNo: -1,
-                selectedAccountAddr: "",
-            },
-        ],
-        selectedOrderNo: -1,
-        selectedAccountAddr: "",
-        testMode: false,
-    }; // LocalStore.getLoginPageProperty();
+export default function PageClient({ email }: { email: string }) {
+    const prop: UserProperty = userPropertyStore.getUserProperty(email);
 
-    const [accountAddrList, setAccountAddrList] = useState([""]);
-    const updateAccountAddrList = (acctList: string[]) => {
-        setAccountAddrList(acctList);
-    };
+    // const [accountAddrList, setAccountAddrList] = useState([""]);
+    // const updateAccountAddrList = (acctList: string[]) => {
+    //     setAccountAddrList(acctList);
+    // };
 
-    const userPropRef: MutableRefObject<UserProperty> = useRef(prop);
+    // const userPropRef: MutableRefObject<UserProperty> = useRef(prop);
 
-    const [userPropState, setUserPropState] = useState(prop);
-    const [serverSidePropState, setServerSidePropState] = useState({
-        w3eapAddr: "",
-        factoryAddr: "",
-        bigBrotherPasswdAddr: "",
-    });
+    const emailRef = useRef(email);
 
-    const userProp: {
-        ref: MutableRefObject<UserProperty>;
-        state: UserProperty;
-        serverSidePropState: {
-            w3eapAddr: string;
-            factoryAddr: string;
-            bigBrotherPasswdAddr: string;
-        };
-    } = {
-        ref: userPropRef,
-        state: userPropState,
-        serverSidePropState: serverSidePropState,
-    };
-
-    useEffect(() => {
-        const ppp = LocalStore.getUserProperty(email);
-        console.log("dashboard page,ppp, prop:", ppp);
-        userPropRef.current = ppp;
-        setUserPropState(ppp);
-    }, []);
-
+    const [userProp, setUserProp] = useState(prop);
     const updateUserProp = ({
         email,
-        selectedOrderNo,
-        selectedAccountAddr,
-        selectedChainCode,
         testMode,
+        selectedChainCode,
+        accountAddrList,
+        selectedOrderNo,
+        w3eapAddr,
+        factoryAddr,
+        bigBrotherPasswdAddr,
     }: {
         email: string;
-        selectedOrderNo: number;
-        selectedAccountAddr: string;
-        selectedChainCode: ChainCode;
-        testMode: boolean;
+        testMode: boolean | undefined;
+        selectedChainCode: ChainCode | undefined;
+        accountAddrList: string[] | undefined;
+        selectedOrderNo: number | undefined;
+        w3eapAddr: string | undefined;
+        factoryAddr: string | undefined;
+        bigBrotherPasswdAddr: string | undefined;
     }) => {
         if (email == null || email == undefined || email == "") {
-            alert("email can not be null!");
-            // return;
+            email = emailRef.current;
         }
-        let upFlag = false;
-        if (
-            selectedOrderNo != null &&
-            selectedOrderNo != undefined &&
-            selectedOrderNo >= 0 &&
-            selectedAccountAddr != null &&
-            selectedAccountAddr != undefined &&
-            selectedAccountAddr != "" &&
-            selectedAccountAddr != userPropRef.current.selectedAccountAddr
-        ) {
-            LocalStore.setPropSelectedOrderNo(
-                email,
-                selectedOrderNo,
-                selectedAccountAddr
-            );
-            upFlag = true;
-        }
-        if (
-            selectedChainCode != null &&
-            selectedChainCode != undefined &&
-            selectedChainCode != userPropRef.current.selectedChainCode
-        ) {
-            LocalStore.setPropChainCode(email, selectedChainCode);
-            upFlag = true;
-        }
-        if (
-            testMode != null &&
-            testMode != undefined &&
-            testMode != userPropRef.current.testMode
-        ) {
-            LocalStore.setPropTestMode(email, testMode);
-            upFlag = true;
-        }
+        userPropertyStore.saveUserProperty(
+            email,
+            testMode,
+            selectedChainCode,
+            accountAddrList,
+            selectedOrderNo,
+            w3eapAddr,
+            factoryAddr,
+            bigBrotherPasswdAddr
+        );
 
-        if (upFlag) {
-            const ppp = LocalStore.getUserProperty(email);
-            userPropRef.current = ppp;
-            setUserPropState(ppp);
-        }
+        const newProp: UserProperty = userPropertyStore.getUserProperty(email);
+        setUserProp(newProp);
     };
 
     useEffect(() => {
         const fun = async () => {
-            console.log("pageClient,effect-xyz:", userPropRef.current);
+            const acctInfo = userProp.accountInfos.get(
+                userProp.selectedChainCode
+            ) as {
+                accountAddrList: string[];
+                selectedOrderNo: number;
+                w3eapAddr: string;
+                factoryAddr: string;
+                bigBrotherPasswdAddr: string;
+            };
+            // //
+            // //
+            if (
+                acctInfo.factoryAddr == undefined ||
+                acctInfo.factoryAddr == ""
+            ) {
+                const factoryAddr = await getFactoryAddr(
+                    userProp.selectedChainCode
+                );
+                acctInfo.factoryAddr = factoryAddr;
+            }
 
-            const w3eapAddr = await getW3eapAddr(
-                userPropRef.current.selectedChainCode
+            if (acctInfo.w3eapAddr == undefined || acctInfo.w3eapAddr == "") {
+                const w3eapAddr = await getW3eapAddr(
+                    userProp.selectedChainCode
+                );
+                acctInfo.w3eapAddr = w3eapAddr;
+            }
+
+            let bigBrotherPasswdAddr = acctInfo.bigBrotherPasswdAddr;
+            if (
+                bigBrotherPasswdAddr == undefined ||
+                bigBrotherPasswdAddr == ""
+            ) {
+                const bigBrotherAcct = await queryAccount(
+                    userProp.selectedChainCode,
+                    acctInfo.factoryAddr,
+                    userProp.bigBrotherOwnerId
+                );
+                bigBrotherPasswdAddr = bigBrotherAcct.passwdAddr;
+            }
+
+            const acctList = await queryAccountList(
+                userProp.selectedChainCode,
+                acctInfo.factoryAddr,
+                userProp.bigBrotherOwnerId
             );
-            const factoryAddr = await getFactoryAddr(
-                userPropRef.current.selectedChainCode
-            );
+
             console.log(
-                "queryAccount...5,factoryAddr:",
-                factoryAddr,
-                ",",
-                userPropRef.current.bigBrotherOwnerId
-            );
-            const acctData = await queryAccount(
-                userPropRef.current.selectedChainCode,
-                factoryAddr,
-                userPropRef.current.bigBrotherOwnerId
+                userProp.selectedChainCode,
+                "client query, queryAccountList222:",
+                acctList
             );
 
-            console.log("pageClient,effect:1:acctData:", acctData);
-
-            setServerSidePropState({
-                w3eapAddr: w3eapAddr,
-                factoryAddr: factoryAddr,
-                bigBrotherPasswdAddr: acctData.passwdAddr,
+            updateUserProp({
+                email: emailRef.current,
+                testMode: undefined,
+                selectedChainCode: undefined,
+                accountAddrList: acctList.map((a) => a.addr),
+                selectedOrderNo: undefined,
+                w3eapAddr: acctInfo.w3eapAddr,
+                factoryAddr: acctInfo.factoryAddr,
+                bigBrotherPasswdAddr: bigBrotherPasswdAddr,
             });
-            console.log("pageClient,effect:2:", serverSidePropState);
+
+            console.log("updateUserProp, init ....!");
         };
         fun();
-    }, [userPropState, setUserPropState]);
+    }, []);
 
     // const userInfo: UserInfo = {
     //     selectedMenu: selectedMenu,

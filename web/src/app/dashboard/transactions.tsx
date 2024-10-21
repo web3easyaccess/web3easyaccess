@@ -23,7 +23,7 @@ import { Menu, UserInfo, uiToString, Transaction } from "../lib/myTypes";
 import { getChainObj } from "../lib/myChain";
 
 import { thegraphQueryOpLog } from "../serverside/serverActions";
-import { UserProperty } from "../storage/LocalStore";
+import { UserProperty } from "../storage/userPropertyStore";
 
 export default function Transactions({
     userProp,

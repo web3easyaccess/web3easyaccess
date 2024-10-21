@@ -26,7 +26,7 @@ import UpgradeImpl from "./upgradeimpl";
 import { useRouter } from "next/navigation";
 
 import { ChainCode, Menu, UserInfo, uiToString } from "../lib/myTypes";
-import { UserProperty } from "../storage/LocalStore";
+import { UserProperty } from "../storage/userPropertyStore";
 import PageClient from "./pageClient";
 
 // const SendChgPrivateInfo = () => {
