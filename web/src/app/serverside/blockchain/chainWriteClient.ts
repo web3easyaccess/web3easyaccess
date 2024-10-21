@@ -89,6 +89,13 @@ export async function chainClient(_chainCode: string) {
         _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_NEOX_TEST;
         _l1GasPriceOracleContract = "0x0";
         _l1DataFeeFunc = "";
+    } else if (chainCode == ChainCode.ARBITRUM_TEST_CHAIN.toString()) {
+        _freeFeeAmountWhenCreated = Number(
+            process.env.INIT_FREE_FEE_AMOUNT_ARBITRUM_TEST
+        );
+        _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_ARBITRUM_TEST;
+        _l1GasPriceOracleContract = "0x0";
+        _l1DataFeeFunc = "";
     } else if (chainCode == "SOLANA_TEST_CHAIN") {
         _freeFeeAmountWhenCreated = Number(
             process.env.INIT_FREE_FEE_AMOUNT_SOLANA_TEST
