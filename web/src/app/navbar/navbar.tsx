@@ -30,41 +30,18 @@ import { SelectedChainIcon, ChainIcons } from "./chainIcons";
 import UserProfile from "./userProfile";
 
 import { Menu, UserInfo, uiToString, ChainCode } from "../lib/myTypes";
-import { UserProperty } from "../storage/LocalStore";
+import { UpdateUserProperty, UserProperty } from "../storage/userPropertyStore";
 
 export default function NavBar({
     userProp,
     updateUserProp,
-    accountAddrList,
-    updateAccountAddrList,
+    loadUserData,
 }: {
-    userProp: {
-        ref: MutableRefObject<UserProperty>;
-        state: UserProperty;
-        serverSidePropState: {
-            w3eapAddr: string;
-            factoryAddr: string;
-            bigBrotherPasswdAddr: string;
-        };
-    };
-    updateUserProp: ({
-        email,
-        selectedOrderNo,
-        selectedAccountAddr,
-        selectedChainCode,
-        testMode,
-    }: {
-        email: string;
-        selectedOrderNo: number;
-        selectedAccountAddr: string;
-        selectedChainCode: ChainCode;
-        testMode: boolean;
-    }) => void;
-    accountAddrList: string[];
-    updateAccountAddrList: (acctList: string[]) => void;
+    userProp: UserProperty;
+    updateUserProp: UpdateUserProperty;
+    loadUserData: (myProp: UserProperty) => Promise<void>;
 }) {
-    console.log("ui in navbar,ref:", userProp.ref.current);
-    console.log("ui in navbar,state:", userProp.state);
+    console.log("ui in navbar,:", userProp);
 
     // max-w-[30ch]
     return (
@@ -73,9 +50,9 @@ export default function NavBar({
                 <p
                     className="text-md"
                     style={{ color: "black" }}
-                    title={userProp.state.emailDisplay}
+                    title={userProp.emailDisplay}
                 >
-                    {userProp.state.emailDisplay}
+                    {userProp.emailDisplay}
                 </p>
                 <Divider
                     orientation="vertical"
@@ -92,8 +69,7 @@ export default function NavBar({
                     <UserProfile
                         userProp={userProp}
                         updateUserProp={updateUserProp}
-                        accountAddrList={accountAddrList}
-                        updateAccountAddrList={updateAccountAddrList}
+                        loadUserData={loadUserData}
                     />
                 </NavbarItem>
                 {/* <NavbarItem className="hidden lg:flex">
@@ -118,27 +94,12 @@ export default function NavBar({
 
 export function Navbar4Login({
     userProp,
-    updateChainCode,
+    updateUserProp,
 }: {
-    userProp: {
-        ref: MutableRefObject<UserProperty>;
-        state: UserProperty;
-        serverSidePropState: {
-            w3eapAddr: string;
-            factoryAddr: string;
-            bigBrotherPasswdAddr: string;
-        };
-    };
-    updateChainCode: ({
-        email,
-        selectedChainCode,
-    }: {
-        email: string;
-        selectedChainCode: ChainCode;
-    }) => void;
+    userProp: UserProperty;
+    updateUserProp: UpdateUserProperty;
 }) {
-    console.log("navbar 4 login, userPropref:", userProp.ref.current);
-    console.log("navbar 4 login, userPropstate:", userProp.state);
+    console.log("navbar 4 login, userPropstate:", userProp);
     // max-w-[30ch]
     return (
         <Navbar isBordered isBlurred={false} maxWidth="full">
@@ -164,7 +125,7 @@ export function Navbar4Login({
             <NavbarContent justify="end">
                 <ChainIcons
                     userProp={userProp}
-                    updateUserProp={updateChainCode}
+                    updateUserProp={updateUserProp}
                 />
                 <NavbarItem className="hidden lg:flex"></NavbarItem>
             </NavbarContent>

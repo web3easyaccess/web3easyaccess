@@ -1,6 +1,6 @@
 import { defineChain } from "viem";
 
-import { scrollSepolia, lineaSepolia, sepolia, arbitrumSepolia } from "viem/chains";
+import { scrollSepolia, lineaSepolia, sepolia, arbitrumSepolia, mainnet } from "viem/chains";
 
 import { clusterApiUrl as solanaClusterApiUrl } from "@solana/web3.js";
 
@@ -267,6 +267,11 @@ export const getChainObj = (
         rtn = { ...arbitrumSepolia };
         rtn.rpcUrls.default.http.unshift(
             "https://arb-sepolia.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
+        );
+    } else if (chainCode == ChainCode.ETHEREUM_MAIN_NET) {
+        rtn = { ...mainnet };
+        rtn.rpcUrls.default.http.unshift(
+            "https://eth-mainnet.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
         );
     } else if (chainCode == ChainCode.SOLANA_TEST_CHAIN) {
         rtn = solanaDevnet; // solanaLocalnet;

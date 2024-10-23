@@ -21,90 +21,20 @@ import { useState, useRef, MutableRefObject, useEffect } from "react";
 import { Navbar4Login } from "../navbar/navbar";
 
 import VerifyCode from "./verifyCode";
-import LocalStore, { UserProperty } from "../storage/LocalStore";
+import { UserProperty, EMAIL_LOGIN_PAGE } from "../storage/userPropertyStore";
+import * as userPropertyStore from "../storage/userPropertyStore";
 import { ChainCode } from "../lib/myTypes";
+import { useUserProperty } from "../dashboard/pageClient";
 
 // export default function Page<T extends { chainCode: string }>({
 //     chainCode,
 // }: T)
 
-export default function Page() {
+export default function Login() {
     console.log("login page, prop00:");
-    const prop: UserProperty = {
-        bigBrotherOwnerId: "",
-        email: "",
-        emailDisplay: "",
-        selectedChainCode: ChainCode.UNKNOW,
-        selectedAccountInfos: [
-            {
-                chainCode: ChainCode.UNKNOW,
-                selectedOrderNo: -1,
-                selectedAccountAddr: "",
-            },
-        ],
-        testMode: false,
-    }; // LocalStore.getLoginPageProperty();
-
-    const userPropRef: MutableRefObject<UserProperty> = useRef(prop);
-
-    console.log("login page, prop11:", userPropRef.current);
-
-    const [userPropState, setUserPropState] = useState(prop);
-
-    const userProp: {
-        ref: MutableRefObject<UserProperty>;
-        state: UserProperty;
-        serverSidePropState: {
-            w3eapAddr: string;
-            factoryAddr: string;
-            bigBrotherPasswdAddr: string;
-        };
-    } = {
-        ref: userPropRef,
-        state: userPropState,
-        serverSidePropRef: {
-            w3eapAddr: "",
-            factoryAddr: "",
-            bigBrotherPasswdAddr: "",
-        },
-    };
-
-    useEffect(() => {
-        const ppp = LocalStore.getLoginPageProperty();
-        userPropRef.current = ppp;
-        setUserPropState(ppp);
-    }, []);
-
-    const updateChainCode = ({
-        email,
-        selectedChainCode,
-    }: {
-        email: string;
-        selectedChainCode: ChainCode;
-    }) => {
-        console.log(
-            "login choice,email&selectedChainCode:",
-            email,
-            selectedChainCode
-        );
-        if (email == null && email == undefined && email == "") {
-            alert("email can not be null!");
-            // return;
-        }
-
-        if (
-            selectedChainCode != null &&
-            selectedChainCode != undefined &&
-            selectedChainCode != userPropRef.current.selectedChainCode
-        ) {
-            LocalStore.setPropChainCode(email, selectedChainCode);
-            const ppp = LocalStore.getUserProperty(email);
-            userPropRef.current.selectedChainCode = selectedChainCode;
-            setUserPropState(ppp);
-        }
-
-        console.log("login page, prop22:", email, selectedChainCode);
-    };
+    const { userProp, updateUserProp, loadUserData } = useUserProperty({
+        email: EMAIL_LOGIN_PAGE,
+    });
 
     const [displayVerify, setDisplayVerify] = useState(false);
     // const [displayPermit, setDisplayPermit] = useState(false);
@@ -115,7 +45,7 @@ export default function Page() {
         <div>
             <Navbar4Login
                 userProp={userProp}
-                updateChainCode={updateChainCode}
+                updateUserProp={updateUserProp}
             ></Navbar4Login>
 
             <Card
@@ -208,9 +138,7 @@ export default function Page() {
                                 }
                                 setDisplayVerify={setDisplayVerify}
                                 // setDisplayPermit={setDisplayPermit}
-                                chainCode={
-                                    userPropRef.current.selectedChainCode
-                                }
+                                chainCode={userProp.selectedChainCode}
                             />
                         </form>
 

@@ -88,7 +88,14 @@ import {
     ChainCode,
 } from "../../lib/myTypes";
 
-import { UserProperty } from "@/app/storage/LocalStore";
+import {
+    bigBrotherAccountCreated,
+    readAccountAddr,
+    readBigBrotherAcctAddr,
+    readFactoryAddr,
+    readOwnerId,
+    UserProperty,
+} from "@/app/storage/userPropertyStore";
 
 const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
     let questionNosEnc = qNo1 + qNo2 + generateRandomString();
@@ -100,22 +107,10 @@ const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
 
 export default function SendChgPrivateInfo({
     userProp,
-    accountAddrList,
-    forTransaction,
 }: {
-    userProp: {
-        ref: MutableRefObject<UserProperty>;
-        state: UserProperty;
-        serverSidePropState: {
-            w3eapAddr: string;
-            factoryAddr: string;
-            bigBrotherPasswdAddr: string;
-        };
-    };
-    accountAddrList: string[];
-    forTransaction: boolean;
+    userProp: UserProperty;
 }) {
-    const chainObj = getChainObj(userProp.state.selectedChainCode);
+    const chainObj = getChainObj(userProp.selectedChainCode);
     console.log("userProp in SendChgPrivateInfo:", userProp);
 
     const [nativeCoinSymbol, setNativeCoinSymbol] = useState("");
@@ -161,9 +156,6 @@ export default function SendChgPrivateInfo({
 
     const [buttonText, setButtonText] = useState("Send ETH");
 
-    const bigBrotherAccountCreated = () => {
-        return accountAddrList.length > 1;
-    };
     const [privateFillInOk, setPrivateFillInOk] = useState(0);
 
     const updateFillInOk = () => {
@@ -221,13 +213,6 @@ export default function SendChgPrivateInfo({
     });
     const [transactionFee, setTransactionFee] = useState("? SOL");
 
-    const getOwnerId = () => {
-        return getOwnerIdLittleBrother(
-            userProp.state.bigBrotherOwnerId,
-            userProp.state.selectedOrderNo
-        );
-    };
-
     useEffect(() => {
         const refreshFee = async () => {
             try {
@@ -262,12 +247,12 @@ export default function SendChgPrivateInfo({
                         );
 
                         eFee = await estimateChgPasswdFee(
-                            userProp.state.bigBrotherOwnerId,
-                            accountAddrList[0],
+                            userProp.bigBrotherOwnerId,
+                            readBigBrotherAcctAddr(userProp),
                             oldPasswdAccount,
                             passwdAccount.address,
                             chainObj,
-                            bigBrotherAccountCreated(),
+                            bigBrotherAccountCreated(userProp),
                             questionNosEnc,
                             preparedPriceRef,
                             nativeCoinSymbol,
@@ -277,8 +262,8 @@ export default function SendChgPrivateInfo({
                     } else {
                         if (receiverAddr != "" && amountETH != "") {
                             eFee = await estimateTransFee(
-                                getOwnerId(),
-                                userProp.state.selectedAccountAddr,
+                                readOwnerId(userProp),
+                                readAccountAddr(userProp),
                                 passwdAccount,
                                 receiverAddr,
                                 amountETH,
@@ -348,41 +333,41 @@ export default function SendChgPrivateInfo({
             // suffix with 0000
             console.log(
                 "queryAccount...1,sendchgprivateinfo:",
-                userProp.state.selectedChainCode,
+                userProp.selectedChainCode,
                 ",",
-                userProp.serverSidePropState.factoryAddr,
+                readFactoryAddr(userProp),
                 ",",
-                getOwnerId()
+                readOwnerId(userProp)
             );
 
             if (
-                userProp.state.selectedChainCode == ChainCode.UNKNOW ||
-                userProp.serverSidePropState.factoryAddr == "" ||
-                userProp.serverSidePropState.factoryAddr == undefined
+                userProp.selectedChainCode == ChainCode.UNKNOW ||
+                readFactoryAddr(userProp) == "" ||
+                readFactoryAddr(userProp) == undefined
             ) {
                 return;
             }
 
             const acct = await queryAccount(
-                userProp.state.selectedChainCode,
-                userProp.serverSidePropState.factoryAddr,
-                getOwnerId()
+                userProp.selectedChainCode,
+                readFactoryAddr(userProp),
+                readOwnerId(userProp)
             );
             console.log(
                 "my Account for new transaction:",
                 acct,
-                getOwnerId(),
-                userProp.state.bigBrotherOwnerId
+                readOwnerId(userProp),
+                userProp.bigBrotherOwnerId
             );
             if (acct.accountAddr == "") {
                 return;
             }
-            if (acct.accountAddr != userProp.state.selectedAccountAddr) {
+            if (acct.accountAddr != readAccountAddr(userProp)) {
                 console.log(
                     "develop error!",
-                    userProp.state.bigBrotherOwnerId,
-                    userProp.state.selectedAccountAddr,
-                    getOwnerId(),
+                    userProp.bigBrotherOwnerId,
+                    readAccountAddr(userProp),
+                    readOwnerId(userProp),
                     acct.accountAddr
                 );
 
@@ -390,10 +375,10 @@ export default function SendChgPrivateInfo({
             }
             setMyAccountCreated(acct?.created);
         };
-        if (userProp.state.selectedAccountAddr != "") {
+        if (readAccountAddr(userProp) != "") {
             fetchMyAccountStatus();
         }
-    }, [userProp.state, userProp.serverSidePropState]);
+    }, [userProp]);
 
     return (
         <>
@@ -407,7 +392,6 @@ export default function SendChgPrivateInfo({
             <div>
                 <PrivateInfo4Chg
                     userProp={userProp}
-                    accountAddrList={accountAddrList}
                     forTransaction={false}
                     currentPriInfoRef={currentPriInfoRef}
                     oldPriInfoRef={oldPriInfoRef}
@@ -475,9 +459,9 @@ export default function SendChgPrivateInfo({
                     }
                 >
                     <CreateTransaction
-                        myOwnerId={getOwnerId()}
-                        verifyingContract={userProp.state.selectedAccountAddr}
-                        email={userProp.state.email}
+                        myOwnerId={readOwnerId(userProp)}
+                        verifyingContract={readAccountAddr(userProp)}
+                        email={userProp.email}
                         chainObj={chainObj}
                         buttonText={buttonText}
                         myAccountCreated={myAccountCreated}

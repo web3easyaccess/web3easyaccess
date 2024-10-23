@@ -26,8 +26,8 @@ import UpgradeImpl from "./upgradeimpl";
 import { useRouter } from "next/navigation";
 
 import { ChainCode, Menu, UserInfo, uiToString } from "../lib/myTypes";
-import { UserProperty } from "../storage/userPropertyStore";
-import PageClient from "./pageClient";
+
+import { UpdateUserProperty, UserProperty } from "../storage/userPropertyStore";
 
 // const SendChgPrivateInfo = () => {
 //     return <div></div>;
@@ -169,33 +169,11 @@ export default function OpMenu({
 export function ShowMain({
     selectedMenu,
     userProp,
-    updateUserProp,
-    accountAddrList,
+    loadUserData,
 }: {
     selectedMenu: Menu;
-    userProp: {
-        ref: MutableRefObject<UserProperty>;
-        state: UserProperty;
-        serverSidePropState: {
-            w3eapAddr: string;
-            factoryAddr: string;
-            bigBrotherPasswdAddr: string;
-        };
-    };
-    updateUserProp: ({
-        email,
-        selectedOrderNo,
-        selectedAccountAddr,
-        selectedChainCode,
-        testMode,
-    }: {
-        email: string;
-        selectedOrderNo: number;
-        selectedAccountAddr: string;
-        selectedChainCode: ChainCode;
-        testMode: boolean;
-    }) => void;
-    accountAddrList: string[];
+    userProp: UserProperty;
+    loadUserData: (myProp: UserProperty) => Promise<void>;
 }) {
     // const chainObj = getChainObj(currentUserInfo.chainCode);
 
@@ -208,10 +186,7 @@ export function ShowMain({
     } else if (selectedMenu == Menu.SendTransaction) {
         console.log("selectedMenu11111111133:", selectedMenu);
         return (
-            <SendTransaction
-                userProp={userProp}
-                accountAddrList={accountAddrList}
-            />
+            <SendTransaction userProp={userProp} loadUserData={loadUserData} />
         );
     } else if (selectedMenu == Menu.PrivateSetting) {
         console.log("selectedMenu11111111144:", selectedMenu);
@@ -221,31 +196,13 @@ export function ShowMain({
         //         <h3 style={{ fontSize: "40px" }}>coming soon ... </h3>
         //     </div>
         // );
-        return (
-            <SendChgPrivateInfo
-                userProp={userProp}
-                accountAddrList={accountAddrList}
-                forTransaction={false}
-            />
-        );
+        return <SendChgPrivateInfo userProp={userProp} />;
     } else if (selectedMenu == Menu.Connect2Dapps) {
         console.log("selectedMenu1111111xxxx:", selectedMenu);
-        return (
-            <Connect2Dapps
-                userProp={userProp}
-                accountAddrList={accountAddrList}
-                forChgPasswd={false}
-            />
-        );
+        return <Connect2Dapps userProp={userProp} />;
     } else if (selectedMenu == Menu.UpgradeImpl) {
         console.log("selectedMenu11111111166:", selectedMenu);
-        return (
-            <UpgradeImpl
-                userProp={userProp}
-                accountAddrList={accountAddrList}
-                forTransaction={false}
-            />
-        );
+        return <UpgradeImpl userProp={userProp} />;
     } else {
         return (
             <div>

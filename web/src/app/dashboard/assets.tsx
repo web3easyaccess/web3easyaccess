@@ -22,54 +22,47 @@ import { useFormState } from "react-dom";
 import { queryAssets } from "../lib/chainQuery";
 
 import { ChainCode, Menu, UserInfo, uiToString } from "../lib/myTypes";
-import { UserProperty } from "../storage/userPropertyStore";
+import {
+    readAccountAddr,
+    readFactoryAddr,
+    UpdateUserProperty,
+    UserProperty,
+} from "../storage/userPropertyStore";
 
-export default function Assets({
-    userProp,
-}: {
-    userProp: {
-        ref: MutableRefObject<UserProperty>;
-        state: UserProperty;
-        serverSidePropState: {
-            w3eapAddr: string;
-            factoryAddr: string;
-            bigBrotherPasswdAddr: string;
-        };
-    };
-}) {
+export default function Assets({ userProp }: { userProp: UserProperty }) {
     const [assets, setAssets] = useState([]);
     console.log("assets:");
 
     useEffect(() => {
+        const acctAddr = readAccountAddr(userProp);
+        const factoryAddr = readFactoryAddr(userProp);
         const fetchAssets = async () => {
             if (
-                userProp.state.selectedAccountAddr == "" ||
-                userProp.state.selectedAccountAddr == undefined ||
-                userProp.state.selectedChainCode == ChainCode.UNKNOW ||
-                userProp.serverSidePropState.factoryAddr == "" ||
-                userProp.serverSidePropState.factoryAddr == undefined
+                acctAddr == "" ||
+                acctAddr == undefined ||
+                userProp.selectedChainCode == ChainCode.UNKNOW ||
+                factoryAddr == "" ||
+                factoryAddr == undefined
             ) {
                 return;
             }
             // suffix with 0000
             console.log(
                 "fetchAssets, account:",
-                userProp.state.selectedChainCode,
-                userProp.serverSidePropState.factoryAddr,
-                userProp.state.selectedAccountAddr,
-                userProp.state.selectedOrderNo
+                userProp.selectedChainCode,
+                factoryAddr,
+                acctAddr
             );
             const a = await queryAssets(
-                userProp.state.selectedChainCode,
-                userProp.serverSidePropState.factoryAddr,
-                userProp.state.selectedAccountAddr
+                userProp.selectedChainCode,
+                factoryAddr,
+                acctAddr
             );
             setAssets(a as any);
         };
-        if (userProp.state.selectedAccountAddr != "") {
-            fetchAssets();
-        }
-    }, [userProp.state, userProp.serverSidePropState]);
+
+        fetchAssets();
+    }, [userProp]);
 
     let kk = 0;
     //   token_address: "-",

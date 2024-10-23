@@ -168,6 +168,11 @@ export async function thegraphQueryOpLog(accountAddr, chainCode) {
         return result;
     }
 
+    const thegraphUrl = THEGRAPH_URLS[chainCode];
+    if (thegraphUrl == undefined || thegraphUrl == null || thegraphUrl == "") {
+        return result;
+    }
+
     const query =
         "{" +
         // " createAccounts(first: 999) { id ownerId account blockNumber blockTimestamp transactionHash}" +
@@ -182,7 +187,7 @@ export async function thegraphQueryOpLog(accountAddr, chainCode) {
     const myData = await fetch(
         // `https://api.studio.thegraph.com/query/87992/w3ealineasepolia/version/latest`,
         // `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/4pPyuX64mqazXXjL2xUCJESDbhHj9KPnzWudeZrfDs1R`,
-        THEGRAPH_URLS[chainCode],
+        thegraphUrl,
         {
             method: "POST",
             body: JSON.stringify({

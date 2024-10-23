@@ -114,6 +114,7 @@ async function getL1DataFee(cc: any, data: any) {
     const myAbi = abis.getL1DataFee;
     myAbi[0].name = cc.l1DataFeeFunc;
     console.log("getL1DataFee:", myAbi, data, cc.publicClient.readContract);
+    console.log("getL1DataFee:cc:", cc);
     const l1DataFee = await cc.publicClient.readContract({
         account: cc.account,
         address: cc.l1GasPriceOracleContract,

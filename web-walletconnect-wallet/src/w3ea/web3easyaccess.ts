@@ -21,8 +21,7 @@ export const getChainKey = () => {
     if (receiverData.chainKey == "") {
         loadW3eaWallet();
     }
-    return "eip155:11155111";
-    // return receiverData.chainKey;
+    return receiverData.chainKey;
 }
 
 export const getW3eaAddress = () => {

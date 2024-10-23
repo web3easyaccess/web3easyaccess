@@ -83,8 +83,7 @@ export function getPasswdAccount(
 
 export function getOwnerIdBigBrother(email: string, chainCode: ChainCode) {
     if (!email || email.trim() == "") {
-        console.log("email is invalid:", email);
-        throw new Error("email is invalid!");
+        console.log("warn, email is invalid:", "[" + email + "]");
     }
     var s1 = saltOwnerId + email;
     var s2 = keccak256(toHex(s1)).toString();

@@ -42,46 +42,31 @@ import {
 } from "../lib/myTypes";
 import { getChainObj } from "../lib/myChain";
 
-import { UserProperty } from "../storage/LocalStore";
+import {
+    accountAddrCreated,
+    readAccountAddr,
+    readAccountList,
+    readFactoryAddr,
+    UpdateUserProperty,
+    UserProperty,
+} from "../storage/userPropertyStore";
 
 let nativeCoinSymbol = "ETH";
 
-export default function App({
+export default function UserProfile({
     userProp,
     updateUserProp,
-    accountAddrList,
-    updateAccountAddrList,
+    loadUserData,
 }: {
-    userProp: {
-        ref: MutableRefObject<UserProperty>;
-        state: UserProperty;
-        serverSidePropState: {
-            w3eapAddr: string;
-            factoryAddr: string;
-            bigBrotherPasswdAddr: string;
-        };
-    };
-    updateUserProp: ({
-        email,
-        selectedOrderNo,
-        selectedAccountAddr,
-        selectedChainCode,
-        testMode,
-    }: {
-        email: string;
-        selectedOrderNo: number;
-        selectedAccountAddr: string;
-        selectedChainCode: ChainCode;
-        testMode: boolean;
-    }) => void;
-    accountAddrList: string[];
-    updateAccountAddrList: (addrList: string[]) => void;
+    userProp: UserProperty;
+    updateUserProp: UpdateUserProperty;
+    loadUserData: (myProp: UserProperty) => Promise<void>;
 }) {
-    console.log("userProfile, entry:", userProp.ref, "++++", userProp.state);
+    console.log("userProfile, entry:", userProp);
 
     const [resultMsg, dispatch] = useFormState(saveSelectedOrderNo, undefined);
 
-    const chainObj = getChainObj(userProp.state.selectedChainCode);
+    const chainObj = getChainObj(userProp.selectedChainCode);
     try {
         nativeCoinSymbol = chainObj.nativeCurrency.symbol;
     } catch (e) {
@@ -103,12 +88,7 @@ export default function App({
 
     const accountToOrderNoMap = useRef(new Map<string, number>());
 
-    const build4WalletConnect = () => {
-        localStorage.setItem(
-            "W3EA_CURRENT_ADDRESS",
-            userProp.ref.current.selectedAccountAddr
-        );
-    };
+    const lastAcctList = useRef("");
 
     useEffect(() => {
         const fetchAcctList = async () => {
@@ -126,30 +106,24 @@ export default function App({
             //     factoryAddr,
             //     ownerId
             //   );
-            console.log("fffxxx:currentUserInfo:", userProp.ref.current);
-            console.log(
-                "fffxxx:currentUserInfo22:",
-                userProp.serverSidePropState
-            );
+            console.log("fffxxx:currentUserInfo:", userProp);
+
             if (
-                userProp.ref.current.email == "" ||
-                userProp.ref.current.email == undefined ||
-                userProp.serverSidePropState.factoryAddr == "" ||
-                userProp.serverSidePropState.factoryAddr == undefined
+                userProp.email == "" ||
+                userProp.email == undefined ||
+                readFactoryAddr(userProp) == "" ||
+                readFactoryAddr(userProp) == undefined
             ) {
                 return;
             }
-            console.log(
-                "fffxxx:currentUserInfo33:",
-                userProp.serverSidePropState
-            );
+
             const acctList = await queryAccountList(
-                userProp.ref.current.selectedChainCode,
-                userProp.serverSidePropState.factoryAddr,
-                userProp.ref.current.bigBrotherOwnerId
+                userProp.selectedChainCode,
+                readFactoryAddr(userProp),
+                userProp.bigBrotherOwnerId
             );
             console.log(
-                userProp.ref.current.selectedChainCode,
+                userProp.selectedChainCode,
                 "client query, queryAccountList:",
                 acctList
             );
@@ -160,50 +134,42 @@ export default function App({
                 accountToOrderNoMap.current.set(a.addr, a.orderNo);
             });
 
-            let mySelectedNo = userProp.ref.current.selectedOrderNo;
-
-            if (mySelectedNo >= myAcctList.length) {
-                mySelectedNo = 0;
+            let acctListJson = JSON.stringify(myAcctList);
+            if (acctListJson != lastAcctList.current) {
+                lastAcctList.current = acctListJson;
+                updateUserProp({
+                    email: userProp.email,
+                    testMode: undefined,
+                    selectedChainCode: undefined,
+                    accountAddrList: myAcctList,
+                    selectedOrderNo: undefined,
+                    w3eapAddr: undefined,
+                    factoryAddr: undefined,
+                    bigBrotherPasswdAddr: undefined,
+                });
             }
-
-            updateUserProp({
-                email: userProp.ref.current.email,
-                selectedOrderNo: mySelectedNo,
-                selectedAccountAddr: myAcctList[mySelectedNo],
-                selectedChainCode: userProp.ref.current.selectedChainCode,
-                testMode: false,
-            });
-            updateAccountAddrList(myAcctList);
-
-            // const cUserInfo = {
-            //     ...currentUserInfo,
-            //     selectedOwnerId: getOwnerIdSelfByBigBrother(
-            //         currentUserInfo.bigBrotherOwnerId,
-            //         mySelectedNo
-            //     ),
-            //     selectedOrderNo: mySelectedNo,
-            //     selectedAccountAddr: accountAddrList[mySelectedNo],
-            //     accountAddrList: accountAddrList,
-            // };
-            // updateCurrentUserInfo(cUserInfo);
         };
         //
 
-        fetchAcctList();
-    }, [userProp.serverSidePropState]);
+        // fetchAcctList();
+        const acctList = readAccountList(userProp);
+        console.log("navbar,acctList,by userProp.list:", acctList);
+        let order = 0;
+        acctList.forEach((a) => {
+            accountToOrderNoMap.current.set(a, order++);
+        });
+    }, [userProp]);
 
     const refreshUserBalance = () => {
-        if (accountAddrList.length == 0) {
+        const acctAddr = readAccountAddr(userProp);
+        if (acctAddr == "") {
             return;
         }
-        if (userProp.serverSidePropState.factoryAddr == "") {
+        if (readFactoryAddr(userProp) == "") {
             return;
         }
 
-        console.log(
-            "do something ,for currentUserInfo changed...",
-            userProp.ref.current.selectedAccountAddr
-        );
+        console.log("do something ,for currentUserInfo changed...", acctAddr);
 
         const fetchBalance = async () => {
             if (!ethBalanceOk) {
@@ -211,17 +177,17 @@ export default function App({
             }
             setEthBalanceOk(false);
             let eb = await queryEthBalance(
-                userProp.ref.current.selectedChainCode,
-                userProp.serverSidePropState.factoryAddr,
-                userProp.ref.current.selectedAccountAddr
+                userProp.selectedChainCode,
+                readFactoryAddr(userProp),
+                acctAddr
             );
             console.log(
-                userProp.ref.current.selectedChainCode,
+                userProp.selectedChainCode,
                 "client query, queryEthBalance:",
-                userProp.ref.current.selectedAccountAddr + ":" + eb
+                acctAddr + ":" + eb
             );
             setEthBalance(eb == "0" ? "0.0" : eb);
-            await asyncSleep(3000);
+            await asyncSleep(1000);
             setEthBalanceOk(true);
         };
 
@@ -232,24 +198,24 @@ export default function App({
             setW3eapBalanceOk(false);
             console.log(
                 "fetchW3eapBalance:",
-                userProp.ref.current.selectedChainCode,
+                userProp.selectedChainCode,
                 "+",
-                userProp.serverSidePropState.factoryAddr,
+                readFactoryAddr(userProp),
                 "+",
-                userProp.ref.current.selectedAccountAddr
+                acctAddr
             );
             let wb = await queryW3eapBalance(
-                userProp.ref.current.selectedChainCode,
-                userProp.serverSidePropState.factoryAddr,
-                userProp.ref.current.selectedAccountAddr
+                userProp.selectedChainCode,
+                readFactoryAddr(userProp),
+                acctAddr
             );
             console.log(
-                userProp.ref.current.selectedChainCode,
+                userProp.selectedChainCode,
                 "client query, queryW3eapBalance:",
-                userProp.ref.current.selectedAccountAddr + ":" + wb
+                acctAddr + ":" + wb
             );
             setW3eapBalance(wb == "0" ? "0.0" : wb);
-            await asyncSleep(3000);
+            await asyncSleep(1000);
             setW3eapBalanceOk(true);
         };
 
@@ -259,50 +225,46 @@ export default function App({
             }
             setFreeGasFeeAmountOk(false);
             let fa = await queryfreeGasFeeAmount(
-                userProp.ref.current.selectedChainCode,
-                userProp.serverSidePropState.factoryAddr,
-                userProp.ref.current.selectedAccountAddr
+                userProp.selectedChainCode,
+                readFactoryAddr(userProp),
+                acctAddr
             );
             console.log(
-                userProp.ref.current.selectedChainCode,
+                userProp.selectedChainCode,
                 "client query, freeGasFeeAmount:",
-                userProp.ref.current.selectedAccountAddr + ":" + fa
+                acctAddr + ":" + fa
             );
             setFreeGasFeeAmount(fa == "0" ? "0.0" : fa);
-            await asyncSleep(3000);
+            await asyncSleep(1000);
             setFreeGasFeeAmountOk(true);
         };
 
         //
-        if (userProp.ref.current.selectedAccountAddr != "") {
-            build4WalletConnect();
+        if (acctAddr != "") {
             fetchBalance();
             fetchW3eapBalance();
-            if (
-                userProp.ref.current.selectedOrderNo ==
-                accountAddrList.length - 1
-            ) {
+            if (accountAddrCreated(userProp)) {
+                fetchfreeGasFeeAmount();
+            } else {
                 setFreeGasFeeAmountOk(false);
                 // the last one, has not created!
                 setFreeGasFeeAmount("0.00");
 
                 setFreeGasFeeAmountOk(true);
-            } else {
-                fetchfreeGasFeeAmount();
             }
             document.getElementById("id_user_selectedOrderNo_btn")?.click();
         }
     };
 
     const [refreshFlag, setRefreshFlag] = useState(1);
+
+    useEffect(() => {
+        loadUserData(undefined); // trigger to userProp.
+    }, [refreshFlag]);
+
     useEffect(() => {
         refreshUserBalance();
-    }, [
-        userProp.serverSidePropState,
-        userProp.state,
-        accountAddrList,
-        refreshFlag,
-    ]);
+    }, [userProp]);
 
     const acctAddrDisplay = (fullAddr: string) => {
         if (fullAddr == undefined || fullAddr == "" || fullAddr == null) {
@@ -373,7 +335,7 @@ export default function App({
         }
         // "success" | "default" | "primary" | "secondary" | "warning" | "danger" | undefined
         let nameTitle = addr.substring(2, 5);
-        if (userProp.state.selectedChainCode == ChainCode.SOLANA_TEST_CHAIN) {
+        if (userProp.selectedChainCode == ChainCode.SOLANA_TEST_CHAIN) {
             nameTitle = addr.substring(0, 3);
         }
         return (
@@ -419,13 +381,13 @@ export default function App({
                     id="id_user_selectedOrderNo"
                     style={{ display: "none" }}
                     name="selectedOrderNo"
-                    defaultValue={userProp.state.selectedOrderNo}
+                    defaultValue={userProp.selectedOrderNo}
                 />
                 <input
                     id="id_user_selectedAccountAddr"
                     style={{ display: "none" }}
                     name="selectedAccountAddr"
-                    defaultValue={userProp.state.selectedAccountAddr}
+                    defaultValue={readAccountAddr(userProp)}
                 />
 
                 <div>{resultMsg && <p>1:{resultMsg}</p>}</div>
@@ -435,16 +397,14 @@ export default function App({
             <Card style={{ width: "450px" }}>
                 <CardHeader className="flex gap-3">
                     <AcctIcon
-                        addr={acctAddrDisplay(
-                            userProp.state.selectedAccountAddr
-                        )}
+                        addr={acctAddrDisplay(readAccountAddr(userProp))}
                     ></AcctIcon>
                     <Snippet
                         hideSymbol={true}
                         codeString={
-                            userProp.state.selectedChainCode +
+                            userProp.selectedChainCode +
                             ": " +
-                            userProp.state.selectedAccountAddr
+                            readAccountAddr(userProp)
                         }
                         variant="bordered"
                         style={{
@@ -456,7 +416,7 @@ export default function App({
                         <select
                             name="accountList"
                             id="id_select_accountList"
-                            value={userProp.state.selectedAccountAddr}
+                            value={readAccountAddr(userProp)}
                             defaultValue={"-"}
                             style={{
                                 width: "185px",
@@ -464,39 +424,49 @@ export default function App({
                                 backgroundColor: "white",
                             }}
                             onChange={(e) => {
+                                console.log(
+                                    "navbar acct selected:",
+                                    e.target.value,
+                                    accountToOrderNoMap
+                                );
                                 updateUserProp({
-                                    email: userProp.state.email,
+                                    email: userProp.email,
+                                    testMode: undefined,
+                                    selectedChainCode: undefined,
+                                    accountAddrList: undefined,
                                     selectedOrderNo:
                                         accountToOrderNoMap.current.get(
                                             e.target.value
                                         ),
-                                    selectedAccountAddr: e.target.value,
-                                    selectedChainCode:
-                                        userProp.state.selectedChainCode,
-                                    testMode: false,
+                                    w3eapAddr: undefined,
+                                    factoryAddr: undefined,
+                                    bigBrotherPasswdAddr: undefined,
                                 });
                             }}
                         >
-                            {accountAddrList.map((acctAddr, index) => (
-                                <option
-                                    key={index}
-                                    value={acctAddr}
-                                    defaultValue={acctAddr}
-                                    style={
-                                        index == accountAddrList.length - 1
-                                            ? {
-                                                  color: "grey",
-                                                  fontStyle: "italic",
-                                              }
-                                            : {
-                                                  fontWeight: "bold",
-                                                  //   color: "Highlight",
-                                              }
-                                    }
-                                >
-                                    {acctAddrDisplay(acctAddr)}
-                                </option>
-                            ))}
+                            {readAccountList(userProp).map(
+                                (acctAddr, index) => (
+                                    <option
+                                        key={index}
+                                        value={acctAddr}
+                                        defaultValue={acctAddr}
+                                        style={
+                                            index ==
+                                            readAccountList(userProp).length - 1
+                                                ? {
+                                                      color: "grey",
+                                                      fontStyle: "italic",
+                                                  }
+                                                : {
+                                                      fontWeight: "bold",
+                                                      //   color: "Highlight",
+                                                  }
+                                        }
+                                    >
+                                        {acctAddrDisplay(acctAddr)}
+                                    </option>
+                                )
+                            )}
                         </select>
                     </Snippet>
 

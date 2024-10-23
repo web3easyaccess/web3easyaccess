@@ -47,7 +47,15 @@ import { useRef, useState, useEffect, MutableRefObject } from "react";
 
 import { Menu, UserInfo, uiToString, Transaction } from "../../lib/myTypes";
 import { getChainObj } from "../../lib/myChain";
-import { UserProperty } from "@/app/storage/LocalStore";
+import {
+    accountAddrCreated,
+    bigBrotherAccountCreated,
+    readAccountAddr,
+    readBigBrotherAcctAddr,
+    readBigBrotherPasswdAddr,
+    readFactoryAddr,
+    UserProperty,
+} from "@/app/storage/userPropertyStore";
 
 const OP_TYPE = {
     // "Enter the email's new information for the first time",
@@ -66,7 +74,6 @@ const pwdRegex = new RegExp(
 
 export function PrivateInfo({
     userProp,
-    accountAddrList,
     forTransaction,
     currentPriInfoRef,
     oldPriInfoRef,
@@ -74,16 +81,7 @@ export function PrivateInfo({
     privateinfoHidden,
     updatePrivateinfoHidden,
 }: {
-    userProp: {
-        ref: MutableRefObject<UserProperty>;
-        state: UserProperty;
-        serverSidePropState: {
-            w3eapAddr: string;
-            factoryAddr: string;
-            bigBrotherPasswdAddr: string;
-        };
-    };
-    accountAddrList: string[];
+    userProp: UserProperty;
     forTransaction: boolean;
     currentPriInfoRef: React.MutableRefObject<PrivateInfoType>;
     oldPriInfoRef: React.MutableRefObject<PrivateInfoType>;
@@ -92,16 +90,9 @@ export function PrivateInfo({
     updatePrivateinfoHidden: (hidden: boolean) => void;
 }) {
     const questions = pq.questions[1];
-    const bigBrotherAccountCreated = () => {
-        console.log(
-            "in bigBrotherAccountCreated, addr length:",
-            accountAddrList.length
-        );
-        return accountAddrList.length > 1;
-    };
 
     let opTypeInit = OP_TYPE.OP_infoForPermit;
-    if (bigBrotherAccountCreated()) {
+    if (bigBrotherAccountCreated(userProp)) {
         opTypeInit = OP_TYPE.OP_infoForPermit;
     } else {
         opTypeInit = OP_TYPE.OP_newInfoFirstTime;
@@ -118,20 +109,20 @@ export function PrivateInfo({
     console.log("PrivateInfo, currentPriInfoRef init...1");
     if (currentPriInfoRef.current.email == "") {
         console.log("PrivateInfo, currentPriInfoRef init...2");
-        currentPriInfoRef.current.email = userProp.state.email;
+        currentPriInfoRef.current.email = userProp.email;
         currentPriInfoRef.current.pin = "";
         currentPriInfoRef.current.question1answer = "";
         currentPriInfoRef.current.question2answer = "";
         currentPriInfoRef.current.firstQuestionNo = "";
         currentPriInfoRef.current.secondQuestionNo = "";
-        if (!bigBrotherAccountCreated()) {
+        if (!bigBrotherAccountCreated(userProp)) {
             currentPriInfoRef.current.confirmedSecondary = false;
         } else {
             currentPriInfoRef.current.confirmedSecondary = true;
         }
     }
     if (oldPriInfoRef.current.email == "") {
-        oldPriInfoRef.current.email = userProp.state.email;
+        oldPriInfoRef.current.email = userProp.email;
         oldPriInfoRef.current.pin = "";
         oldPriInfoRef.current.question1answer = "";
         oldPriInfoRef.current.question2answer = "";
@@ -139,34 +130,33 @@ export function PrivateInfo({
         oldPriInfoRef.current.secondQuestionNo = "";
     }
 
-    console.log(
-        "factoryAddr in privateinfo:",
-        userProp.serverSidePropState.factoryAddr
-    );
+    console.log("factoryAddr in privateinfo:", readFactoryAddr(userProp));
 
     const selectedQuestionIdsEncRef = useRef("");
 
     console.log(
-        `privateinfo..123,forTransaction=${forTransaction},bigBrotherAccountCreated()=${bigBrotherAccountCreated()}`
+        `privateinfo..123,forTransaction=${forTransaction},bigBrotherAccountCreated(userProp)=${bigBrotherAccountCreated(
+            userProp
+        )}`
     );
 
-    const chainObj = getChainObj(userProp.state.selectedChainCode);
+    const chainObj = getChainObj(userProp.selectedChainCode);
 
     const forModification = () => {
-        return bigBrotherAccountCreated() && !forTransaction;
+        return bigBrotherAccountCreated(userProp) && !forTransaction;
     };
 
     const fetchBigBrothersQuestionNos = async (oldPin: string) => {
         if (oldPin != "") {
             console.log(
                 "fetchBigBrothersQuestionNos:",
-                userProp.state.bigBrotherOwnerId,
-                accountAddrList[0]
+                userProp.bigBrotherOwnerId,
+                readBigBrotherAcctAddr(userProp)
             );
             const encQuestionNos = await queryQuestionIdsEnc(
-                userProp.state.selectedChainCode,
-                userProp.serverSidePropState.factoryAddr,
-                accountAddrList[0]
+                userProp.selectedChainCode,
+                readFactoryAddr(userProp),
+                readBigBrotherAcctAddr(userProp)
             );
             console.log("fetchBigBrothersQuestionNos, encNos:", encQuestionNos);
             const nos = aesDecrypt(encQuestionNos, oldPin);
@@ -201,7 +191,7 @@ export function PrivateInfo({
     const handlePinBlur = (position: string) => {
         console.log(
             "handlePinBlur,ac:",
-            bigBrotherAccountCreated(),
+            bigBrotherAccountCreated(userProp),
             forTransaction
         );
         let pin_old = getInputValueById("id_private_pin_old");
@@ -218,7 +208,7 @@ export function PrivateInfo({
         }
         setPinErrorMsg("");
 
-        if (!bigBrotherAccountCreated()) {
+        if (!bigBrotherAccountCreated(userProp)) {
             console.log("Input lost focus,new user:", pin1, pin2);
             if (pin1.length > 0 && pin2.length > 0 && pin1 == pin2) {
                 currentPriInfoRef.current = {
@@ -300,7 +290,7 @@ export function PrivateInfo({
 
     const handleQuestion1AnswerBlur = () => {
         // id_private_question1_answer_old
-        if (!bigBrotherAccountCreated()) {
+        if (!bigBrotherAccountCreated(userProp)) {
             let question1answer1 = getInputValueById(
                 "id_private_question1_answer_1"
             );
@@ -391,7 +381,7 @@ export function PrivateInfo({
 
     const handleQuestion2AnswerBlur = () => {
         // id_private_question2_answer_old
-        if (!bigBrotherAccountCreated()) {
+        if (!bigBrotherAccountCreated(userProp)) {
             let question2answer1 = getInputValueById(
                 "id_private_question2_answer_1"
             );
@@ -545,8 +535,7 @@ export function PrivateInfo({
             <WarnMsgForSender
                 forTransaction={forTransaction}
                 userProp={userProp}
-                accountAddrList={accountAddrList}
-                bigBrotherAccountCreated={bigBrotherAccountCreated()}
+                bigBrotherAccountCreated={bigBrotherAccountCreated(userProp)}
             />
 
             <Card
@@ -559,7 +548,7 @@ export function PrivateInfo({
             >
                 <CardHeader className="flex gap-3">
                     <p style={{ fontWeight: "bold", fontSize: "20px" }}>
-                        {userProp.state.email}
+                        {userProp.email}
                     </p>
                     's
                     <p>Private information</p>
@@ -799,12 +788,14 @@ export function PrivateInfo({
                                     {/*todo need show multi chain when modifying....*/}
                                     <MultiChainForModify />
                                     <SubmitMessage
-                                        email={userProp.state.email}
-                                        verifyingContract={
-                                            userProp.state.selectedAccountAddr
-                                        }
+                                        email={userProp.email}
+                                        verifyingContract={readAccountAddr(
+                                            userProp
+                                        )}
                                         chainObj={chainObj}
-                                        bigBrotherAccountCreated={bigBrotherAccountCreated()}
+                                        bigBrotherAccountCreated={bigBrotherAccountCreated(
+                                            userProp
+                                        )}
                                         resetAfterFirstConfirmed={
                                             resetAfterFirstConfirmed
                                         }
@@ -814,10 +805,9 @@ export function PrivateInfo({
                                         forModification={forModification()}
                                         submitOpType={submitOpType}
                                         updateSubmitOpType={updateSubmitOpType}
-                                        bigBrotherPasswdAddr={
-                                            userProp.serverSidePropState
-                                                .bigBrotherPasswdAddr
-                                        }
+                                        bigBrotherPasswdAddr={readBigBrotherPasswdAddr(
+                                            userProp
+                                        )}
                                     />
                                 </>
                             </div>
@@ -865,41 +855,35 @@ function WarnMsgForNewBigBrother() {
 function WarnMsgForSender({
     forTransaction,
     userProp,
-    accountAddrList,
     bigBrotherAccountCreated,
 }: {
     forTransaction: boolean;
-    userProp: {
-        ref: MutableRefObject<UserProperty>;
-        state: UserProperty;
-        serverSidePropState: {
-            w3eapAddr: string;
-            factoryAddr: string;
-            bigBrotherPasswdAddr: string;
-        };
-    };
-    accountAddrList: string[];
+    userProp: UserProperty;
     bigBrotherAccountCreated: boolean;
 }) {
     const myMsg = () => {
         if (forTransaction) {
-            if (userProp.state.selectedOrderNo < accountAddrList.length - 1) {
+            if (accountAddrCreated(userProp)) {
                 // account has created.
                 return {
-                    msg: `Sender: ${userProp.state.selectedAccountAddr}.`,
+                    msg: `Sender: ${readAccountAddr(userProp)}.`,
                     color: "success",
                 };
             } else {
                 if (bigBrotherAccountCreated) {
                     return {
-                        // No account has been created under your email [${userProp.state.email}]
-                        msg: `Sender: ${userProp.state.selectedAccountAddr}.\nThe sender is a new account, system will create it when you make your first transaction.`,
+                        // No account has been created under your email [${userProp.email}]
+                        msg: `Sender: ${readAccountAddr(
+                            userProp
+                        )}.\nThe sender is a new account, system will create it when you make your first transaction.`,
                         color: "danger",
                     };
                 } else {
                     return {
-                        // No account has been created under your email [${userProp.state.email}]
-                        msg: `Sender: ${userProp.state.selectedAccountAddr}.\nThe sender is a new account, and it is Your first account, you need to repeat some private information and system will create it when you make your first transaction.`,
+                        // No account has been created under your email [${userProp.email}]
+                        msg: `Sender: ${readAccountAddr(
+                            userProp
+                        )}.\nThe sender is a new account, and it is Your first account, you need to repeat some private information and system will create it when you make your first transaction.`,
                         color: "danger",
                     };
                 }

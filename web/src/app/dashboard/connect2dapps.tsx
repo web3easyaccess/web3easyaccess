@@ -43,7 +43,13 @@ import * as libsolana from "@/app/lib/client/solana/libsolana";
 import * as funNewTrans from "@/app/dashboard/newtransaction/funNewTrans";
 
 import { MutableRefObject, useEffect, useRef, useState } from "react";
-import { UserProperty } from "../storage/userPropertyStore";
+import {
+    accountAddrCreated,
+    readAccountAddr,
+    readFactoryAddr,
+    readOwnerId,
+    UserProperty,
+} from "../storage/userPropertyStore";
 import { Button, Progress } from "@nextui-org/react";
 import { getChainObj } from "../lib/myChain";
 import { ChainCode } from "../lib/myTypes";
@@ -67,35 +73,12 @@ import { executeTransaction } from "./newtransaction/sendtransaction";
 
 export default function Connect2Dapps({
     userProp,
-    accountAddrList,
-    forChgPasswd,
 }: {
-    userProp: {
-        ref: MutableRefObject<UserProperty>;
-        state: UserProperty;
-        serverSidePropState: {
-            w3eapAddr: string;
-            factoryAddr: string;
-            bigBrotherPasswdAddr: string;
-        };
-    };
-    accountAddrList: string[];
-    forChgPasswd: boolean;
+    userProp: UserProperty;
 }) {
     useEffect(() => {}, []);
 
-    const chainObj = getChainObj(userProp.ref.current.selectedChainCode);
-    const chainKey = "eip155:" + chainObj.id; // todo ,for evm now.
-    const accountAddr = userProp.ref.current.selectedAccountAddr;
-
-    const walleconnectHost = "http://localhost:3001"; // process.env.CHILD_W3EA_WALLETCONNECT_HOST
-
-    const getOwnerId = () => {
-        return getOwnerIdLittleBrother(
-            userProp.state.bigBrotherOwnerId,
-            userProp.state.selectedOrderNo
-        );
-    };
+    const walleconnectHost = useRef("http://localhost:3001"); // process.env.CHILD_W3EA_WALLETCONNECT_HOST
 
     const preparedPriceRef = useRef({
         preparedMaxFeePerGas: undefined,
@@ -105,7 +88,7 @@ export default function Connect2Dapps({
     const msgIdFromChild = useRef(0);
     //回调函数
     async function receiveMessageFromChild(event) {
-        if (event.origin == walleconnectHost) {
+        if (event.origin == walleconnectHost.current) {
             console.log(
                 "parent here,receve msg from walletconnect: ",
                 event.data
@@ -122,10 +105,10 @@ export default function Connect2Dapps({
                 const content = msg.msg.content;
                 const hash = await signMessage(
                     currentPriInfoRef.current,
-                    accountAddr,
+                    accountAddr.current,
                     content,
-                    chainObj,
-                    userProp.serverSidePropState.factoryAddr
+                    chainObj.current,
+                    readFactoryAddr(userProp)
                 );
                 writeWalletConnectData("signMessage", chatId, hash);
             } else if (msg.msgType == "sendTransaction") {
@@ -134,11 +117,11 @@ export default function Connect2Dapps({
                 const hash = await sendTransaction(
                     currentPriInfoRef,
                     preparedPriceRef,
-                    accountAddr,
+                    accountAddr.current,
                     txReq,
-                    chainObj,
-                    userProp.serverSidePropState.factoryAddr,
-                    getOwnerId()
+                    chainObj.current,
+                    readFactoryAddr(userProp),
+                    readOwnerId(userProp)
                 );
                 writeWalletConnectData("sendTransaction", chatId, hash);
             } else {
@@ -162,13 +145,23 @@ export default function Connect2Dapps({
         chatId: string,
         content: any
     ) => {
-        console.log("writeWalletConnectData,", msgType, chatId, content);
+        const chainKey = "eip155:" + chainObj.current.id; // todo ,for evm now.
+        console.log("chainKey in 2dapp, chainKey:", chainKey);
+
+        console.log(
+            "writeWalletConnectData,",
+            msgType,
+            chatId,
+            content,
+            chainKey,
+            accountAddr.current
+        );
 
         // msgIndex.current = msgIndex.current + 1;
         const msg: Message = {
             msgType: msgType,
             chainKey: chainKey,
-            address: accountAddr,
+            address: accountAddr.current,
             msgIdx: new Date().getTime(), // msgIndex.current,
             msg: {
                 chatId: chatId,
@@ -176,19 +169,26 @@ export default function Connect2Dapps({
             },
         };
 
-        console.log("writeWalletConnectData....:", msg, walleconnectHost);
+        console.log(
+            "writeWalletConnectData....:",
+            msg,
+            walleconnectHost.current
+        );
 
         let k = 0;
         for (k = 0; k < 10 * 60; ) {
             await sleep(1000);
             const childFrameObj = document.getElementById("w3eaWalletconnect");
             try {
-                console.log("send to child 111.childFrameObj:", childFrameObj);
-                childFrameObj.contentWindow.postMessage(msg, walleconnectHost); //window.postMessage
-                console.log("send to child 222.");
+                // console.log("send to child 111.childFrameObj:", childFrameObj);
+                childFrameObj.contentWindow.postMessage(
+                    msg,
+                    walleconnectHost.current
+                ); //window.postMessage
+                // console.log("send to child 222.");
                 break;
             } catch (e) {
-                console.log("send to child error, retry.", e);
+                // console.log("send to child error, retry.", e);
             }
             k++;
         }
@@ -197,13 +197,14 @@ export default function Connect2Dapps({
         }
     };
 
-    useEffect(() => {
-        writeWalletConnectData("initializeChild", "", "");
-    }, [userProp.state]);
+    const chainObj = useRef(getChainObj(userProp.selectedChainCode));
+    const accountAddr = useRef(readAccountAddr(userProp));
 
-    const accountCreated = () => {
-        return userProp.state.selectedOrderNo < accountAddrList.length - 1;
-    };
+    useEffect(() => {
+        accountAddr.current = readAccountAddr(userProp);
+        chainObj.current = getChainObj(userProp.selectedChainCode);
+        writeWalletConnectData("initializeChild", "", "");
+    }, [userProp]);
 
     const piInit: PrivateInfoType = {
         email: "",
@@ -238,7 +239,7 @@ export default function Connect2Dapps({
                             title="w3eaWalletconnect"
                             width="800"
                             height="500"
-                            src={walleconnectHost + "/walletconnect"}
+                            src={walleconnectHost.current + "/walletconnect"}
                         ></iframe>
                     </>
                 ) : (
@@ -250,25 +251,24 @@ export default function Connect2Dapps({
 
     return (
         <div>
-            {accountCreated() ? (
-                <PrivateInfo
-                    userProp={userProp}
-                    forTransaction={true}
-                    currentPriInfoRef={currentPriInfoRef}
-                    oldPriInfoRef={oldPriInfoRef}
-                    updateFillInOk={updateFillInOk}
-                    privateinfoHidden={privateinfoHidden}
-                    accountAddrList={accountAddrList}
-                    updatePrivateinfoHidden={updatePrivateinfoHidden}
-                ></PrivateInfo>
+            {accountAddrCreated(userProp) ? (
+                <>
+                    <PrivateInfo
+                        userProp={userProp}
+                        forTransaction={true}
+                        currentPriInfoRef={currentPriInfoRef}
+                        oldPriInfoRef={oldPriInfoRef}
+                        updateFillInOk={updateFillInOk}
+                        privateinfoHidden={privateinfoHidden}
+                        updatePrivateinfoHidden={updatePrivateinfoHidden}
+                    ></PrivateInfo>
+                    <Wallet></Wallet>
+                </>
             ) : (
                 <p>
-                    this account[ {userProp.state.selectedAccountAddr} ] has not
-                    created!
+                    this account[ {readAccountAddr(userProp)} ] has not created!
                 </p>
             )}
-
-            <Wallet></Wallet>
         </div>
     );
 }
@@ -368,12 +368,18 @@ const sendTransaction = async (
                 : hexToBigInt(txReq.gasPrice),
     };
 
+    let txVal;
+    if (txReq.value == undefined || txReq.value == "") {
+        txVal = 0;
+    } else {
+        txVal = Number(hexToBigInt(txReq.value));
+    }
     const tx = executeTransaction(
         ownerId,
         accountAddr,
         passwdAccount,
         txReq.to,
-        "" + Number(hexToBigInt(txReq.value)) / 1e18,
+        "" + txVal / 1e18,
         txReq.data,
         chainObj,
         true,

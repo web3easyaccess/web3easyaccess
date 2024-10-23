@@ -18,7 +18,7 @@ import {
     ChainCode,
     chainCodeFromString,
 } from "../lib/myTypes";
-import { UserProperty } from "../storage/userPropertyStore";
+import { UpdateUserProperty, UserProperty } from "../storage/userPropertyStore";
 import * as userPropertyStore from "../storage/userPropertyStore";
 
 // export function getSessionData(req) {
@@ -31,35 +31,13 @@ import * as userPropertyStore from "../storage/userPropertyStore";
 export default function Dashboard({
     userProp,
     updateUserProp,
-    accountAddrList,
-    updateAccountAddrList,
+    loadUserData,
 }: {
-    userProp: {
-        ref: MutableRefObject<UserProperty>;
-        state: UserProperty;
-        serverSidePropState: {
-            w3eapAddr: string;
-            factoryAddr: string;
-            bigBrotherPasswdAddr: string;
-        };
-    };
-    updateUserProp: ({
-        email,
-        selectedOrderNo,
-        selectedAccountAddr,
-        selectedChainCode,
-        testMode,
-    }: {
-        email: string;
-        selectedOrderNo: number;
-        selectedAccountAddr: string;
-        selectedChainCode: ChainCode;
-        testMode: boolean;
-    }) => void;
-    accountAddrList: string[];
-    updateAccountAddrList: (acctList: string[]) => void;
+    userProp: UserProperty;
+    updateUserProp: UpdateUserProperty;
+    loadUserData: (myProp: UserProperty) => Promise<void>;
 }) {
-    console.log("dashborad,ui:", userProp.ref.current);
+    console.log("dashborad,ui:", userProp);
 
     const [selectedMenu, setSelectedMenu] = useState(Menu.OOOO);
     const updateSelectedMenu = (menu: Menu) => {
@@ -77,8 +55,7 @@ export default function Dashboard({
             <Navbar
                 userProp={userProp}
                 updateUserProp={updateUserProp}
-                accountAddrList={accountAddrList}
-                updateAccountAddrList={updateAccountAddrList}
+                loadUserData={loadUserData}
             ></Navbar>
             <Divider
                 orientation="horizontal"
@@ -93,7 +70,7 @@ export default function Dashboard({
             >
                 <Card className="max-w-full">
                     <OpMenu
-                        email={userProp.ref.current.email}
+                        email={userProp.email}
                         selectedMenu={selectedMenu}
                         updateSelectedMenu={updateSelectedMenu}
                     />
@@ -107,8 +84,7 @@ export default function Dashboard({
                         <ShowMain
                             selectedMenu={selectedMenu}
                             userProp={userProp}
-                            updateUserProp={updateUserProp}
-                            accountAddrList={accountAddrList}
+                            loadUserData={loadUserData}
                         />
                     </CardBody>
                 </Card>

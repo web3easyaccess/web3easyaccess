@@ -21,7 +21,7 @@ import { chainPublicClient } from "./chainQueryClient";
 import { getOwnerIdLittleBrother } from "../lib/client/keyTools";
 
 import abis from "../serverside/blockchain/abi/abis";
-import LocalStore from "../storage/LocalStore";
+import * as userPropertyStore from "../storage/userPropertyStore";
 
 const accountOnlyForRead = privateKeyToAccount(
     "0x1000000000000000000000000000000000000000000000000000000000000000"
@@ -284,7 +284,7 @@ export async function queryAccount(
     }
 
     try {
-        const cache = LocalStore.getCacheQueryAccount(
+        const cache = userPropertyStore.getCacheQueryAccount(
             chainCode,
             factoryAddr,
             ownerId
@@ -340,7 +340,7 @@ export async function queryAccount(
                 created: true,
                 passwdAddr: "" + passwdAddr,
             };
-            LocalStore.setCacheQueryAccount(
+            userPropertyStore.setCacheQueryAccount(
                 chainCode,
                 factoryAddr,
                 ownerId,
@@ -355,7 +355,8 @@ export async function queryAccount(
             e
         );
 
-        throw new Error("queryAccount error!");
+        // throw new Error("queryAccount error!");
+        return "";
     }
 }
 
@@ -722,6 +723,7 @@ export async function queryW3eapBalance(
             addr,
             e
         );
+        return "0";
         if (
             e != null &&
             e != undefined &&
@@ -729,7 +731,7 @@ export async function queryW3eapBalance(
         ) {
             return "0";
         }
-        throw new Error("queryW3eapBalance error2!");
+        // throw new Error("queryW3eapBalance error2!");
     }
 }
 
@@ -776,6 +778,7 @@ export async function queryfreeGasFeeAmount(
             addr,
             e
         );
+        return "0";
         if (
             e != null &&
             e != undefined &&

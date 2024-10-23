@@ -23,25 +23,13 @@ import { Menu, UserInfo, uiToString, Transaction } from "../lib/myTypes";
 import { getChainObj } from "../lib/myChain";
 
 import { thegraphQueryOpLog } from "../serverside/serverActions";
-import { UserProperty } from "../storage/userPropertyStore";
+import { readAccountAddr, UserProperty } from "../storage/userPropertyStore";
 
-export default function Transactions({
-    userProp,
-}: {
-    userProp: {
-        ref: MutableRefObject<UserProperty>;
-        state: UserProperty;
-        serverSidePropState: {
-            w3eapAddr: string;
-            factoryAddr: string;
-            bigBrotherPasswdAddr: string;
-        };
-    };
-}) {
+export default function Transactions({ userProp }: { userProp: UserProperty }) {
     const rr: Transaction[] = [];
     const [txList, setTxList] = useState(rr);
 
-    const chainObj = getChainObj(userProp.state.selectedChainCode);
+    const chainObj = getChainObj(userProp.selectedChainCode);
     const explorerUrl = chainObj.blockExplorers.default.url;
     let nativeCoinSymbol = "ETH";
     try {
@@ -53,38 +41,35 @@ export default function Transactions({
 
     const [opLogs, setOpLogs] = React.useState([]);
 
+    const acctAddr = readAccountAddr(userProp);
+
     useEffect(() => {
         // execute(ExampleQueryDocument, {}).then((result) => {
         //     setData(result?.data);
         //     console.log("ExampleQueryDocument result:", result);
         // });
+
         const fetchThegraph = async () => {
-            console.log("currentUserInfoxxxxxx:", userProp.state);
-            if (
-                userProp.state.selectedAccountAddr != undefined &&
-                userProp.state.selectedAccountAddr != ""
-            ) {
+            console.log("currentUserInfoxxxxxx:", userProp);
+            if (acctAddr != undefined && acctAddr != "") {
                 const jsonData = await thegraphQueryOpLog(
-                    userProp.state.selectedAccountAddr.toLowerCase(),
-                    userProp.state.selectedChainCode
+                    acctAddr.toLowerCase(),
+                    userProp.selectedChainCode
                 );
                 console.log("fetch thegraphQueryOpLog:", jsonData);
                 setOpLogs(jsonData);
             }
         };
         fetchThegraph();
-    }, [userProp.state]);
+    }, [userProp]);
 
     useEffect(() => {
         const fetchTxList = async () => {
             // suffix with 0000
-            console.log(
-                "fetchTxList, account:",
-                userProp.state.selectedAccountAddr
-            );
+            console.log("fetchTxList, account:", acctAddr);
             const aList = await queryTransactions(
-                userProp.state.selectedChainCode,
-                userProp.state.selectedAccountAddr
+                userProp.selectedChainCode,
+                acctAddr
             );
             aList.sort((a, b) => {
                 if (a.timestamp < b.timestamp) {
@@ -95,10 +80,10 @@ export default function Transactions({
             });
             setTxList(aList);
         };
-        if (userProp.state.selectedAccountAddr != "") {
+        if (acctAddr != "") {
             fetchTxList();
         }
-    }, [userProp.state]);
+    }, [userProp]);
 
     let kk = 0;
 
@@ -252,8 +237,9 @@ export default function Transactions({
                                                 color={
                                                     addressEq(
                                                         tx.from,
-                                                        userProp.state
-                                                            .selectedAccountAddr
+                                                        readAccountAddr(
+                                                            userProp
+                                                        )
                                                     )
                                                         ? "danger"
                                                         : "primary"
@@ -269,8 +255,9 @@ export default function Transactions({
                                                 color={
                                                     addressEq(
                                                         tx.to,
-                                                        userProp.state
-                                                            .selectedAccountAddr
+                                                        readAccountAddr(
+                                                            userProp
+                                                        )
                                                     )
                                                         ? "danger"
                                                         : "primary"
@@ -282,8 +269,7 @@ export default function Transactions({
                                         <TableCell>
                                             {addressEq(
                                                 tx.to,
-                                                userProp.state
-                                                    .selectedAccountAddr
+                                                readAccountAddr(userProp)
                                             )
                                                 ? tx.value
                                                 : -1 * Number(tx.value)}
@@ -394,8 +380,7 @@ export default function Transactions({
                                         style={{
                                             color: addressEq(
                                                 tx.from,
-                                                userProp.state
-                                                    .selectedAccountAddr
+                                                readAccountAddr(userProp)
                                             )
                                                 ? "red"
                                                 : "black",
@@ -409,8 +394,7 @@ export default function Transactions({
                                         style={{
                                             color: addressEq(
                                                 tx.to,
-                                                userProp.state
-                                                    .selectedAccountAddr
+                                                readAccountAddr(userProp)
                                             )
                                                 ? "red"
                                                 : "black",
@@ -420,10 +404,7 @@ export default function Transactions({
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    {addressEq(
-                                        tx.to,
-                                        userProp.state.selectedAccountAddr
-                                    )
+                                    {addressEq(tx.to, acctAddr)
                                         ? tx.value
                                         : -1 * Number(tx.value)}
                                 </TableCell>

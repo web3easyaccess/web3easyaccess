@@ -134,7 +134,7 @@ export default function SendTransaction({
         testnet: boolean;
         chainCode: ChainCode;
         l1ChainCode: ChainCode;
-    } = getChainObj(userProp.state.selectedChainCode);
+    } = getChainObj(userProp.selectedChainCode);
     const explorerUrl = chainObj.blockExplorers.default.url;
 
     const explorerTxUrl = (hash: string) => {
@@ -168,7 +168,7 @@ export default function SendTransaction({
         isShow:
             l1Chain != null &&
             // 下面这个临时限制为只支持 LINEA_TEST_CHAIN
-            userProp.state.selectedChainCode == ChainCode.LINEA_TEST_CHAIN,
+            userProp.selectedChainCode == ChainCode.LINEA_TEST_CHAIN,
         l1ChainCode: l1Chain != null ? l1Chain.chainCode : ChainCode.UNKNOW,
         l2ChainCode: l1Chain != null ? chainObj.chainCode : ChainCode.UNKNOW,
     };
@@ -194,20 +194,20 @@ export default function SendTransaction({
         const refreshBalance = async () => {
             console.log("======++++++++++++:000:bridgeProps:", bridgeProps);
             if (
-                userProp.state.selectedAccountAddr != "" &&
+                readAccountAddr(userProp) != "" &&
                 bridgeProps != null &&
                 bridgeProps.l1ChainCode != ChainCode.UNKNOW &&
                 bridgeProps.l1ChainCode != ""
             ) {
                 const b1 = await queryEthBalance(
                     bridgeProps.l1ChainCode,
-                    userProp.serverSidePropState.factoryAddr,
-                    userProp.state.selectedAccountAddr
+                    readFactoryAddr(userProp),
+                    readAccountAddr(userProp)
                 );
                 const b2 = await queryEthBalance(
                     bridgeProps.l2ChainCode,
-                    userProp.serverSidePropState.factoryAddr,
-                    userProp.state.selectedAccountAddr
+                    readFactoryAddr(userProp),
+                    readAccountAddr(userProp)
                 );
                 setBridgeBalanceInfo({
                     l1Balance: "" + b1,
@@ -232,7 +232,7 @@ export default function SendTransaction({
             setInterval(async () => {
                 const cpc = chainPublicClient(
                     bridgeProps.l1ChainCode,
-                    userProp.serverSidePropState.factoryAddr
+                    readFactoryAddr(userProp)
                 );
                 console.log(
                     "xxxxxx112:",
@@ -283,7 +283,7 @@ export default function SendTransaction({
     }, [
         bridgeL1ToL2,
         setBridgeL1ToL2,
-        userProp.state.selectedAccountAddr,
+        readAccountAddr(userProp),
         setCurrentTabShow,
         currentTabShow,
     ]);
@@ -326,7 +326,7 @@ export default function SendTransaction({
                 tokenAddr = "NULL";
             }
         } else if (currentTabTagRef.current == "bridgeL2AndL1") {
-            receiverAddr = userProp.state.selectedAccountAddr;
+            receiverAddr = readAccountAddr(userProp);
             amount = getInputValueById("id_newtrans_amount_ui_bridge");
             //
             //
@@ -444,10 +444,10 @@ export default function SendTransaction({
         });
 
         const detail = await queryTokenDetail(
-            userProp.state.selectedChainCode,
-            userProp.serverSidePropState.factoryAddr,
+            userProp.selectedChainCode,
+            readFactoryAddr(userProp),
             addr,
-            userProp.state.selectedAccountAddr
+            readAccountAddr(userProp)
         );
 
         console.log("tokenAddressBlur:", detail);
@@ -477,10 +477,10 @@ export default function SendTransaction({
         });
 
         const detail = await queryNftDetail(
-            userProp.state.selectedChainCode,
-            userProp.serverSidePropState.factoryAddr,
+            userProp.selectedChainCode,
+            readFactoryAddr(userProp),
             addr,
-            userProp.state.selectedAccountAddr
+            readAccountAddr(userProp)
         );
 
         detail.tokenUri = "";
@@ -496,8 +496,8 @@ export default function SendTransaction({
         const nftAddr = getInputValueById("id_newtrans_token_addr_ui_nft");
         const nftId = getInputValueById("id_newtrans_nftId_ui_nft");
         const { ownerAddr, tokenUri } = await queryNftsOwnerUri(
-            userProp.state.selectedChainCode,
-            userProp.serverSidePropState.factoryAddr,
+            userProp.selectedChainCode,
+            readFactoryAddr(userProp),
             nftAddr,
             BigInt(nftId)
         );
@@ -505,7 +505,7 @@ export default function SendTransaction({
         let tokenIdMsg = "";
         if (
             ownerAddr.toLowerCase() !=
-            userProp.state.selectedAccountAddr.toLowerCase()
+            readAccountAddr(userProp).toLowerCase()
         ) {
             tokenIdMsg = `ERROR: NFT ID[${nftId}] is not yours!`;
         } else {
@@ -560,7 +560,7 @@ export default function SendTransaction({
 
     const getOwnerId = () => {
         return getOwnerIdLittleBrother(
-            userProp.state.bigBrotherOwnerId,
+            userProp.bigBrotherOwnerId,
             userProp.state.selectedOrderNo
         );
     };
@@ -626,7 +626,7 @@ export default function SendTransaction({
                             if (bridgeDirection == "L1ToL2") {
                                 const acct = await queryAccount(
                                     bridgeProps.l1ChainCode,
-                                    userProp.serverSidePropState.factoryAddr,
+                                    readFactoryAddr(userProp),
                                     getOwnerId()
                                 );
                                 theAccountCreated = acct.created;
@@ -638,7 +638,7 @@ export default function SendTransaction({
                                 abi: abis.transferFrom,
                                 functionName: "transferFrom",
                                 args: [
-                                    userProp.state.selectedAccountAddr,
+                                    readAccountAddr(userProp),
                                     receiverAddr,
                                     BigInt(nftId),
                                 ],
@@ -658,7 +658,7 @@ export default function SendTransaction({
 
                         eFee = await estimateTransFee(
                             getOwnerId(),
-                            userProp.state.selectedAccountAddr,
+                            readAccountAddr(userProp),
                             passwdAccount,
                             tokenAddr, // it maybe a bridge message contract when bridging.
                             amountETH,
@@ -673,7 +673,7 @@ export default function SendTransaction({
                         // transfer ETH
                         eFee = await estimateTransFee(
                             getOwnerId(),
-                            userProp.state.selectedAccountAddr,
+                            readAccountAddr(userProp),
                             passwdAccount,
                             receiverAddr,
                             amount,
@@ -779,37 +779,37 @@ export default function SendTransaction({
 
         const fetchMyAccountStatus = async () => {
             if (
-                userProp.state.selectedChainCode == ChainCode.UNKNOW ||
-                userProp.serverSidePropState.factoryAddr == "" ||
-                userProp.serverSidePropState.factoryAddr == undefined
+                userProp.selectedChainCode == ChainCode.UNKNOW ||
+                readFactoryAddr(userProp) == "" ||
+                readFactoryAddr(userProp) == undefined
             ) {
                 return;
             }
             console.log(
                 "my Account for new transaction1:",
-                userProp.state.selectedChainCode,
+                userProp.selectedChainCode,
                 "+",
-                userProp.serverSidePropState.factoryAddr,
+                readFactoryAddr(userProp),
                 "+",
                 getOwnerId()
             );
             // suffix with 0000
             const acct = await queryAccount(
-                userProp.state.selectedChainCode,
-                userProp.serverSidePropState.factoryAddr,
+                userProp.selectedChainCode,
+                readFactoryAddr(userProp),
                 getOwnerId()
             );
             console.log(
                 "my Account for new transaction2:",
                 acct,
                 getOwnerId(),
-                userProp.state.bigBrotherOwnerId
+                userProp.bigBrotherOwnerId
             );
-            if (acct.accountAddr != userProp.state.selectedAccountAddr) {
+            if (acct.accountAddr != readAccountAddr(userProp)) {
                 console.log(
                     "develop error!",
-                    userProp.state.bigBrotherOwnerId,
-                    userProp.state.selectedAccountAddr,
+                    userProp.bigBrotherOwnerId,
+                    readAccountAddr(userProp),
                     getOwnerId(),
                     acct.accountAddr
                 );
@@ -817,7 +817,7 @@ export default function SendTransaction({
             }
             setMyAccountCreated(acct?.created);
         };
-        if (userProp.state.selectedAccountAddr != "") {
+        if (readAccountAddr(userProp) != "") {
             fetchMyAccountStatus();
         }
     }, [userProp.state, userProp.serverSidePropState]);
@@ -1119,7 +1119,7 @@ export default function SendTransaction({
                                             : bridgeProps.l2ChainCode
                                     }
                                 ></SelectedChainIcon>
-                                <p>{userProp.state.selectedAccountAddr}</p>
+                                <p>{readAccountAddr(userProp)}</p>
                                 <p>
                                     {bridgeL1ToL2
                                         ? bridgeBalanceInfo.l1Balance
@@ -1147,7 +1147,7 @@ export default function SendTransaction({
                                             : bridgeProps.l1ChainCode
                                     }
                                 ></SelectedChainIcon>
-                                <p>{userProp.state.selectedAccountAddr}</p>
+                                <p>{readAccountAddr(userProp)}</p>
                                 <p>
                                     {bridgeL1ToL2
                                         ? bridgeBalanceInfo.l2Balance
@@ -1313,8 +1313,8 @@ export default function SendTransaction({
                 >
                     <CreateTransaction
                         myOwnerId={getOwnerId()}
-                        verifyingContract={userProp.state.selectedAccountAddr}
-                        email={userProp.state.email}
+                        verifyingContract={readAccountAddr(userProp)}
+                        email={userProp.email}
                         chainObj={chainObj}
                         buttonText={buttonText}
                         myAccountCreated={myAccountCreated}
@@ -1322,7 +1322,7 @@ export default function SendTransaction({
                         preparedPriceRef={preparedPriceRef}
                         updateCurrentTx={updateCurrentTx}
                         readReceiverInfo={readReceiverInfo}
-                        factoryAddr={userProp.serverSidePropState.factoryAddr}
+                        factoryAddr={readFactoryAddr(userProp)}
                     />
                 </div>
             </div>

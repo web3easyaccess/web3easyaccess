@@ -93,7 +93,7 @@ import {
     ChainCode,
 } from "@/app/lib/myTypes";
 
-import { UserProperty } from "@/app/storage/LocalStore";
+import { UserProperty } from "@/app/storage/userPropertyStore";
 
 const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
     let questionNosEnc = qNo1 + qNo2 + generateRandomString();
@@ -103,23 +103,7 @@ const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
     return questionNosEnc;
 };
 
-export default function UpgradeImpl({
-    userProp,
-    accountAddrList,
-    forChgPasswd,
-}: {
-    userProp: {
-        ref: MutableRefObject<UserProperty>;
-        state: UserProperty;
-        serverSidePropState: {
-            w3eapAddr: string;
-            factoryAddr: string;
-            bigBrotherPasswdAddr: string;
-        };
-    };
-    accountAddrList: string[];
-    forChgPasswd: boolean;
-}) {
+export default function UpgradeImpl({ userProp }: { userProp: UserProperty }) {
     return (
         <div>
             <p>

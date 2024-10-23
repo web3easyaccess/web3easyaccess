@@ -12,37 +12,17 @@ import { useFormState, useFormStatus } from "react-dom";
 import { saveChainCode } from "../serverside/serverActions";
 
 import { ChainCode, chainCodeFromString } from "../lib/myTypes";
-import { UserProperty } from "../storage/LocalStore";
+import { UpdateUserProperty, UserProperty } from "../storage/userPropertyStore";
 
 export const ChainIcons = ({
     userProp,
     updateUserProp,
 }: {
-    userProp: {
-        ref: MutableRefObject<UserProperty>;
-        state: UserProperty;
-        serverSidePropState: {
-            w3eapAddr: string;
-            factoryAddr: string;
-            bigBrotherPasswdAddr: string;
-        };
-    };
-    updateUserProp: ({
-        email,
-        selectedOrderNo,
-        selectedAccountAddr,
-        selectedChainCode,
-        testMode,
-    }: {
-        email: string;
-        selectedOrderNo: number;
-        selectedAccountAddr: string;
-        selectedChainCode: ChainCode;
-        testMode: boolean;
-    }) => void;
+    userProp: UserProperty;
+    updateUserProp: UpdateUserProperty;
 }) => {
-    console.log("chain icons, userPropref:", userProp.ref.current);
-    console.log("chain icons, userPropState:", userProp.state);
+    console.log("chain icons, userPropref:", userProp);
+    console.log("chain icons, userPropState:", userProp);
 
     // const initChainRef = useRef("[init]");
 
@@ -100,13 +80,13 @@ export const ChainIcons = ({
     };
 
     // if (initChainRef.current == "[init]") {
-    //     setChainCodeHere(userProp.ref.current.selectedChainCode);
-    //     initChainRef.current = userProp.ref.current.selectedChainCode;
+    //     setChainCodeHere(userProp.selectedChainCode);
+    //     initChainRef.current = userProp.selectedChainCode;
     // }
     useEffect(() => {
         console.log("setChainCodeHere,1:", userProp);
-        setChainCodeHere(userProp.state.selectedChainCode);
-    }, [userProp.state]);
+        setChainCodeHere(userProp.selectedChainCode);
+    }, [userProp]);
     //
     // // // ////////////////////
 
@@ -114,20 +94,19 @@ export const ChainIcons = ({
         console.log(chainCode);
         if (ChainCode.ETHEREUM_MAIN_NET == chainCode) {
             alert("not supprted " + chainCode + " this time.");
-            chainCode = userProp.state.selectedChainCode;
+            chainCode = userProp.selectedChainCode;
         }
-        console.log(
-            "do a choice in chainIcons,userPropState:",
-            userProp.ref.current
-        );
+        console.log("do a choice in chainIcons,userPropState:", userProp);
 
-        userProp.ref.current.selectedAccountAddr = "";
         updateUserProp({
-            email: userProp.ref.current.email,
-            selectedOrderNo: userProp.ref.current.selectedOrderNo,
-            selectedAccountAddr: userProp.ref.current.selectedAccountAddr,
+            email: userProp.email,
+            testMode: undefined,
             selectedChainCode: chainCode,
-            testMode: false,
+            accountAddrList: undefined,
+            selectedOrderNo: undefined,
+            w3eapAddr: undefined,
+            factoryAddr: undefined,
+            bigBrotherPasswdAddr: undefined,
         });
         // // //
         setChainCodeHere(chainCode);
@@ -282,19 +261,7 @@ export const ChainIcons = ({
     );
 };
 
-export const SelectedChainIcon = ({
-    userProp,
-}: {
-    userProp: {
-        ref: MutableRefObject<UserProperty>;
-        state: UserProperty;
-        serverSidePropState: {
-            w3eapAddr: string;
-            factoryAddr: string;
-            bigBrotherPasswdAddr: string;
-        };
-    };
-}) => {
+export const SelectedChainIcon = ({ userProp }: { userProp: UserProperty }) => {
     if (typeof window !== "undefined") {
         console.log("SelectedChainIcon, we are running on the client");
     } else {
@@ -302,10 +269,10 @@ export const SelectedChainIcon = ({
     }
     const [myChainCode, setMyChainCode] = useState(ChainCode.UNKNOW);
     useEffect(() => {
-        console.log("setMyChainCode,chainCode:", userProp.state);
-        setMyChainCode(userProp.state.selectedChainCode);
-    }, [userProp.state]);
-    console.log("SelectedChainIcon,chainCode:", userProp.state);
+        console.log("setMyChainCode,chainCode:", userProp);
+        setMyChainCode(userProp.selectedChainCode);
+    }, [userProp]);
+    console.log("SelectedChainIcon,chainCode:", userProp);
     if (myChainCode == ChainCode.DEFAULT_ANVIL_CHAIN) {
         return (
             <div className="flex gap-3 items-center">
@@ -426,9 +393,7 @@ export const SelectedChainIcon = ({
                 </Badge>
             </div>
         );
-    } else if (
-        userProp.state.selectedChainCode == ChainCode.ETHEREUM_MAIN_NET
-    ) {
+    } else if (userProp.selectedChainCode == ChainCode.ETHEREUM_MAIN_NET) {
         return (
             <div className="flex gap-3 items-center">
                 <Badge content="" color="secondary">

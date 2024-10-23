@@ -10,25 +10,30 @@ import { ChainCode } from "@/app/lib/myTypes";
 
 export async function getFactoryAddr(chainCode: string) {
     console.log("getFactoryAddr, chainCode:", chainCode);
+    let res;
     if (chainCode == "DEFAULT_ANVIL_CHAIN") {
-        return process.env.CHAIN_FACTORY_ADDRESS_LOCAL;
+        res = process.env.CHAIN_FACTORY_ADDRESS_LOCAL;
     } else if (chainCode == "MORPH_TEST_CHAIN") {
-        return process.env.CHAIN_FACTORY_ADDRESS_MORPH_TEST;
+        res = process.env.CHAIN_FACTORY_ADDRESS_MORPH_TEST;
     } else if (chainCode == "SCROLL_TEST_CHAIN") {
-        return process.env.CHAIN_FACTORY_ADDRESS_SCROLL_TEST;
+        res = process.env.CHAIN_FACTORY_ADDRESS_SCROLL_TEST;
     } else if (chainCode == "LINEA_TEST_CHAIN") {
-        return process.env.CHAIN_FACTORY_ADDRESS_LINEA_TEST;
+        res = process.env.CHAIN_FACTORY_ADDRESS_LINEA_TEST;
     } else if (chainCode == "SEPOLIA_CHAIN") {
-        return process.env.CHAIN_FACTORY_ADDRESS_SEPOLIA;
+        res = process.env.CHAIN_FACTORY_ADDRESS_SEPOLIA;
     } else if (chainCode == ChainCode.NEOX_TEST_CHAIN.toString()) {
-        return process.env.CHAIN_FACTORY_ADDRESS_NEOX_TEST;
+        res = process.env.CHAIN_FACTORY_ADDRESS_NEOX_TEST;
     } else if (chainCode == ChainCode.ARBITRUM_TEST_CHAIN.toString()) {
-        return process.env.CHAIN_FACTORY_ADDRESS_ARBITRUM_TEST;
+        res = process.env.CHAIN_FACTORY_ADDRESS_ARBITRUM_TEST;
+    } else if (chainCode == ChainCode.ETHEREUM_MAIN_NET.toString()) {
+        res = process.env.CHAIN_FACTORY_ADDRESS_ETH_MAIN;
     } else if (chainCode == "SOLANA_TEST_CHAIN") {
-        return process.env.CHAIN_FACTORY_ADDRESS_SOLANA_TEST;
-    } else {
-        var a = 1 / 0;
+        res = process.env.CHAIN_FACTORY_ADDRESS_SOLANA_TEST;
     }
+    if (res == undefined || res == "") {
+        throw Error("FACTORY IS NOT SET!");
+    }
+    return res;
 }
 
 // DEFAULT_ANVIL_CHAIN, MORPH_TEST_CHAIN
@@ -58,8 +63,9 @@ export async function chainClient(_chainCode: string) {
         );
         _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_MORPH_TEST;
         _l1GasPriceOracleContract =
-            "0x53000000000000000000000000000000000000??";
-        _l1DataFeeFunc = "getL1Fee";
+            "0x778d1d9a4d8b6b9ade36d967a9ac19455ec3fd0b";
+        _l1GasPriceOracleContract = ""; // morph .... comment .. todo.
+        _l1DataFeeFunc = "calculateIntrinsicGasFee";
     } else if (chainCode == "SCROLL_TEST_CHAIN") {
         _freeFeeAmountWhenCreated = Number(
             process.env.INIT_FREE_FEE_AMOUNT_SCROLL_TEST
@@ -94,6 +100,13 @@ export async function chainClient(_chainCode: string) {
             process.env.INIT_FREE_FEE_AMOUNT_ARBITRUM_TEST
         );
         _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_ARBITRUM_TEST;
+        _l1GasPriceOracleContract = "0x0";
+        _l1DataFeeFunc = "";
+    } else if (chainCode == ChainCode.ETHEREUM_MAIN_NET.toString()) {
+        _freeFeeAmountWhenCreated = Number(
+            process.env.INIT_FREE_FEE_AMOUNT_ETH_MAIN
+        );
+        _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_ETH_MAIN;
         _l1GasPriceOracleContract = "0x0";
         _l1DataFeeFunc = "";
     } else if (chainCode == "SOLANA_TEST_CHAIN") {
