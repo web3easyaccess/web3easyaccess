@@ -26,7 +26,10 @@ import { ChainLogo } from "./myLogo";
 
 import { Logout } from "./logout";
 
+// import { SelectedChainIcon, ChainIcons } from "./chainIcons";
+
 import { SelectedChainIcon, ChainIcons } from "./chainIcons";
+
 import UserProfile from "./userProfile";
 
 import { Menu, UserInfo, uiToString, ChainCode } from "../lib/myTypes";
@@ -128,6 +131,7 @@ export function Navbar4Login({
                     updateUserProp={updateUserProp}
                 />
                 <NavbarItem className="hidden lg:flex"></NavbarItem>
+                <div style={{ width: "120px" }}></div>
             </NavbarContent>
         </Navbar>
     );

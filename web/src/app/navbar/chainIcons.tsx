@@ -4,6 +4,9 @@ import {
     Avatar,
     Tooltip,
     Badge,
+    SelectItem,
+    Select,
+    Switch,
 } from "@nextui-org/react";
 import { useState, useRef, useEffect, MutableRefObject } from "react";
 
@@ -13,6 +16,85 @@ import { saveChainCode } from "../serverside/serverActions";
 
 import { ChainCode, chainCodeFromString } from "../lib/myTypes";
 import { UpdateUserProperty, UserProperty } from "../storage/userPropertyStore";
+import * as userPropertyStore from "../storage/userPropertyStore";
+
+const supportedChains: {
+    chainCode: ChainCode;
+    img: string;
+    title: string;
+    isTestnet: boolean;
+    size: "sm" | "md";
+    bordered: boolean;
+}[] = [
+    {
+        chainCode: ChainCode.NEOX_TEST_CHAIN,
+        img: "/chain/neoxtest.png",
+        title: "NeoX testnet",
+        isTestnet: true,
+        size: "sm",
+        bordered: false,
+    },
+    {
+        chainCode: ChainCode.SOLANA_TEST_CHAIN,
+        img: "/chain/solanatest.png",
+        title: "Solana testnet",
+        isTestnet: true,
+        size: "sm",
+        bordered: false,
+    },
+    {
+        chainCode: ChainCode.SEPOLIA_CHAIN,
+        img: "/chain/sepolia.png",
+        title: "Sepolia testnet",
+        isTestnet: true,
+        size: "sm",
+        bordered: false,
+    },
+    {
+        chainCode: ChainCode.LINEA_TEST_CHAIN,
+        img: "/chain/lineatest.png",
+        title: "Linea Sepolia",
+        isTestnet: true,
+        size: "sm",
+        bordered: false,
+    },
+    {
+        chainCode: ChainCode.SCROLL_TEST_CHAIN,
+        img: "/chain/scrolltest.png",
+        title: "Scroll Sepolia",
+        isTestnet: true,
+        size: "sm",
+        bordered: false,
+    },
+    {
+        chainCode: ChainCode.MORPH_TEST_CHAIN,
+        img: "/chain/morphl2test.png",
+        title: "Morph testnet",
+        isTestnet: true,
+        size: "sm",
+        bordered: false,
+    },
+    {
+        chainCode: ChainCode.DEFAULT_ANVIL_CHAIN,
+        img: "/chain/anvil.png",
+        title: "anvil testnet",
+        isTestnet: true,
+        size: "sm",
+        bordered: false,
+    },
+    {
+        chainCode: ChainCode.ETHEREUM_MAIN_NET,
+        img: "/chain/ethereum.png",
+        title: "Ether eum",
+        isTestnet: false,
+        size: "sm",
+        bordered: false,
+    },
+];
+
+const currentAllChains = (testMode: boolean) => {
+    return supportedChains.filter((s) => s.isTestnet == testMode);
+};
 
 export const ChainIcons = ({
     userProp,
@@ -24,7 +106,81 @@ export const ChainIcons = ({
     console.log("chain icons, userPropref:", userProp);
     console.log("chain icons, userPropState:", userProp);
 
-    // const initChainRef = useRef("[init]");
+    const latestChains = () => {
+        const latestChainCodes = userPropertyStore.getNavbarLatestChains(
+            userProp.email
+        );
+
+        const allChains = currentAllChains(userProp.testMode);
+
+        const validLatestChains: {
+            chainCode: ChainCode;
+            img: string;
+            title: string;
+            isTestnet: boolean;
+            size: "sm" | "md";
+            bordered: boolean;
+        }[] = [];
+
+        latestChainCodes.forEach((code) => {
+            const aa = allChains.filter((a) => a.chainCode == code);
+            if (aa.length > 0) {
+                const cc = { ...aa[0] };
+                validLatestChains.push(cc);
+            }
+        });
+
+        if (validLatestChains.length == 0) {
+            const cc = { ...allChains[0] };
+            validLatestChains.push(cc);
+        }
+        validLatestChains[0].bordered = true;
+        validLatestChains[0].size = "md";
+        console.log("validLatestChains:", validLatestChains);
+        if (validLatestChains.length > 3) {
+            return validLatestChains.slice(0, 3);
+        } else {
+            return validLatestChains;
+        }
+    };
+
+    const [testModeMsg, setTestModeMsg] = useState("Switch to TestMode");
+    const updateTestMode = (tm: boolean) => {
+        if (tm) {
+            setTestModeMsg(
+                "Now in test mode, please be aware that the assets on the test chain are worthless"
+            );
+        } else {
+            setTestModeMsg("Switch to TestMode");
+        }
+        updateUserProp({
+            email: userProp.email,
+            testMode: tm,
+            selectedChainCode: undefined,
+            accountAddrList: undefined,
+            selectedOrderNo: undefined,
+            w3eapAddr: undefined,
+            factoryAddr: undefined,
+            bigBrotherPasswdAddr: undefined,
+        });
+    };
+
+    const updateSelectedChain = (cc: Set<never>) => {
+        console.log("updateSelectedChain:", cc);
+        console.log("updateSelectedChain2:", cc.values());
+        let chainCode = cc.values().next();
+
+        updateUserProp({
+            email: userProp.email,
+            testMode: undefined,
+            selectedChainCode: chainCode.value,
+            accountAddrList: undefined,
+            selectedOrderNo: undefined,
+            w3eapAddr: undefined,
+            factoryAddr: undefined,
+            bigBrotherPasswdAddr: undefined,
+        });
+    };
 
     const myDefault = {
         size: "sm",
@@ -47,36 +203,35 @@ export const ChainIcons = ({
     const [solanatestnetState, setSolanatestnetState] = useState(myDefault);
 
     const setChainCodeHere = (cc: ChainCode) => {
-        console.log("setChainCodeHere,2:", cc);
-        setMorphl2testState(myDefault);
-        setDefaultAnvilState(myDefault);
-        setEthereumMainnetState(myDefault);
-        setScrolltestState(myDefault);
-        setLineatestState(myDefault);
-        setSepoliaState(myDefault);
-        setNeoxtestState(myDefault);
-        setArbitrumtestState(myDefault);
-
-        setSolanatestnetState(myDefault);
-        if (cc == ChainCode.MORPH_TEST_CHAIN) {
-            setMorphl2testState(myChecked);
-        } else if (cc == ChainCode.DEFAULT_ANVIL_CHAIN) {
-            setDefaultAnvilState(myChecked);
-        } else if (cc == ChainCode.ETHEREUM_MAIN_NET) {
-            setEthereumMainnetState(myChecked);
-        } else if (cc == ChainCode.SCROLL_TEST_CHAIN) {
-            setScrolltestState(myChecked);
-        } else if (cc == ChainCode.LINEA_TEST_CHAIN) {
-            setLineatestState(myChecked);
-        } else if (cc == ChainCode.SEPOLIA_CHAIN) {
-            setSepoliaState(myChecked);
-        } else if (cc == ChainCode.NEOX_TEST_CHAIN) {
-            setNeoxtestState(myChecked);
-        } else if (cc == ChainCode.ARBITRUM_TEST_CHAIN) {
-            setArbitrumtestState(myChecked);
-        } else if (cc == ChainCode.SOLANA_TEST_CHAIN) {
-            setSolanatestnetState(myChecked);
-        }
+        // console.log("setChainCodeHere,2:", cc);
+        // setMorphl2testState(myDefault);
+        // setDefaultAnvilState(myDefault);
+        // setEthereumMainnetState(myDefault);
+        // setScrolltestState(myDefault);
+        // setLineatestState(myDefault);
+        // setSepoliaState(myDefault);
+        // setNeoxtestState(myDefault);
+        // setArbitrumtestState(myDefault);
+        // setSolanatestnetState(myDefault);
+        // if (cc == ChainCode.MORPH_TEST_CHAIN) {
+        //     setMorphl2testState(myChecked);
+        // } else if (cc == ChainCode.DEFAULT_ANVIL_CHAIN) {
+        //     setDefaultAnvilState(myChecked);
+        // } else if (cc == ChainCode.ETHEREUM_MAIN_NET) {
+        //     setEthereumMainnetState(myChecked);
+        // } else if (cc == ChainCode.SCROLL_TEST_CHAIN) {
+        //     setScrolltestState(myChecked);
+        // } else if (cc == ChainCode.LINEA_TEST_CHAIN) {
+        //     setLineatestState(myChecked);
+        // } else if (cc == ChainCode.SEPOLIA_CHAIN) {
+        //     setSepoliaState(myChecked);
+        // } else if (cc == ChainCode.NEOX_TEST_CHAIN) {
+        //     setNeoxtestState(myChecked);
+        // } else if (cc == ChainCode.ARBITRUM_TEST_CHAIN) {
+        //     setArbitrumtestState(myChecked);
+        // } else if (cc == ChainCode.SOLANA_TEST_CHAIN) {
+        //     setSolanatestnetState(myChecked);
+        // }
     };
 
     // if (initChainRef.current == "[init]") {
@@ -85,7 +240,7 @@ export const ChainIcons = ({
     // }
     useEffect(() => {
         console.log("setChainCodeHere,1:", userProp);
-        setChainCodeHere(userProp.selectedChainCode);
+        // setChainCodeHere(userProp.selectedChainCode);
     }, [userProp]);
     //
     // // // ////////////////////
@@ -109,7 +264,7 @@ export const ChainIcons = ({
             bigBrotherPasswdAddr: undefined,
         });
         // // //
-        setChainCodeHere(chainCode);
+        // setChainCodeHere(chainCode);
         // console.log("id_setChainForm_button click before..");
         // document.getElementById("id_setChainForm_code").value =
         //     chainCode.toString();
@@ -117,145 +272,83 @@ export const ChainIcons = ({
         // console.log("id_setChainForm_button click afetr!");
     };
 
-    // function SetChainForm({}) {
-    //     const [message, formAction] = useFormState(saveChainCode, null);
-    //     return (
-    //         <form action={formAction} style={{ display: "none" }}>
-    //             <input
-    //                 id="id_setChainForm_code"
-    //                 name="newChainCode"
-    //                 defaultValue={userPropState.selectedChainCode.toString()}
-    //             />
-    //             <button id="id_setChainForm_button" type="submit">
-    //                 Set Chain Code
-    //             </button>
-    //             {message}
-    //         </form>
-    //     );
-    // }
-
     return (
-        <div className="flex gap-3 items-center" style={{ cursor: "pointer" }}>
-            {/* <SetChainForm /> */}
-            {/* <Badge content="" color="secondary"> */}
+        <div style={{ display: "flex" }}>
+            <div
+                className="flex gap-3 items-center"
+                style={{ cursor: "pointer", zIndex: 2 }}
+            >
+                <Switch
+                    defaultSelected={userProp.testMode}
+                    isSelected={userProp.testMode}
+                    onValueChange={updateTestMode}
+                    size={"sm"}
+                    title={testModeMsg}
+                ></Switch>
 
-            <Tooltip content="Arbitrum testnet">
-                <Avatar
-                    src="/chain/arbitrumtest.png"
-                    size={arbitrumtestState.size}
-                    isBordered={arbitrumtestState.bordered}
-                    onClick={() => {
-                        handleClick(ChainCode.ARBITRUM_TEST_CHAIN);
+                {latestChains().map((cc) => (
+                    <Tooltip content={cc.title}>
+                        <Avatar
+                            src={cc.img}
+                            size={cc.size}
+                            isBordered={cc.bordered}
+                            onClick={() => {
+                                handleClick(cc.chainCode);
+                            }}
+                            color="primary"
+                            radius="sm"
+                        />
+                    </Tooltip>
+                ))}
+            </div>
+            <div
+                style={{
+                    position: "absolute",
+                    left: "1010px",
+                    width: "150px",
+                    backgroundColor: "transparent",
+                    zIndex: 1,
+                }}
+            >
+                <Select
+                    selectionMode="single"
+                    className="max-w-xs"
+                    style={{
+                        backgroundColor: "transparent",
                     }}
-                    color="primary"
-                    radius="sm"
-                />
-            </Tooltip>
+                    defaultSelectedKeys={[]}
+                    label=" "
+                    selectedKeys={
+                        [] // selectedChain
+                    }
+                    onSelectionChange={updateSelectedChain}
+                >
+                    {(
+                        currentAllChains(
+                            userProp.testMode
+                        ) as CollectionElement<object>
+                    ).map((item: any) => (
+                        <SelectItem
+                            key={item.chainCode}
+                            startContent={
+                                <Avatar
+                                    src={item.img}
+                                    color="primary"
+                                    radius="sm"
+                                />
+                            }
+                        >
+                            {item.title}
+                        </SelectItem>
+                    ))}
 
-            <Tooltip content="NeoX testnet">
-                <Avatar
-                    src="/chain/neoxtest.png"
-                    size={neoxtestState.size}
-                    isBordered={neoxtestState.bordered}
-                    onClick={() => {
-                        handleClick(ChainCode.NEOX_TEST_CHAIN);
-                    }}
-                    color="primary"
-                    radius="sm"
-                />
-            </Tooltip>
-
-            <Tooltip content="Solana testnet">
-                <Avatar
-                    src="/chain/solanatest.png"
-                    size={solanatestnetState.size}
-                    isBordered={solanatestnetState.bordered}
-                    onClick={() => {
-                        handleClick(ChainCode.SOLANA_TEST_CHAIN);
-                    }}
-                    color="primary"
-                    radius="sm"
-                />
-            </Tooltip>
-
-            <Tooltip content="Sepolia testnet">
-                <Avatar
-                    src="/chain/sepolia.png"
-                    size={sepoliaState.size}
-                    isBordered={sepoliaState.bordered}
-                    onClick={() => {
-                        handleClick(ChainCode.SEPOLIA_CHAIN);
-                    }}
-                    color="primary"
-                    radius="sm"
-                />
-            </Tooltip>
-
-            <Tooltip content="Linea Sepolia testnet">
-                <Avatar
-                    src="/chain/lineatest.png"
-                    size={lineatestState.size}
-                    isBordered={lineatestState.bordered}
-                    onClick={() => {
-                        handleClick(ChainCode.LINEA_TEST_CHAIN);
-                    }}
-                    color="primary"
-                    radius="sm"
-                />
-            </Tooltip>
-
-            <Tooltip content="Scroll Sepolia testnet">
-                <Avatar
-                    src="/chain/scrolltest.png"
-                    size={scrolltestState.size}
-                    isBordered={scrolltestState.bordered}
-                    onClick={() => {
-                        handleClick(ChainCode.SCROLL_TEST_CHAIN);
-                    }}
-                    color="primary"
-                    radius="sm"
-                />
-            </Tooltip>
-            {/* </Badge> */}
-
-            <Tooltip content="MorphL2 testnet">
-                <Avatar
-                    src="/chain/morphl2test.png"
-                    size={morphl2testState.size}
-                    isBordered={morphl2testState.bordered}
-                    onClick={() => {
-                        handleClick(ChainCode.MORPH_TEST_CHAIN);
-                    }}
-                    color="primary"
-                    radius="sm"
-                />
-            </Tooltip>
-            <div style={{ display: "none" }}>
-                <Tooltip content="anvil testnet">
-                    <Avatar
-                        src="/chain/anvil.png"
-                        size={defaultAnvilState.size}
-                        isBordered={defaultAnvilState.bordered}
-                        onClick={() => {
-                            handleClick(ChainCode.DEFAULT_ANVIL_CHAIN);
-                        }}
-                        color="primary"
-                        radius="sm"
-                    />
-                </Tooltip>
-
-                <Tooltip content="Ethereum">
-                    <Avatar
-                        src="/chain/ethereum.png"
-                        size={ethereumMainnetState.size}
-                        isBordered={ethereumMainnetState.bordered}
-                        onClick={() => {
-                            handleClick(ChainCode.ETHEREUM_MAIN_NET);
-                        }}
-                        color="primary"
-                        radius="sm"
-                    />
-                </Tooltip>
+                    <SelectItem key={"bottomLine"} startContent={<p></p>}>
+                        ------------
+                    </SelectItem>
+                    {/* <SelectItem key={"space"} startContent={<p></p>}>
+                            {" "}
+                        </SelectItem> */}
+                </Select>
             </div>
         </div>
     );
