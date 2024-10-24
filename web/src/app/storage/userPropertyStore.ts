@@ -340,6 +340,13 @@ export function setPropSelectedOrderNo(
 
 
 export function getNavbarLatestChains(email: string): ChainCode[] {
+    if (typeof window == "undefined" || email == "" || email == undefined) {
+        console.log("localstore, getNavbarLatestChains, we are running on the server or email is empty!");
+        return [];
+    } else {
+        console.log("localstore,getNavbarLatestChains, we are running on the client");
+    }
+
     const cc3 = localStorage.getItem(KEY_PREFIX + email + "-" + "NavbarLatestChains");
     if (cc3 == null || cc3 == undefined || cc3 == "" || cc3.length == 0) {
         return [];
@@ -361,6 +368,14 @@ export function setPropChainCode(email: string, chainCode: ChainCode) {
 
 function saveChain2Latest(email: string, chainCode: ChainCode) {
     const latest = getNavbarLatestChains(email);
+
+    // if included by previeus three, not modify
+    if ((latest.length > 0 && latest[0] == chainCode) ||
+        (latest.length > 1 && latest[1] == chainCode) ||
+        (latest.length > 2 && latest[2] == chainCode)) {
+
+        return;
+    }
 
     const newL = latest.filter(c => c != chainCode);
     newL.unshift(chainCode);

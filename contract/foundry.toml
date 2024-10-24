@@ -10,3 +10,10 @@ solc = '0.8.20'
 evm_version = "London"
 
 
+
+[rpc_endpoints]
+mainnet = "${RPC_URL}"
+
+[etherscan]
+mainnet = { key = "${ETHERSCAN_API_KEY}" }
+

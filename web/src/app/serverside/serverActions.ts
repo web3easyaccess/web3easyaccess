@@ -83,9 +83,9 @@ export async function checkEmail(
 
         const sixNum = generateRandomDigitInteger().toString();
 
-        await asyncSendMail(email, sixNum); // ignore tmp.
-
         verifyCode[email] = sixNum + ":" + new Date().valueOf();
+
+        await asyncSendMail(email, sixNum); // ignore tmp.
 
         console.log("sent email", email, "========> [" + sixNum + "]");
         // Please log in to your email address "123@a.com" and check for the verification code.
@@ -155,6 +155,8 @@ const THEGRAPH_URLS: { [key: string]: string } = {
     SEPOLIA_CHAIN: `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/JCzyXC26m46orpfwuY4i4nUWMXk3LAJjGpWoQGw451Lp`,
     NEOX_TEST_CHAIN: `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/o2FaoPpD1KeP8Dk5KnUyGuw7b7tZvvcrTUu3xYuGkez`,
     ARBITRUM_TEST_CHAIN: ``,
+    AIACHAIN_MAIN_CHAIN: ``,
+    AIACHAIN_TEST_CHAIN: ``,
 };
 export async function thegraphQueryOpLog(accountAddr, chainCode) {
     const result: {

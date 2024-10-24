@@ -13,6 +13,7 @@ import AccountCard from '@/components/AccountCard'
 import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS, EIP155_CHAINS } from '@/data/EIP155Data'
 import { getChainKey } from '@/w3ea/web3easyaccess'
 import W3eaChannel from '@/w3ea/W3eaChannel'
+import { getChain } from '@/w3ea/ChainsData'
 
 export default function WalletConnectPage(params: { deepLink?: string }) {
   const { deepLink } = params
@@ -67,6 +68,8 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
     }
   }, [deepLink])
 
+  const currentChain = getChain()
+
   return (
     <Fragment>
       <PageHeader title="WalletConnect" />
@@ -106,7 +109,17 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
 
         <div style={{ marginTop: '40px' }}></div>
 
-        {Object.entries(EIP155_CHAINS)
+        <AccountCard
+          key={currentChain.name}
+          name={currentChain.name}
+          logo={currentChain.logo}
+          rgb={currentChain.rgb}
+          address={w3eaAddress}
+          chainId={currentChain.chainKey}
+          data-testid={'chain-card-' + currentChain.chainKey.toString()}
+        />
+
+        {/* {Object.entries(EIP155_CHAINS)
           .filter(r => r[0] == getChainKey())
           .map(([caip10, { name, logo, rgb }]) => (
             <AccountCard
@@ -118,7 +131,7 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
               chainId={caip10.toString()}
               data-testid={'chain-card-' + caip10.toString()}
             />
-          ))}
+          ))} */}
 
         <W3eaChannel></W3eaChannel>
       </>

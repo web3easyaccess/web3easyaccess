@@ -81,15 +81,6 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
 }
 
 export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
-    'eip155:2810': {
-        chainId: 2810,
-        name: 'Morph Holesky Testnet',
-        logo: '/chain-logos/eip155-2810.png',
-        rgb: '99, 125, 234',
-        rpc: 'https://rpc-quicknode-holesky.morphl2.io',
-        namespace: 'eip155',
-        smartAccountEnabled: true
-    },
     'eip155:5': {
         chainId: 5,
         name: 'Ethereum Goerli',
@@ -160,7 +151,42 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     }
 }
 
-export const EIP155_CHAINS = { ...EIP155_MAINNET_CHAINS, ...EIP155_TEST_CHAINS }
+
+export const EIP155_W3EA_CHAINS: Record<string, EIP155Chain> = {
+    'eip155:2810': {
+        chainId: 2810,
+        name: 'Morph Holesky Testnet',
+        logo: '/chain-logos/eip155-2810.png',
+        rgb: '99, 125, 234',
+        rpc: 'https://rpc-quicknode-holesky.morphl2.io',
+        namespace: 'eip155',
+        smartAccountEnabled: true
+    },
+    'eip155:1320': {
+        chainId: 1320,
+        name: 'AIA Testnet',
+        logo: '/chain-logos/eip155-1320.png',
+        rgb: '99, 125, 234',
+        rpc: 'https://aia-dataseed1-testnet.aiachain.org',
+        namespace: 'eip155',
+        smartAccountEnabled: true
+    },
+    'eip155:1319': {
+        chainId: 1319,
+        name: 'AIA Mainnet',
+        logo: '/chain-logos/eip155-1319.png',
+        rgb: '99, 125, 234',
+        rpc: 'https://aia-dataseed2.aiachain.org',
+        namespace: 'eip155',
+        smartAccountEnabled: true
+    },
+}
+
+export const EIP155_CHAINS = {
+    ...EIP155_MAINNET_CHAINS,
+    ...EIP155_TEST_CHAINS,
+    ...EIP155_W3EA_CHAINS
+}
 
 /**
  * Methods

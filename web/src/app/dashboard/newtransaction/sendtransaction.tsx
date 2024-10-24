@@ -918,6 +918,23 @@ export default function SendTransaction({
         }
     };
 
+    const [createOnly, setCreateOnly] = useState(false);
+    const handleCreateOnlySelected = (e: any) => {
+        console.log("handleCreateOnlySelected:", e.target.checked);
+        console.log("handleCreateOnlySelected2:", createOnly);
+        setCreateOnly(e.target.checked);
+        if (e.target.checked) {
+            setInputValueById(
+                "id_newtrans_receiver_addr_ui",
+                readAccountAddr(userProp)
+            );
+            setInputValueById("id_newtrans_amount_ui", "0");
+        } else {
+            setInputValueById("id_newtrans_receiver_addr_ui", "");
+            setInputValueById("id_newtrans_amount_ui", "");
+        }
+    };
+
     // useEffect(() => {
     //     console.log("updateInputFillInChange by upgradeImpl");
     //     updateInputFillInChange();
@@ -963,14 +980,41 @@ export default function SendTransaction({
                                 placeholder="Enter your Receiver Address"
                                 onBlur={updateInputFillInChange}
                             />
-                            <Checkbox
-                                defaultSelected={upgradeImpl}
-                                isSelected={upgradeImpl}
-                                onChange={handleUpgradeImplSelected}
-                                title="Upgrade account functions at the same time"
-                            >
-                                upgrade account
-                            </Checkbox>
+                            {myAccountCreated ? (
+                                <Checkbox
+                                    defaultSelected={upgradeImpl}
+                                    isSelected={upgradeImpl}
+                                    onChange={handleUpgradeImplSelected}
+                                    title="Upgrade account functions at the same time"
+                                >
+                                    <span
+                                        style={{
+                                            color: "#091aaa",
+                                            fontWeight: "bold",
+                                        }}
+                                    >
+                                        upgrade account
+                                    </span>
+                                </Checkbox>
+                            ) : (
+                                <></>
+                                // <Checkbox
+                                //     defaultSelected={createOnly}
+                                //     isSelected={createOnly}
+                                //     onChange={handleCreateOnlySelected}
+                                //     title="create current account only"
+                                //     color="danger"
+                                // >
+                                //     <span
+                                //         style={{
+                                //             color: "#aa2509",
+                                //             fontWeight: "bold",
+                                //         }}
+                                //     >
+                                //         create only
+                                //     </span>
+                                // </Checkbox>
+                            )}
                         </div>
                         <div>
                             <p>{upgradeMsg}</p>

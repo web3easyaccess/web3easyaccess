@@ -27,6 +27,14 @@ const supportedChains: {
     bordered: boolean;
 }[] = [
     {
+        chainCode: ChainCode.AIACHAIN_TEST_CHAIN,
+        img: "/chain/aiachaintest.png",
+        title: "AIA Testnet",
+        isTestnet: true,
+        size: "sm",
+        bordered: false,
+    },
+    {
         chainCode: ChainCode.NEOX_TEST_CHAIN,
         img: "/chain/neoxtest.png",
         title: "NeoX testnet",
@@ -90,6 +98,14 @@ const supportedChains: {
         size: "sm",
         bordered: false,
     },
+    {
+        chainCode: ChainCode.AIACHAIN_MAIN_CHAIN,
+        img: "/chain/aiachain.png",
+        title: "AIA Mainnet",
+        isTestnet: false,
+        size: "sm",
+        bordered: false,
+    },
 ];
 
 const currentAllChains = (testMode: boolean) => {
@@ -134,9 +150,15 @@ export const ChainIcons = ({
             const cc = { ...allChains[0] };
             validLatestChains.push(cc);
         }
-        validLatestChains[0].bordered = true;
-        validLatestChains[0].size = "md";
         console.log("validLatestChains:", validLatestChains);
+
+        validLatestChains.forEach((c) => {
+            if (c.chainCode == userProp.selectedChainCode) {
+                c.bordered = true;
+                c.size = "md";
+            }
+        });
+
         if (validLatestChains.length > 3) {
             return validLatestChains.slice(0, 3);
         } else {
@@ -144,15 +166,14 @@ export const ChainIcons = ({
         }
     };
 
-    const [testModeMsg, setTestModeMsg] = useState("Switch to TestMode");
-    const updateTestMode = (tm: boolean) => {
-        if (tm) {
-            setTestModeMsg(
-                "Now in test mode, please be aware that the assets on the test chain are worthless"
-            );
+    const testModeMsg = () => {
+        if (userProp.testMode) {
+            return "Now in test mode, please be aware that the assets on the test chain are worthless";
         } else {
-            setTestModeMsg("Switch to TestMode");
+            return "Switch to TestMode";
         }
+    };
+    const updateTestMode = (tm: boolean) => {
         updateUserProp({
             email: userProp.email,
             testMode: tm,
@@ -182,74 +203,74 @@ export const ChainIcons = ({
         });
     };
 
-    const myDefault = {
-        size: "sm",
-        bordered: false,
-    };
-    const myChecked = {
-        size: "md",
-        bordered: true,
-    };
+    // const myDefault = {
+    //     size: "sm",
+    //     bordered: false,
+    // };
+    // const myChecked = {
+    //     size: "md",
+    //     bordered: true,
+    // };
 
-    const [morphl2testState, setMorphl2testState] = useState(myDefault);
-    const [scrolltestState, setScrolltestState] = useState(myDefault);
-    const [lineatestState, setLineatestState] = useState(myDefault);
-    const [sepoliaState, setSepoliaState] = useState(myDefault);
-    const [defaultAnvilState, setDefaultAnvilState] = useState(myDefault);
-    const [ethereumMainnetState, setEthereumMainnetState] = useState(myDefault);
-    const [neoxtestState, setNeoxtestState] = useState(myDefault);
-    const [arbitrumtestState, setArbitrumtestState] = useState(myDefault);
+    // const [morphl2testState, setMorphl2testState] = useState(myDefault);
+    // const [scrolltestState, setScrolltestState] = useState(myDefault);
+    // const [lineatestState, setLineatestState] = useState(myDefault);
+    // const [sepoliaState, setSepoliaState] = useState(myDefault);
+    // const [defaultAnvilState, setDefaultAnvilState] = useState(myDefault);
+    // const [ethereumMainnetState, setEthereumMainnetState] = useState(myDefault);
+    // const [neoxtestState, setNeoxtestState] = useState(myDefault);
+    // const [arbitrumtestState, setArbitrumtestState] = useState(myDefault);
 
-    const [solanatestnetState, setSolanatestnetState] = useState(myDefault);
+    // const [solanatestnetState, setSolanatestnetState] = useState(myDefault);
 
-    const setChainCodeHere = (cc: ChainCode) => {
-        // console.log("setChainCodeHere,2:", cc);
-        // setMorphl2testState(myDefault);
-        // setDefaultAnvilState(myDefault);
-        // setEthereumMainnetState(myDefault);
-        // setScrolltestState(myDefault);
-        // setLineatestState(myDefault);
-        // setSepoliaState(myDefault);
-        // setNeoxtestState(myDefault);
-        // setArbitrumtestState(myDefault);
-        // setSolanatestnetState(myDefault);
-        // if (cc == ChainCode.MORPH_TEST_CHAIN) {
-        //     setMorphl2testState(myChecked);
-        // } else if (cc == ChainCode.DEFAULT_ANVIL_CHAIN) {
-        //     setDefaultAnvilState(myChecked);
-        // } else if (cc == ChainCode.ETHEREUM_MAIN_NET) {
-        //     setEthereumMainnetState(myChecked);
-        // } else if (cc == ChainCode.SCROLL_TEST_CHAIN) {
-        //     setScrolltestState(myChecked);
-        // } else if (cc == ChainCode.LINEA_TEST_CHAIN) {
-        //     setLineatestState(myChecked);
-        // } else if (cc == ChainCode.SEPOLIA_CHAIN) {
-        //     setSepoliaState(myChecked);
-        // } else if (cc == ChainCode.NEOX_TEST_CHAIN) {
-        //     setNeoxtestState(myChecked);
-        // } else if (cc == ChainCode.ARBITRUM_TEST_CHAIN) {
-        //     setArbitrumtestState(myChecked);
-        // } else if (cc == ChainCode.SOLANA_TEST_CHAIN) {
-        //     setSolanatestnetState(myChecked);
-        // }
-    };
+    // const setChainCodeHere = (cc: ChainCode) => {
+    //     // console.log("setChainCodeHere,2:", cc);
+    //     // setMorphl2testState(myDefault);
+    //     // setDefaultAnvilState(myDefault);
+    //     // setEthereumMainnetState(myDefault);
+    //     // setScrolltestState(myDefault);
+    //     // setLineatestState(myDefault);
+    //     // setSepoliaState(myDefault);
+    //     // setNeoxtestState(myDefault);
+    //     // setArbitrumtestState(myDefault);
+    //     // setSolanatestnetState(myDefault);
+    //     // if (cc == ChainCode.MORPH_TEST_CHAIN) {
+    //     //     setMorphl2testState(myChecked);
+    //     // } else if (cc == ChainCode.DEFAULT_ANVIL_CHAIN) {
+    //     //     setDefaultAnvilState(myChecked);
+    //     // } else if (cc == ChainCode.ETHEREUM_MAIN_NET) {
+    //     //     setEthereumMainnetState(myChecked);
+    //     // } else if (cc == ChainCode.SCROLL_TEST_CHAIN) {
+    //     //     setScrolltestState(myChecked);
+    //     // } else if (cc == ChainCode.LINEA_TEST_CHAIN) {
+    //     //     setLineatestState(myChecked);
+    //     // } else if (cc == ChainCode.SEPOLIA_CHAIN) {
+    //     //     setSepoliaState(myChecked);
+    //     // } else if (cc == ChainCode.NEOX_TEST_CHAIN) {
+    //     //     setNeoxtestState(myChecked);
+    //     // } else if (cc == ChainCode.ARBITRUM_TEST_CHAIN) {
+    //     //     setArbitrumtestState(myChecked);
+    //     // } else if (cc == ChainCode.SOLANA_TEST_CHAIN) {
+    //     //     setSolanatestnetState(myChecked);
+    //     // }
+    // };
 
-    // if (initChainRef.current == "[init]") {
-    //     setChainCodeHere(userProp.selectedChainCode);
-    //     initChainRef.current = userProp.selectedChainCode;
-    // }
-    useEffect(() => {
-        console.log("setChainCodeHere,1:", userProp);
-        // setChainCodeHere(userProp.selectedChainCode);
-    }, [userProp]);
+    // // if (initChainRef.current == "[init]") {
+    // //     setChainCodeHere(userProp.selectedChainCode);
+    // //     initChainRef.current = userProp.selectedChainCode;
+    // // }
+    // useEffect(() => {
+    //     console.log("setChainCodeHere,1:", userProp);
+    //     // setChainCodeHere(userProp.selectedChainCode);
+    // }, [userProp]);
     //
     // // // ////////////////////
 
     const handleClick = (chainCode: ChainCode) => {
         console.log(chainCode);
         if (ChainCode.ETHEREUM_MAIN_NET == chainCode) {
-            alert("not supprted " + chainCode + " this time.");
-            chainCode = userProp.selectedChainCode;
+            // alert("not supprted " + chainCode + " this time.");
+            // chainCode = userProp.selectedChainCode;
         }
         console.log("do a choice in chainIcons,userPropState:", userProp);
 
@@ -283,7 +304,7 @@ export const ChainIcons = ({
                     isSelected={userProp.testMode}
                     onValueChange={updateTestMode}
                     size={"sm"}
-                    title={testModeMsg}
+                    title={testModeMsg()}
                 ></Switch>
 
                 {latestChains().map((cc) => (
@@ -366,155 +387,25 @@ export const SelectedChainIcon = ({ userProp }: { userProp: UserProperty }) => {
         setMyChainCode(userProp.selectedChainCode);
     }, [userProp]);
     console.log("SelectedChainIcon,chainCode:", userProp);
-    if (myChainCode == ChainCode.DEFAULT_ANVIL_CHAIN) {
-        return (
-            <div className="flex gap-3 items-center">
-                <Badge content="" color="secondary">
-                    <Tooltip content="anvil testnet">
-                        <Avatar
-                            src="/chain/anvil.png"
-                            size="sm"
-                            color="primary"
-                            radius="sm"
-                        />
-                    </Tooltip>
-                </Badge>
-            </div>
-        );
-    } else if (myChainCode == ChainCode.MORPH_TEST_CHAIN) {
-        return (
-            <div className="flex gap-3 items-center">
-                <Badge content="" color="secondary">
-                    <Tooltip content="MorphL2 testnet">
-                        <Avatar
-                            src="/chain/morphl2test.png"
-                            size="sm"
-                            color="primary"
-                            radius="sm"
-                        />
-                    </Tooltip>
-                </Badge>
-            </div>
-        );
-    } else if (myChainCode == ChainCode.SCROLL_TEST_CHAIN) {
-        return (
-            <div className="flex gap-3 items-center">
-                <Badge content="" color="secondary">
-                    <Tooltip content="scroll sepolia testnet">
-                        <Avatar
-                            src="/chain/scrolltest.png"
-                            size="sm"
-                            color="primary"
-                            radius="sm"
-                        />
-                    </Tooltip>
-                </Badge>
-            </div>
-        );
-    } else if (myChainCode == ChainCode.LINEA_TEST_CHAIN) {
-        return (
-            <div className="flex gap-3 items-center">
-                <Badge content="" color="secondary">
-                    <Tooltip content="linea sepolia testnet">
-                        <Avatar
-                            src="/chain/lineatest.png"
-                            size="sm"
-                            color="primary"
-                            radius="sm"
-                        />
-                    </Tooltip>
-                </Badge>
-            </div>
-        );
-    } else if (myChainCode == ChainCode.SEPOLIA_CHAIN) {
-        return (
-            <div className="flex gap-3 items-center">
-                <Badge content="" color="secondary">
-                    <Tooltip content="sepolia testnet">
-                        <Avatar
-                            src="/chain/sepolia.png"
-                            size="sm"
-                            color="primary"
-                            radius="sm"
-                        />
-                    </Tooltip>
-                </Badge>
-            </div>
-        );
-    } else if (myChainCode == ChainCode.NEOX_TEST_CHAIN) {
-        return (
-            <div className="flex gap-3 items-center">
-                <Badge content="" color="secondary">
-                    <Tooltip content="NeoX testnet">
-                        <Avatar
-                            src="/chain/neoxtest.png"
-                            size="sm"
-                            color="primary"
-                            radius="sm"
-                        />
-                    </Tooltip>
-                </Badge>
-            </div>
-        );
-    } else if (myChainCode == ChainCode.ARBITRUM_TEST_CHAIN) {
-        return (
-            <div className="flex gap-3 items-center">
-                <Badge content="" color="secondary">
-                    <Tooltip content="Arbitrum testnet">
-                        <Avatar
-                            src="/chain/arbitrumtest.png"
-                            size="sm"
-                            color="primary"
-                            radius="sm"
-                        />
-                    </Tooltip>
-                </Badge>
-            </div>
-        );
-    } else if (myChainCode == ChainCode.SOLANA_TEST_CHAIN) {
-        return (
-            <div className="flex gap-3 items-center">
-                <Badge content="" color="secondary">
-                    <Tooltip content="solana testnet">
-                        <Avatar
-                            src="/chain/solanatest.png"
-                            size="sm"
-                            color="primary"
-                            radius="sm"
-                        />
-                    </Tooltip>
-                </Badge>
-            </div>
-        );
-    } else if (userProp.selectedChainCode == ChainCode.ETHEREUM_MAIN_NET) {
-        return (
-            <div className="flex gap-3 items-center">
-                <Badge content="" color="secondary">
-                    <Tooltip content="Ethereum">
-                        <Avatar
-                            src="/chain/ethereum.png"
-                            size="sm"
-                            color="primary"
-                            radius="sm"
-                        />
-                    </Tooltip>
-                </Badge>
-            </div>
-        );
-    } else {
-        return (
-            <div className="flex gap-3 items-center">
-                <Badge content="" color="secondary">
-                    <Tooltip content="unknow">
-                        <Avatar
-                            src="/chain/unknow.png"
-                            size="sm"
-                            color="primary"
-                            radius="sm"
-                        />
-                    </Tooltip>
-                </Badge>
-            </div>
-        );
-    }
+
+    return (
+        <>
+            {supportedChains
+                .filter((c) => c.chainCode == userProp.selectedChainCode)
+                .map((c) => (
+                    <div className="flex gap-3 items-center">
+                        <Badge content="" color="secondary">
+                            <Tooltip content={c.title}>
+                                <Avatar
+                                    src={c.img}
+                                    size={c.size}
+                                    color="primary"
+                                    radius="sm"
+                                />
+                            </Tooltip>
+                        </Badge>
+                    </div>
+                ))}
+        </>
+    );
 };

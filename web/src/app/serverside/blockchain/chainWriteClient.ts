@@ -27,6 +27,10 @@ export async function getFactoryAddr(chainCode: string) {
         res = process.env.CHAIN_FACTORY_ADDRESS_ARBITRUM_TEST;
     } else if (chainCode == ChainCode.ETHEREUM_MAIN_NET.toString()) {
         res = process.env.CHAIN_FACTORY_ADDRESS_ETH_MAIN;
+    } else if (chainCode == ChainCode.AIACHAIN_MAIN_CHAIN.toString()) {
+        res = process.env.CHAIN_FACTORY_ADDRESS_AIACHAIN_MAIN;
+    } else if (chainCode == ChainCode.AIACHAIN_TEST_CHAIN.toString()) {
+        res = process.env.CHAIN_FACTORY_ADDRESS_AIACHAIN_TEST;
     } else if (chainCode == "SOLANA_TEST_CHAIN") {
         res = process.env.CHAIN_FACTORY_ADDRESS_SOLANA_TEST;
     }
@@ -107,6 +111,20 @@ export async function chainClient(_chainCode: string) {
             process.env.INIT_FREE_FEE_AMOUNT_ETH_MAIN
         );
         _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_ETH_MAIN;
+        _l1GasPriceOracleContract = "0x0";
+        _l1DataFeeFunc = "";
+    } else if (chainCode == ChainCode.AIACHAIN_MAIN_CHAIN.toString()) {
+        _freeFeeAmountWhenCreated = Number(
+            process.env.INIT_FREE_FEE_AMOUNT_AIACHAIN_MAIN
+        );
+        _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_AIACHAIN_MAIN;
+        _l1GasPriceOracleContract = "0x0";
+        _l1DataFeeFunc = "";
+    } else if (chainCode == ChainCode.AIACHAIN_TEST_CHAIN.toString()) {
+        _freeFeeAmountWhenCreated = Number(
+            process.env.INIT_FREE_FEE_AMOUNT_AIACHAIN_TEST
+        );
+        _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_AIACHAIN_TEST;
         _l1GasPriceOracleContract = "0x0";
         _l1DataFeeFunc = "";
     } else if (chainCode == "SOLANA_TEST_CHAIN") {

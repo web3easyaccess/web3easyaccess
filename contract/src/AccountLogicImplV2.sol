@@ -75,7 +75,7 @@ contract AccountLogicImplV2 is AccountEntity, IAccountLogic {
     }
 
     uint256 constant DAYS30 = 30 * 24 * 3600;
-    uint256 constant TIMESTAMP20250801 = 1753977600;
+    uint256 constant TIMESTAMP20260131 = 1769788800;
     function _takeFee(uint256 estimatedFee) private {
         if (estimatedFee <= gasFreeAmount) {
             gasFreeAmount -= estimatedFee;
@@ -102,8 +102,8 @@ contract AccountLogicImplV2 is AccountEntity, IAccountLogic {
 
             //
         }
-        uint pointTimes = block.timestamp < TIMESTAMP20250801 - DAYS30
-            ? (TIMESTAMP20250801 - block.timestamp) / DAYS30
+        uint pointTimes = block.timestamp < TIMESTAMP20260131 - DAYS30
+            ? (TIMESTAMP20260131 - block.timestamp) / DAYS30
             : 1;
         w3eaPointAmount +=
             ((pointTimes * estimatedFee) * 1e13) /

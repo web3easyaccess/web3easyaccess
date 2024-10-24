@@ -7,7 +7,7 @@ Welcome to: [web3easyaccess.link](https://www.web3easyaccess.link/)
 ## What is Web3EasyAccess
 
 Web3EasyAccess: Provides an easy way to access the web3 world. People can log in to this website just like a regular Web2 website and then manage decentralized assets and explore the decentralized world.\
-We utilize EIP712 to implement this system. Through the services provided by this system, users do not need to manage mnemonic phrases or private keys, but instead control their accounts using their own passwords, while still retaining the key features of "decentralization". Additionally, users can modify their existing password information while keeping their account addresses unchanged.
+We utilize EIP712 to implement this system. Through the services provided by this system, users do not need to manage mnemonic phrases or private keys, but instead control their accounts using their own passwords, while still retaining the key features of "decentralization",that is, the user's password is never leaked to the server. Additionally, users can modify their existing password information while keeping their account addresses unchanged.
 
 ## System implementation principle
 

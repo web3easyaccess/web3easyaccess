@@ -124,6 +124,70 @@ const neoxTestnet = defineChain({
     testnet: true,
 });
 
+
+const aiachainMainnet = defineChain({
+    id: 1319,
+    name: "AIA-mainnet",
+    nativeCurrency: {
+        decimals: 18,
+        name: "AIA",
+        symbol: "AIA",
+    },
+    rpcUrls: {
+        default: {
+            http: ["https://aia-dataseed1.aiachain.org"],
+            webSocket: [""],
+        },
+    },
+    blockExplorers: {
+        default: {
+            name: "Explorer",
+            url: "http://aiascan.com",
+        },
+    },
+    contracts: {
+        multicall3: {
+            address: "0xD6010D102015fEa9cB3a9AbFBB51994c0Fd6E672",
+            blockCreated: 1,
+        },
+    },
+    explorerApiUrl: "http://aiascan.com/api/",
+    testnet: false,
+});
+
+
+
+const aiachainTestnet = defineChain({
+    id: 1320,
+    name: "AIA-testnet",
+    nativeCurrency: {
+        decimals: 18,
+        name: "AIA",
+        symbol: "AIA",
+    },
+    rpcUrls: {
+        default: {
+            http: ["https://aia-dataseed1-testnet.aiachain.org"],
+            webSocket: [""],
+        },
+    },
+    blockExplorers: {
+        default: {
+            name: "Explorer",
+            url: "https://testnet.aiascan.com",
+        },
+    },
+    contracts: {
+        multicall3: {
+            address: "0xD6010D102015fEa9cB3a9AbFBB51994c0Fd6E672",
+            blockCreated: 1,
+        },
+    },
+    explorerApiUrl: "https://testnet.aiascan.com/api/",
+    testnet: true,
+});
+
+
 const solanaLocalnet = defineChain({
     id: 999014,
     name: "Solana Localnet",
@@ -273,6 +337,10 @@ export const getChainObj = (
         rtn.rpcUrls.default.http.unshift(
             "https://eth-mainnet.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
         );
+    } else if (chainCode == ChainCode.AIACHAIN_MAIN_CHAIN) {
+        rtn = aiachainMainnet;
+    } else if (chainCode == ChainCode.AIACHAIN_TEST_CHAIN) {
+        rtn = aiachainTestnet;
     } else if (chainCode == ChainCode.SOLANA_TEST_CHAIN) {
         rtn = solanaDevnet; // solanaLocalnet;
     } else {

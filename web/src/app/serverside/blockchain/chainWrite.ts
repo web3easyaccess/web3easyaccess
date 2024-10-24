@@ -322,7 +322,8 @@ export async function newAccountAndTransferETH(
         }
         // xxxx
     } catch (e) {
-        console.log("newAccount error00:", e.shortMessage);
+
+        console.log("if[exceeds the balance], check my [EOA ****Acce55] first!");
         console.log("newAccount error:", e);
         return { success: false, msg: e.shortMessage, tx: hash };
     }

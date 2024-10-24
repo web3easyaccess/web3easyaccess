@@ -42,7 +42,7 @@ export const loadW3eaWallet = () => {
     // todo : send parent to get address. waiting server sent. and received
 
     if (receiverData.address == "") {
-        receiverData.address = "0x6fFE2E68855a59A76c781708AF2914a796239af7";
+        receiverData.address = "0x0000";
         console.log("error,address havn't received!");
     }
     if (w3eaWallet == null || w3eaWallet == undefined || w3eaWallet.getAddress() != receiverData.address) {

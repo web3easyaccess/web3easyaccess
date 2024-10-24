@@ -17,13 +17,27 @@ import { receiverData } from './web3easyaccess'
 import SettingsStore from '@/store/SettingsStore'
 import { TransactionRequest } from './W3eaWallet'
 
-const w3eaHost = 'http://localhost:3000' // process.env.PARENT_W3EA_HOST
+const w3eaHost = () => {
+  let hh
+  if (process.env.PARENT_W3EA_HOST != undefined && process.env.PARENT_W3EA_HOST != '') {
+    console.log('env is valid!')
+    hh = process.env.PARENT_W3EA_HOST
+  } else {
+    console.log('env is invalid!')
+    hh = 'http://localhost:3000'
+  }
+  if (hh.endsWith('/')) {
+    return hh.substring(0, hh.length - 1)
+  } else {
+    return hh
+  }
+} // process.env.PARENT_W3EA_HOST
 
 export default function W3eaChannel() {
   ////////////////////////////////////
   // w3ea,web3easyaccess...
 
-  console.log('w3ea, host:', w3eaHost)
+  console.log('w3ea, host:', w3eaHost())
 
   window.addEventListener('message', receiveMsgFromParent, false)
 
@@ -53,7 +67,7 @@ const sendMsgToParent = async (message: Message) => {
   for (let k = 0; k < nnn; k++) {
     await sleep(100)
     try {
-      parent.postMessage(JSON.stringify(message), w3eaHost) //window.postMessage
+      parent.postMessage(JSON.stringify(message), w3eaHost()) //window.postMessage
       break
     } catch (e) {
       console.log('sendMsgToParent error:', e)
@@ -71,7 +85,7 @@ const parentMsgBuffer = new Map()
 const receiveMsgFromParent = async (event: { origin: string; data: Message }) => {
   await sleep(Math.random() * 100)
   console.log('w3ea received....:', event)
-  if (event.origin == w3eaHost) {
+  if (event.origin == w3eaHost()) {
     if (event.data.msgIdx <= receivedMsgIdx) {
       console.log('this must be repeat msg trigger by browser, discard', event.data)
     } else {

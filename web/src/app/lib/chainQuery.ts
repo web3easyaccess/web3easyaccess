@@ -916,6 +916,8 @@ export async function queryTransactions(
         chainCode == "SEPOLIA_CHAIN" ||
         chainCode == "LINEA_TEST_CHAIN" ||
         chainCode == "NEOX_TEST_CHAIN" ||
+        chainCode == "AIACHAIN_MAIN_CHAIN" ||
+        chainCode == "AIACHAIN_TEST_CHAIN" ||
         chainCode == "ARBITRUM_TEST_CHAIN"
     ) {
         const res = await _queryTransactions(chainCode, addr);
@@ -979,6 +981,14 @@ const CHAIN_PROPS = {
     NEOX_TEST_CHAIN: {
         scanApiKey: "123apiKey",
         startBlock: 526100,
+    },
+    AIACHAIN_MAIN_CHAIN: {
+        scanApiKey: "123apiKey",
+        startBlock: 1,
+    },
+    AIACHAIN_TEST_CHAIN: {
+        scanApiKey: "123apiKey",
+        startBlock: 35759035,
     },
     ARBITRUM_TEST_CHAIN: {
         scanApiKey: "M8YBQ2W5RCFR9A71Y17XBY6AF8XCBGJPYN",
