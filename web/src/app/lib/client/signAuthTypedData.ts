@@ -19,6 +19,7 @@ import { type TypedData } from "viem";
 
 import * as encoding from "@walletconnect/encoding";
 import * as ethUtil from "ethereumjs-util";
+import { TypedDataUtils } from "eth-sig-util";
 
 
 // _permit(address eoa, uint256 nonce, uint8 v, bytes32 r, bytes32 s)
@@ -128,9 +129,17 @@ export const signPersonalMessage = async (
     chainId: string,
     verifyingContract: string,
     chainObj: any,
-    msg: string
+    msg: string,
+    isTypedData: boolean
 ) => {
-    const msgHash = hashPersonalMessage(msg);
+
+    let msgHash;
+    if (isTypedData) {
+        msgHash = hashTypedDataMessage(msg);
+    } else {
+        msgHash = hashPersonalMessage(msg);
+    }
+
     console.log("w3ea,msg=>hash.", msg, "=>", msgHash);
     const sign = await signAuth(
         passwdAccount,
@@ -150,6 +159,26 @@ export const signPersonalMessage = async (
 }
 
 
+export function hashTypedDataMessage(msg: string): string {
+    const data = encodeTypedDataMessage(msg);
+    const buf = ethUtil.toBuffer(data);
+    const hash = ethUtil.keccak256(buf);
+    return ethUtil.bufferToHex(hash);
+}
+
+export function encodeTypedDataMessage(msg: string): string {
+    const data = TypedDataUtils.sanitizeData(JSON.parse(msg));
+    const buf = Buffer.concat([
+        Buffer.from("1901", "hex"),
+        TypedDataUtils.hashStruct("EIP712Domain", data.domain, data.types),
+        TypedDataUtils.hashStruct(
+            data.primaryType as string,
+            data.message,
+            data.types
+        ),
+    ]);
+    return ethUtil.bufferToHex(buf);
+}
 
 function hashPersonalMessage(msg: string): string {
     const data = encodePersonalMessage(msg);

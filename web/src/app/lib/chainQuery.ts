@@ -189,6 +189,7 @@ export async function testIsValidSignature(
 
 
         console.log(`testIsValidSignature,returnValue=${returnValue}, magicValue=0x1626ba7e`);
+        return returnValue;
     } catch (e) {
         console.log(
             "==================testIsValidSignature error======================, accountAddr=" +
@@ -196,6 +197,7 @@ export async function testIsValidSignature(
             e
         );
         // throw new Error("testIsValidSignature error!");
+        return "0xffffffff";
     }
 }
 

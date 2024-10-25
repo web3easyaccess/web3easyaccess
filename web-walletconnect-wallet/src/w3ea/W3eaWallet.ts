@@ -142,11 +142,36 @@ export class W3eaWallet implements EIP155Wallet {
         return this.address;
     }
     async signMessage(message: string) {
-        const rtn = await chat_signMessage(message);
+        const rtn = await chat_signMessage(message, false);
         return rtn;
     }
-    _signTypedData(domain: any, types: any, data: any, _primaryType?: string): Promise<string> {
-        throw new Error('_signTypedData Method not implemented.@w3ea')
+
+    // Promise<string>
+    async _signTypedData(domain: any, types: any, data: any, _primaryType?: string) {
+
+        const typedData = {
+            types: {
+                EIP712Domain: [
+                    { name: "name", type: "string" },
+                    { name: "version", type: "string" },
+                    { name: "chainId", type: "uint256" },
+                    { name: "verifyingContract", type: "address" },
+                ],
+                ...types
+            },
+            primaryType: _primaryType,
+            domain: domain,
+            message: data,
+        };
+        console.log("_signTypedData:", typedData);
+        const message = JSON.stringify(
+            typedData
+        );
+
+        const rtn = await chat_signMessage(message, true);
+        return rtn;
+
+        // throw new Error('_signTypedData Method not implemented.@w3ea')
     }
     async connect(provider: providers.JsonRpcProvider) {
         const connectedWallet = {

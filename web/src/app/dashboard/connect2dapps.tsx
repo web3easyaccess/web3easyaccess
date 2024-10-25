@@ -2,9 +2,12 @@
 
 type Message = {
     msgType:
+        | "reportReceived"
+        | "connect"
         | "childReady"
         | "initializeChild"
         | "signMessage"
+        | "signTypedData"
         | "signTransaction"
         | "sendTransaction";
     chainKey: string;
@@ -71,14 +74,87 @@ import { testIsValidSignature } from "../lib/chainQuery";
 import { PrivateInfo } from "./newtransaction/privateinfo";
 import { executeTransaction } from "./newtransaction/sendtransaction";
 
+let setSignal: (key: string, value: string) => void;
+let getSignal: (key: string) => any;
+let removeSignal: (key: string) => void;
+
+let getWalletConnectHost: () => string;
+
 export default function Connect2Dapps({
     userProp,
 }: {
     userProp: UserProperty;
 }) {
-    useEffect(() => {}, []);
+    const vvv: Map<string, string> = new Map();
+    const signalMap = useRef(vvv);
+    setSignal = (key: string, value: string) => {
+        signalMap.current.set(key, value);
+    };
+    getSignal = (key: string) => {
+        let val = signalMap.current.get(key);
+        if (val == undefined || val == null) {
+            val = "";
+        }
+        return val;
+    };
+    removeSignal = (key: string) => {
+        console.log("signalMap:", signalMap.current);
+        signalMap.current.delete(key);
+        console.log("signalMap2:", signalMap.current);
+    };
 
-    const walleconnectHost = useRef("http://localhost:3001"); // process.env.CHILD_W3EA_WALLETCONNECT_HOST
+    /////
+
+    const walletconnectHost = useRef("");
+    getWalletConnectHost = () => {
+        return walletconnectHost.current;
+    };
+
+    const chainObj = useRef(getChainObj(userProp.selectedChainCode));
+    const accountAddr = useRef(readAccountAddr(userProp));
+    const factoryAddr = useRef(readFactoryAddr(userProp));
+
+    const lastEffectPropJson = useRef("");
+    useEffect(() => {
+        const propJson = JSON.stringify(userProp);
+        if (propJson == lastEffectPropJson.current) {
+            console.log("same prop effected, skip:", userProp);
+            return;
+        } else {
+            console.log("new prop effecting...", userProp);
+            lastEffectPropJson.current = propJson;
+        }
+
+        if (
+            userProp.bigBrotherOwnerId != undefined &&
+            userProp.bigBrotherOwnerId != ""
+        ) {
+            // userProp is valid.
+            accountAddr.current = readAccountAddr(userProp);
+            factoryAddr.current = readFactoryAddr(userProp);
+            chainObj.current = getChainObj(userProp.selectedChainCode);
+            let myselfHost = userProp.myselfHost;
+            walletconnectHost.current = userProp.walletconnectHost;
+            if (myselfHost == undefined || myselfHost == "") {
+                console.log("host123,myselfHost is empty, set to 3000");
+                myselfHost = "http://localhost:3000";
+            }
+            if (
+                walletconnectHost.current == undefined ||
+                walletconnectHost.current == ""
+            ) {
+                console.log("host123,walletconnectHost is empty, set to 3001");
+                walletconnectHost.current = "http://localhost:3001";
+            }
+            const chainKey = "eip155:" + chainObj.current.id;
+            connect2WcHost(
+                myselfHost,
+                walletconnectHost.current,
+                chainKey,
+                accountAddr.current
+            );
+        }
+    }, [userProp]);
 
     const preparedPriceRef = useRef({
         preparedMaxFeePerGas: undefined,
@@ -88,123 +164,81 @@ export default function Connect2Dapps({
     const msgIdFromChild = useRef(0);
     //回调函数
     async function receiveMessageFromChild(event) {
-        if (event.origin == walleconnectHost.current) {
-            console.log(
-                "parent here,receve msg from walletconnect: ",
-                event.data
-            );
-            const msg: Message = JSON.parse(event.data);
-            if (msg.msgIdx <= msgIdFromChild.current) {
-                return;
-            }
-            msgIdFromChild.current = msg.msgIdx;
-            if (msg.msgType == "childReady") {
-                writeWalletConnectData("initializeChild", "", "");
-            } else if (msg.msgType == "signMessage") {
-                const chatId = msg.msg.chatId;
-                const content = msg.msg.content;
-                const hash = await signMessage(
-                    currentPriInfoRef.current,
-                    accountAddr.current,
-                    content,
-                    chainObj.current,
-                    readFactoryAddr(userProp)
-                );
-                writeWalletConnectData("signMessage", chatId, hash);
-            } else if (msg.msgType == "sendTransaction") {
-                const chatId = msg.msg.chatId;
-                const txReq = msg.msg.content as TransactionRequest;
-                const hash = await sendTransaction(
-                    currentPriInfoRef,
-                    preparedPriceRef,
-                    accountAddr.current,
-                    txReq,
-                    chainObj.current,
-                    readFactoryAddr(userProp),
-                    readOwnerId(userProp)
-                );
-                writeWalletConnectData("sendTransaction", chatId, hash);
-            } else {
-                console.log("not supported msg:", msg);
-            }
-        }
+        // if (event.origin == walleconnectHost.current) {
+        //     console.log(
+        //         "parent here,receve msg from walletconnect: ",
+        //         event.data
+        //     );
+        //     const msg: Message = JSON.parse(event.data);
+        //     if (msg.msgIdx <= msgIdFromChild.current) {
+        //         return;
+        //     }
+        //     msgIdFromChild.current = msg.msgIdx;
+        //     if (msg.msgType == "childReady") {
+        //         writeWalletConnectData("initializeChild", "", "");
+        //     } else if (msg.msgType == "signMessage") {
+        //         const chatId = msg.msg.chatId;
+        //         const content = msg.msg.content;
+        //         const { rtnVal, signature } = await signMessage(
+        //             currentPriInfoRef.current,
+        //             accountAddr.current,
+        //             content,
+        //             chainObj.current,
+        //             factoryAddr.current,
+        //             false
+        //         );
+        //         if ("" + rtnVal == "0x1626ba7e") {
+        //             console.log(
+        //                 "signMessage x valid... go!aaa,signature:",
+        //                 signature
+        //             );
+        //             writeWalletConnectData("signMessage", chatId, signature);
+        //         } else {
+        //             console.log("signMessage x invalid..aaa. skip!");
+        //         }
+        //     } else if (msg.msgType == "signTypedData") {
+        //         const chatId = msg.msg.chatId;
+        //         const content = msg.msg.content;
+        //         const { rtnVal, signature } = await signMessage(
+        //             currentPriInfoRef.current,
+        //             accountAddr.current,
+        //             content,
+        //             chainObj.current,
+        //             factoryAddr.current,
+        //             true
+        //         );
+        //         if ("" + rtnVal == "0x1626ba7e") {
+        //             console.log(
+        //                 "signMessage x valid... go!bbb,signature:",
+        //                 signature
+        //             );
+        //             writeWalletConnectData("signMessage", chatId, signature);
+        //         } else {
+        //             console.log("signMessage x invalid..bbb. skip!");
+        //         }
+        //     } else if (msg.msgType == "sendTransaction") {
+        //         const chatId = msg.msg.chatId;
+        //         const txReq = msg.msg.content as TransactionRequest;
+        //         const hash = await sendTransaction(
+        //             currentPriInfoRef,
+        //             preparedPriceRef,
+        //             accountAddr.current,
+        //             txReq,
+        //             chainObj.current,
+        //             factoryAddr.current,
+        //             readOwnerId(userProp)
+        //         );
+        //         writeWalletConnectData("sendTransaction", chatId, hash);
+        //     } else {
+        //         console.log("not supported msg:", msg);
+        //     }
+        // }
     }
     //监听message事件
-    window.addEventListener("message", receiveMessageFromChild, false);
+    window.addEventListener("message", handleMsgReceived, false);
 
     // const msgIndex = useRef(0);
     // const lastMsgIndex = useRef(0);
-
-    const writeWalletConnectData = async (
-        msgType:
-            | "childReady"
-            | "initializeChild"
-            | "signMessage"
-            | "signTransaction"
-            | "sendTransaction",
-        chatId: string,
-        content: any
-    ) => {
-        const chainKey = "eip155:" + chainObj.current.id; // todo ,for evm now.
-        console.log("chainKey in 2dapp, chainKey:", chainKey);
-
-        console.log(
-            "writeWalletConnectData,",
-            msgType,
-            chatId,
-            content,
-            chainKey,
-            accountAddr.current
-        );
-
-        // msgIndex.current = msgIndex.current + 1;
-        const msg: Message = {
-            msgType: msgType,
-            chainKey: chainKey,
-            address: accountAddr.current,
-            msgIdx: new Date().getTime(), // msgIndex.current,
-            msg: {
-                chatId: chatId,
-                content: content,
-            },
-        };
-
-        console.log(
-            "writeWalletConnectData....:",
-            msg,
-            walleconnectHost.current
-        );
-
-        let k = 0;
-        for (k = 0; k < 10 * 60; ) {
-            await sleep(1000);
-            const childFrameObj = document.getElementById("w3eaWalletconnect");
-            try {
-                // console.log("send to child 111.childFrameObj:", childFrameObj);
-                childFrameObj.contentWindow.postMessage(
-                    msg,
-                    walleconnectHost.current
-                ); //window.postMessage
-                // console.log("send to child 222.");
-                break;
-            } catch (e) {
-                // console.log("send to child error, retry.", e);
-            }
-            k++;
-        }
-        if (k > 90) {
-            console.log("fff.kkkk error!");
-        }
-    };
-
-    const chainObj = useRef(getChainObj(userProp.selectedChainCode));
-    const accountAddr = useRef(readAccountAddr(userProp));
-
-    useEffect(() => {
-        accountAddr.current = readAccountAddr(userProp);
-        chainObj.current = getChainObj(userProp.selectedChainCode);
-        writeWalletConnectData("initializeChild", "", "");
-    }, [userProp]);
 
     const piInit: PrivateInfoType = {
         email: "",
@@ -229,30 +263,31 @@ export default function Connect2Dapps({
         updatePrivateinfoHidden(true);
     };
 
-    const Wallet = () => {
-        return (
-            <div>
-                {privateinfoHidden ? (
-                    <>
-                        <iframe
-                            id="w3eaWalletconnect"
-                            title="w3eaWalletconnect"
-                            width="800"
-                            height="500"
-                            src={walleconnectHost.current + "/walletconnect"}
-                        ></iframe>
-                    </>
-                ) : (
-                    <div></div>
-                )}
-            </div>
-        );
-    };
+    // const Wallet = () => {
+    //     return (
+    //         <div>
+    //             {privateinfoHidden ? (
+    //                 <>
+    //                     <iframe
+    //                         id="w3eaWalletconnect"
+    //                         title="w3eaWalletconnect"
+    //                         width="800"
+    //                         height="500"
+    //                         src={walleconnectHost.current + "/walletconnect"}
+    //                     ></iframe>
+    //                 </>
+    //             ) : (
+    //                 <div></div>
+    //             )}
+    //         </div>
+    //     );
+    // };
 
     return (
         <div>
             {accountAddrCreated(userProp) ? (
                 <>
+                    {/* <p>{accountAddr.current}</p>
                     <PrivateInfo
                         userProp={userProp}
                         forTransaction={true}
@@ -261,8 +296,8 @@ export default function Connect2Dapps({
                         updateFillInOk={updateFillInOk}
                         privateinfoHidden={privateinfoHidden}
                         updatePrivateinfoHidden={updatePrivateinfoHidden}
-                    ></PrivateInfo>
-                    <Wallet></Wallet>
+                    ></PrivateInfo> */}
+                    <IframeWallet src={getWalletConnectHost()}></IframeWallet>
                 </>
             ) : (
                 <p>
@@ -272,6 +307,243 @@ export default function Connect2Dapps({
         </div>
     );
 }
+
+const IframeWallet = ({ src }: { src: string }) => {
+    useEffect(() => {
+        console.log("iframeWallet,src:", src);
+        if (src == null || src == undefined || src == "") {
+            return;
+        }
+        const iframe = document.createElement("iframe");
+        iframe.src = src + "/walletconnect";
+        iframe.style.width = "800px";
+        iframe.style.height = "500px";
+        iframe.id = "w3eaWalletconnect";
+        const container = document.getElementById("div_w3eaWalletconnect");
+        container.appendChild(iframe);
+
+        // return () => {
+        //     container.removeChild(iframe);
+        // };
+    }, [src]);
+
+    return <div id="div_w3eaWalletconnect"></div>;
+};
+
+const connect2WcHost = async (
+    myselfHost: string,
+    walletconnectHost: string,
+    chainKey: string,
+    accountAddr: string
+) => {
+    // msgIndex.current = msgIndex.current + 1;
+    const msg: Message = {
+        msgType: "connect",
+        chainKey: chainKey,
+        address: accountAddr,
+        msgIdx: new Date().getTime(), // msgIndex.current,
+        msg: {
+            chatId: "",
+            content: {
+                mainHost: myselfHost,
+                walletconnectHost: walletconnectHost,
+            },
+        },
+    };
+
+    await sendMsgUntilSuccess(walletconnectHost, msg);
+};
+
+const sendMsgUntilSuccess = async (walletconnectHost: string, msg: Message) => {
+    let childFrameObj = document.getElementById("w3eaWalletconnect");
+    let cnt = 0;
+    setSignal("" + msg.msgIdx, "" + msg.msgIdx);
+
+    while (true) {
+        await sleep(1000);
+
+        if (childFrameObj == undefined || childFrameObj == null) {
+            childFrameObj = document.getElementById("w3eaWalletconnect");
+        }
+        if (childFrameObj == null || childFrameObj == undefined) {
+            continue;
+        }
+        if (getSignal("" + msg.msgIdx) == "") {
+            // here,means msg had received success
+            break;
+        }
+
+        let label = "ok";
+        try {
+            childFrameObj.contentWindow.postMessage(
+                JSON.stringify(msg),
+                walletconnectHost
+            ); //window.postMessage
+            label = "ok";
+        } catch (e) {
+            label = "error";
+            if (cnt % 10 == 0) {
+                console.log("warn, send to child error msg:", e);
+            }
+            // console.log("send to child error, retry.", e);
+        }
+        if (cnt % 10 == 0) {
+            console.log(
+                `cnt=${cnt},label=${label},try sendMsgUntilSuccess to `,
+                walletconnectHost,
+                msg
+            );
+        }
+
+        cnt++;
+    }
+};
+
+async function handleMsgReceived(event: { origin: any; data: string }) {
+    if (event.origin != getWalletConnectHost()) {
+        return;
+    }
+
+    const msg: Message = JSON.parse(event.data);
+    if (msg.msgType == "reportReceived") {
+        console.log("reportReceived000:", getSignal("" + msg.msgIdx));
+        removeSignal("" + msg.msgIdx);
+        console.log("reportReceived001:", getSignal("" + msg.msgIdx));
+    }
+
+    // if (event.origin == walleconnectHost.current) {
+    //     console.log("parent here,receve msg from walletconnect: ", event.data);
+    //     const msg: Message = JSON.parse(event.data);
+    //     if (msg.msgIdx <= msgIdFromChild.current) {
+    //         return;
+    //     }
+    //     msgIdFromChild.current = msg.msgIdx;
+    //     if (msg.msgType == "childReady") {
+    //         writeWalletConnectData("initializeChild", "", "");
+    //     } else if (msg.msgType == "signMessage") {
+    //         const chatId = msg.msg.chatId;
+    //         const content = msg.msg.content;
+    //         const { rtnVal, signature } = await signMessage(
+    //             currentPriInfoRef.current,
+    //             accountAddr.current,
+    //             content,
+    //             chainObj.current,
+    //             factoryAddr.current,
+    //             false
+    //         );
+    //         if ("" + rtnVal == "0x1626ba7e") {
+    //             console.log(
+    //                 "signMessage x valid... go!aaa,signature:",
+    //                 signature
+    //             );
+    //             writeWalletConnectData("signMessage", chatId, signature);
+    //         } else {
+    //             console.log("signMessage x invalid..aaa. skip!");
+    //         }
+    //     } else if (msg.msgType == "signTypedData") {
+    //         const chatId = msg.msg.chatId;
+    //         const content = msg.msg.content;
+    //         const { rtnVal, signature } = await signMessage(
+    //             currentPriInfoRef.current,
+    //             accountAddr.current,
+    //             content,
+    //             chainObj.current,
+    //             factoryAddr.current,
+    //             true
+    //         );
+    //         if ("" + rtnVal == "0x1626ba7e") {
+    //             console.log(
+    //                 "signMessage x valid... go!bbb,signature:",
+    //                 signature
+    //             );
+    //             writeWalletConnectData("signMessage", chatId, signature);
+    //         } else {
+    //             console.log("signMessage x invalid..bbb. skip!");
+    //         }
+    //     } else if (msg.msgType == "sendTransaction") {
+    //         const chatId = msg.msg.chatId;
+    //         const txReq = msg.msg.content as TransactionRequest;
+    //         const hash = await sendTransaction(
+    //             currentPriInfoRef,
+    //             preparedPriceRef,
+    //             accountAddr.current,
+    //             txReq,
+    //             chainObj.current,
+    //             factoryAddr.current,
+    //             readOwnerId(userProp)
+    //         );
+    //         writeWalletConnectData("sendTransaction", chatId, hash);
+    //     } else {
+    //         console.log("not supported msg:", msg);
+    //     }
+    // }
+}
+
+///////////
+
+///////////
+
+///////////
+
+///////
+
+const writeWalletConnectData = async (
+    msgType:
+        | "childReady"
+        | "initializeChild"
+        | "signMessage"
+        | "signTransaction"
+        | "sendTransaction",
+    chatId: string,
+    content: any
+) => {
+    const chainKey = "eip155:" + chainObj.current.id; // todo ,for evm now.
+    console.log("chainKey in 2dapp, chainKey:", chainKey);
+
+    console.log(
+        "writeWalletConnectData,",
+        msgType,
+        chatId,
+        content,
+        chainKey,
+        accountAddr.current
+    );
+
+    // msgIndex.current = msgIndex.current + 1;
+    const msg: Message = {
+        msgType: msgType,
+        chainKey: chainKey,
+        address: accountAddr.current,
+        msgIdx: new Date().getTime(), // msgIndex.current,
+        msg: {
+            chatId: chatId,
+            content: content,
+        },
+    };
+
+    console.log("writeWalletConnectData....:", msg, walleconnectHost.current);
+
+    let k = 0;
+    for (k = 0; k < 10 * 60; ) {
+        await sleep(1000);
+        const childFrameObj = document.getElementById("w3eaWalletconnect");
+        try {
+            // console.log("send to child 111.childFrameObj:", childFrameObj);
+            childFrameObj.contentWindow.postMessage(
+                msg,
+                walleconnectHost.current
+            ); //window.postMessage
+            // console.log("send to child 222.");
+            break;
+        } catch (e) {
+            // console.log("send to child error, retry.", e);
+        }
+        k++;
+    }
+    if (k > 90) {
+        console.log("fff.kkkk error!");
+    }
+};
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -290,7 +562,8 @@ const signMessage = async (
         chainCode: ChainCode;
         l1ChainCode: ChainCode;
     },
-    factoryAddr: string
+    factoryAddr: string,
+    isTypedData: boolean
 ) => {
     let sign: {
         signature: string;
@@ -314,11 +587,12 @@ const signMessage = async (
             chainId,
             accountAddr,
             chainObj,
-            msg
+            msg,
+            isTypedData
         );
         console.log("signAuth,777,:", sign);
 
-        testIsValidSignature(
+        const rtnVal = await testIsValidSignature(
             chainObj.chainCode,
             factoryAddr,
             accountAddr,
@@ -326,7 +600,7 @@ const signMessage = async (
             sign.signature
         );
 
-        return sign.signature;
+        return { rtnVal: rtnVal, signature: sign.signature };
     }
 };
 

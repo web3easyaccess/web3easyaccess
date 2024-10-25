@@ -1,5 +1,13 @@
 type Message = {
-  msgType: 'childReady' | 'initializeChild' | 'signMessage' | 'signTransaction' | 'sendTransaction'
+  msgType:
+    | 'reportReceived'
+    | 'connect'
+    | 'childReady'
+    | 'initializeChild'
+    | 'signMessage'
+    | 'signTypedData'
+    | 'signTransaction'
+    | 'sendTransaction'
   chainKey: string
   address: string
   msgIdx: number
@@ -11,35 +19,34 @@ type Message = {
 
 let receivedMsgIdx = 0
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { receiverData } from './web3easyaccess'
 
 import SettingsStore from '@/store/SettingsStore'
 import { TransactionRequest } from './W3eaWallet'
 
-const w3eaHost = () => {
-  let hh
-  if (process.env.PARENT_W3EA_HOST != undefined && process.env.PARENT_W3EA_HOST != '') {
-    console.log('env is valid!')
-    hh = process.env.PARENT_W3EA_HOST
-  } else {
-    console.log('env is invalid!')
-    hh = 'http://localhost:3000'
-  }
-  if (hh.endsWith('/')) {
-    return hh.substring(0, hh.length - 1)
-  } else {
-    return hh
-  }
-} // process.env.PARENT_W3EA_HOST
+let setW3eaHost: (host: string) => void
+let getW3eaHost: () => string
 
 export default function W3eaChannel() {
   ////////////////////////////////////
   // w3ea,web3easyaccess...
 
-  console.log('w3ea, host:', w3eaHost())
+  const w3eaHost = useRef('')
 
-  window.addEventListener('message', receiveMsgFromParent, false)
+  setW3eaHost = (host: string) => {
+    w3eaHost.current = host
+  }
+
+  getW3eaHost = () => {
+    return w3eaHost.current
+  }
+
+  window.addEventListener(
+    'message',
+    handleMsgReceived, // receiveMsgFromParent,
+    false
+  )
 
   useEffect(() => {
     const msg: Message = {
@@ -52,7 +59,7 @@ export default function W3eaChannel() {
         content: undefined
       }
     }
-    sendMsgToParent(msg)
+    // sendMsgToParent(msg)
   }, [])
   /////////////////////////////////////////
 
@@ -78,6 +85,62 @@ const sendMsgToParent = async (message: Message) => {
   }
   console.log('in sendMsgToParent,,2')
 }
+
+async function handleMsgReceived(event: { origin: any; data: string }) {
+  if (getW3eaHost() == '' || getW3eaHost() == undefined) {
+    if (event.origin != 'http://localhost:3000' && event.origin != 'https://web3easyaccess.link') {
+      return
+    }
+  } else if (event.origin != getW3eaHost()) {
+    return
+  }
+
+  const msg: Message = JSON.parse(event.data)
+  if (msg.msgType == 'connect') {
+    const content = msg.msg.content as {
+      mainHost: string
+      walletconnectHost: string
+    }
+    setW3eaHost(content.mainHost)
+    //
+    const msg2Parent: Message = {
+      msgType: 'reportReceived',
+      // chainKey: chainKey,
+      // address: accountAddr,
+      msgIdx: msg.msgIdx
+      //   msg: {
+      //     chatId: '',
+      //     content: {
+      //       mainHost: myselfHost,
+      //       walletconnectHost: walletconnectHost
+      //     }
+      //   }
+    }
+    await sendMsgOnce(msg2Parent)
+  }
+}
+////
+
+const sendMsgOnce = async (msg: Message) => {
+  while (true) {
+    try {
+      if (getW3eaHost() != null && getW3eaHost() != undefined && getW3eaHost() != '') {
+        console.log('sendMsgOnce, w3eaHost:', getW3eaHost(), msg)
+        parent.postMessage(JSON.stringify(msg), getW3eaHost())
+        break
+      }
+    } catch (e) {
+      console.log('warn, wallet,sendMsgOnce,error ', e)
+    }
+    await sleep(1000)
+  }
+}
+
+////
+
+////
+
+////
 
 const parentMsgBuffer = new Map()
 
@@ -134,13 +197,13 @@ function getRandomInt(max: number) {
 }
 // const idx2Parent = { msgIdx: 0 }
 
-export const chat_signMessage = async (userMessage: string) => {
+export const chat_signMessage = async (userMessage: string, isTypedData: boolean) => {
   let chatId = new Date().getTime() + '_' + getRandomInt(1000)
 
   parentMsgBuffer.set(chatId, '')
 
   const msg: Message = {
-    msgType: 'signMessage',
+    msgType: isTypedData ? 'signTypedData' : 'signMessage',
     chainKey: '',
     address: '',
     msgIdx: new Date().getTime(), // ++idx2Parent.msgIdx,
@@ -149,7 +212,7 @@ export const chat_signMessage = async (userMessage: string) => {
       content: userMessage
     }
   }
-  console.log('chat_signMessage, send msg to parent:', msg)
+  console.log('chat_signMessage, send msg to parent:', msg, 'isTypedData=', isTypedData)
   await sendMsgToParent(msg)
   const signedHash = await waitParentMsg(chatId)
   console.log('chat_signMessage, receive hash from parent:', signedHash)

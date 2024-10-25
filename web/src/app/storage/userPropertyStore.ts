@@ -32,6 +32,8 @@ export type UserProperty = {
         factoryAddr: string;
         bigBrotherPasswdAddr: string;
     }>;
+    myselfHost: string;
+    walletconnectHost: string;
 
     /////
     // selectedAccountInfosXXX: {
@@ -51,9 +53,11 @@ export type UserProperty = {
 export function readFactoryAddr(prop: UserProperty) {
     const acct = prop.accountInfos[prop.selectedChainCode];
     if (acct == undefined || acct == null) {
+        console.log("readFactoryAddr empty, prop1:", prop);
         return "";
     }
     if (acct.factoryAddr == undefined || acct.factoryAddr == "") {
+        console.log("readFactoryAddr empty, prop2:", prop);
         return "";
     }
 
