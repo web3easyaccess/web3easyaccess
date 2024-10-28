@@ -52,6 +52,7 @@
     "react-dom": "17.0.2",
     "react-hot-toast": "^2.4.1",
     "react-qr-reader-es6": "2.2.1-2",
+    "rpc-websockets": "7.11.0",
     "solady": "^0.0.234",
     "tronweb": "^4.4.0",
     "valtio": "1.13.2",
