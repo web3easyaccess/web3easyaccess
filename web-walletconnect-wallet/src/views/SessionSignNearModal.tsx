@@ -30,7 +30,7 @@ export default function SessionSignNearModal() {
   const { request, chainId } = params
 
   const formatTransaction = (transaction: Uint8Array) => {
-    const tx = transactions.Transaction.decode(Buffer.from(transaction))
+    const tx = transactions.Transaction.decode(Buffer.from(transaction).map(i => i))
 
     return {
       signerId: tx.signerId,
