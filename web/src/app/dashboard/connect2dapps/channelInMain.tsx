@@ -166,9 +166,14 @@ export const sendMsgUntilSuccess = async (
             continue;
         }
         const ss = getSignal("" + msg.msgIdx);
-        console.log("MainHost:getSignal,", ss);
+
         if (ss == "") {
             // here,means msg had been received success
+            break;
+        }
+        if (getAccountAddr == undefined || getAccountAddr() == "") {
+            // current page is invalid.
+            console.log("ChannelInMain, current page is invalid,break");
             break;
         }
 
@@ -192,6 +197,7 @@ export const sendMsgUntilSuccess = async (
             // console.log("MainHost:send to child error, retry.", e);
         }
         if (cnt % 10 == 0) {
+            console.log("MainHost:getSignal,", ss);
             console.log(
                 `MainHost,cnt=${cnt},label=${label},try sendMsgUntilSuccess to `,
                 walletconnectHost,
