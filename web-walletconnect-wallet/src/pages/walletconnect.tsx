@@ -69,12 +69,9 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
     }
   }, [deepLink])
 
-  const [currentChain, setCurrentChain] = useState(getChain())
+  const currentChain = getChain()
 
-  useEffect(() => {
-    console.log('useeffect in wallect connect ...123')
-    setCurrentChain(getChain())
-  }, [w3eaChainKey])
+  console.log('child,walletconnect,w3eaChainKey:', w3eaChainKey, '--', currentChain)
 
   return (
     <Fragment>
@@ -121,8 +118,8 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
           logo={currentChain.logo}
           rgb={currentChain.rgb}
           address={w3eaAddress}
-          chainId={currentChain.chainKey}
-          data-testid={'chain-card-' + currentChain.chainKey.toString()}
+          chainId={w3eaChainKey}
+          data-testid={'chain-card-' + w3eaChainKey.toString()}
         />
 
         {/* {Object.entries(EIP155_CHAINS)

@@ -13,7 +13,7 @@ import {
     UserProperty,
 } from "../../storage/userPropertyStore";
 import { Button, Progress } from "@nextui-org/react";
-import { getChainObj as getChainObj_xyz } from "../../lib/myChain";
+import { getChainObj } from "../../lib/myChain";
 import { ChainCode } from "../../lib/myTypes";
 import {
     encodeAbiParameters,
@@ -45,20 +45,30 @@ import ChannelInMain, {
     TransactionRequest,
 } from "./channelInMain";
 
-let getPrivateInfo: () => PrivateInfoType;
-let getAccountAddr: () => string;
-let getFactoryAddr: () => string;
-let getOwnerId: () => string;
-let getChainObj: () => {
-    id: number;
-    name: string;
-    nativeCurrency: {};
-    rpcUrls: {};
-    blockExplorers: {};
-    contracts: {};
-    testnet: boolean;
-    chainCode: ChainCode;
-    l1ChainCode: ChainCode;
+const piInit: PrivateInfoType = {
+    email: "",
+    pin: "",
+    question1answer: "",
+    question2answer: "",
+    firstQuestionNo: "01",
+    secondQuestionNo: "01",
+    confirmedSecondary: true,
+};
+
+let getPrivateInfo = () => {
+    return piInit;
+};
+export let getAccountAddr = () => {
+    return "";
+};
+let getFactoryAddr = () => {
+    return "";
+};
+let getOwnerId = () => {
+    return "";
+};
+export let getChainObject = () => {
+    return getChainObj(ChainCode.UNKNOW);
 };
 
 let setPreparedPriceRef: (pp: {
@@ -78,15 +88,6 @@ export default function Connect2Dapps({
 }) {
     /////
 
-    const piInit: PrivateInfoType = {
-        email: "",
-        pin: "",
-        question1answer: "",
-        question2answer: "",
-        firstQuestionNo: "01",
-        secondQuestionNo: "01",
-        confirmedSecondary: true,
-    };
     const currentPriInfoRef = useRef(piInit);
     const oldPriInfoRef = useRef(piInit);
 
@@ -102,8 +103,8 @@ export default function Connect2Dapps({
     getOwnerId = () => {
         return readOwnerId(userProp);
     };
-    getChainObj = () => {
-        return getChainObj_xyz(userProp.selectedChainCode);
+    getChainObject = () => {
+        return getChainObj(userProp.selectedChainCode);
     };
 
     const lastEffectPropJson = useRef("");
@@ -124,7 +125,7 @@ export default function Connect2Dapps({
             setMainHost(userProp.myselfHost);
             setWalletConnectHost(userProp.walletconnectHost);
 
-            connect2WcHost(getChainObj().id, getAccountAddr());
+            connect2WcHost(getChainObject().id, getAccountAddr());
         }
     }, [userProp]);
 
@@ -141,83 +142,6 @@ export default function Connect2Dapps({
     }) => {
         preparedPriceRef.current = pp;
     };
-
-    const msgIdFromChild = useRef(0);
-    //回调函数
-    async function receiveMessageFromChild(event) {
-        // if (event.origin == walleconnectHost.current) {
-        //     console.log(
-        //         "parent here,receve msg from walletconnect: ",
-        //         event.data
-        //     );
-        //     const msg: Message = JSON.parse(event.data);
-        //     if (msg.msgIdx <= msgIdFromChild.current) {
-        //         return;
-        //     }
-        //     msgIdFromChild.current = msg.msgIdx;
-        //     if (msg.msgType == "childReady") {
-        //         writeWalletConnectData("initializeChild", "", "");
-        //     } else if (msg.msgType == "signMessage") {
-        //         const chatId = msg.msg.chatId;
-        //         const content = msg.msg.content;
-        //         const { rtnVal, signature } = await signMessage(
-        //             currentPriInfoRef.current,
-        //             getAccountAddr(),
-        //             content,
-        //             chainObj.current,
-        //             factoryAddr.current,
-        //             false
-        //         );
-        //         if ("" + rtnVal == "0x1626ba7e") {
-        //             console.log(
-        //                 "signMessage x valid... go!aaa,signature:",
-        //                 signature
-        //             );
-        //             writeWalletConnectData("signMessage", chatId, signature);
-        //         } else {
-        //             console.log("MainHost:signMessage x invalid..aaa. skip!");
-        //         }
-        //     } else if (msg.msgType == "signTypedData") {
-        //         const chatId = msg.msg.chatId;
-        //         const content = msg.msg.content;
-        //         const { rtnVal, signature } = await signMessage(
-        //             currentPriInfoRef.current,
-        //             getAccountAddr(),
-        //             content,
-        //             chainObj.current,
-        //             factoryAddr.current,
-        //             true
-        //         );
-        //         if ("" + rtnVal == "0x1626ba7e") {
-        //             console.log(
-        //                 "signMessage x valid... go!bbb,signature:",
-        //                 signature
-        //             );
-        //             writeWalletConnectData("signMessage", chatId, signature);
-        //         } else {
-        //             console.log("MainHost:signMessage x invalid..bbb. skip!");
-        //         }
-        //     } else if (msg.msgType == "sendTransaction") {
-        //         const chatId = msg.msg.chatId;
-        //         const txReq = msg.msg.content as TransactionRequest;
-        //         const hash = await sendTransaction(
-        //             currentPriInfoRef,
-        //             preparedPriceRef,
-        //             getAccountAddr(),
-        //             txReq,
-        //             chainObj.current,
-        //             factoryAddr.current,
-        //             readOwnerId(userProp)
-        //         );
-        //         writeWalletConnectData("sendTransaction", chatId, hash);
-        //     } else {
-        //         console.log("MainHost:not supported msg:", msg);
-        //     }
-        // }
-    }
-
-    // const msgIndex = useRef(0);
-    // const lastMsgIndex = useRef(0);
 
     const [privateinfoHidden, setPrivateinfoHidden] = useState(false);
     const updatePrivateinfoHidden = (hidden: boolean) => {
@@ -246,7 +170,9 @@ export default function Connect2Dapps({
                     ></PrivateInfo>
                     <IframeWallet
                         getWalletConnectHostFun={getWalletConnectHost}
+                        privateinfoHidden={privateinfoHidden}
                     ></IframeWallet>
+                    : <></>
                 </>
             ) : (
                 <p>
@@ -259,8 +185,10 @@ export default function Connect2Dapps({
 
 const IframeWallet = ({
     getWalletConnectHostFun,
+    privateinfoHidden,
 }: {
     getWalletConnectHostFun: () => string;
+    privateinfoHidden: boolean;
 }) => {
     let src = "";
     if (getWalletConnectHostFun != undefined) {
@@ -289,7 +217,14 @@ const IframeWallet = ({
         // };
     }, [src]);
 
-    return <div id="div_w3eaWalletconnect"></div>;
+    return (
+        <div
+            id="div_w3eaWalletconnect"
+            style={
+                privateinfoHidden ? { display: "block" } : { display: "none" }
+            }
+        ></div>
+    );
 };
 
 ///////////
@@ -297,7 +232,7 @@ const IframeWallet = ({
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 const checkAddr = (msg: Message) => {
-    const myChainKey = "eip155:" + getChainObj().id;
+    const myChainKey = "eip155:" + getChainObject().id;
     if (msg.address != getAccountAddr() || msg.chainKey != myChainKey) {
         console.log("my addr:", myChainKey, getAccountAddr());
         console.log("target addr:", msg.chainKey, msg.address);
@@ -318,7 +253,7 @@ export const signTextMessage = async (msg: Message) => {
         getPrivateInfo(),
         getAccountAddr(),
         content,
-        getChainObj(),
+        getChainObject(),
         getFactoryAddr(),
         false
     );
@@ -350,7 +285,7 @@ export const signTypedDataMessage = async (msg: Message) => {
         getPrivateInfo(),
         getAccountAddr(),
         content,
-        getChainObj(),
+        getChainObject(),
         getFactoryAddr(),
         true
     );
@@ -433,7 +368,7 @@ const signMessage = async (
 export const sendTransaction = async (msg: Message) => {
     const passwdAccount = getPasswdAccount(
         getPrivateInfo(),
-        getChainObj().chainCode
+        getChainObject().chainCode
     );
 
     checkAddr(msg);
@@ -464,7 +399,7 @@ export const sendTransaction = async (msg: Message) => {
         txReq.to,
         "" + txVal / 1e18,
         txReq.data,
-        getChainObj(),
+        getChainObject(),
         true,
         "",
         getPreparedPriceRef(),

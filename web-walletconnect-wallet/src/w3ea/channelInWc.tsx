@@ -2,6 +2,7 @@ type Message = {
   msgType:
     | 'reportReceived'
     | 'connect'
+    | 'wcReset'
     | 'signMessage'
     | 'signTypedData'
     | 'signTransaction'
@@ -28,7 +29,9 @@ export let setW3eaWallet: (w: W3eaWallet) => void = (w: W3eaWallet) => {}
 export let getW3eaWallet: () => W3eaWallet = () => {
   return new W3eaWallet('', '')
 }
-export let setReceiverData: (data: { address: string; chainKey: string }) => void = ({}) => {}
+export let setReceiverData: (data: { address: string; chainKey: string }) => void = ({}) => {
+  console.log('setReceiverData empty...')
+}
 export let getReceiverData: () => { address: string; chainKey: string } = () => {
   return { address: 'Loading...', chainKey: '' }
 }
@@ -38,7 +41,9 @@ import { TransactionRequest, W3eaWallet } from './W3eaWallet'
 import { japanese } from 'viem/accounts'
 
 let setW3eaMainHost: (host: string) => void
-let getW3eaMainHost: () => string
+let getW3eaMainHost = () => {
+  return ''
+}
 
 export default function ChannelInWc() {
   const w3eaWallet = useRef(new W3eaWallet('', ''))
@@ -54,6 +59,7 @@ export default function ChannelInWc() {
     return receiverData.current
   }
   setReceiverData = (data: { address: string; chainKey: string }) => {
+    console.log('setReceiverData ok.')
     receiverData.current = data
   }
 
@@ -97,7 +103,24 @@ export default function ChannelInWc() {
     false
   )
 
-  useEffect(() => {}, [])
+  useEffect(() => {
+    //
+    const reset = async () => {
+      const msg2Parent: Message = {
+        msgType: 'wcReset',
+        chainKey: '',
+        address: '',
+        msgIdx: new Date().getTime(),
+        msg: {
+          chatId: '',
+          content: {}
+        }
+      }
+      console.log('child reset...')
+      await sendMsgOnce(msg2Parent)
+    }
+    reset()
+  }, [])
 
   /////////////////////////////////////////
 
@@ -107,7 +130,8 @@ export default function ChannelInWc() {
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 
 async function handleMsgReceived(event: { origin: any; data: string }) {
-  console.log('handleMsgReceived,entry,event:', event)
+  console.log('child:handleMsgReceived,entry,event:', event)
+  console.log('child:handleMsgReceived,entry,getW3eaMainHost:', getW3eaMainHost())
   if (getW3eaMainHost() == '' || getW3eaMainHost() == undefined) {
     if (
       event.origin != 'http://localhost:3000' &&
@@ -152,9 +176,12 @@ async function handleMsgReceived(event: { origin: any; data: string }) {
     setW3eaMainHost(content.mainHost)
     //
     if (getReceiverData().address != msg.address || getReceiverData().chainKey != msg.chainKey) {
+      console.log('child:trigger render...msg:', msg)
       setReceiverData({ address: msg.address, chainKey: msg.chainKey })
       SettingsStore.setW3eaChainKey(getReceiverData().chainKey)
       SettingsStore.setW3eaAddress(getReceiverData().address)
+    } else {
+      console.log('child:not trigger...')
     }
     //
   } else {
@@ -164,6 +191,11 @@ async function handleMsgReceived(event: { origin: any; data: string }) {
 ////
 
 const sendMsgOnce = async (msg: Message) => {
+  if (msg.msgType == 'wcReset') {
+    // target parent host uncertain
+    parent.postMessage(JSON.stringify(msg), '*')
+    return
+  }
   if (getW3eaMainHost() != null && getW3eaMainHost() != undefined && getW3eaMainHost() != '') {
     msg.chainKey = getReceiverData().chainKey
     msg.address = getReceiverData().address

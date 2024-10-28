@@ -2,7 +2,7 @@ import { getOwnerIdBigBrother as getBigBrotherOwnerId, getOwnerIdLittleBrother }
 
 import { ChainCode, Menu, chainCodeFromString } from "../lib/myTypes";
 
-const KEY_PREFIX = "W3EA_PROFILE_V5:";
+const KEY_PREFIX = "W3EA_PROFILE_V6:";
 
 export type UpdateUserProperty = ({
     email, testMode, selectedChainCode, accountAddrList,

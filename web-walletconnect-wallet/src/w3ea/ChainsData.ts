@@ -21,7 +21,7 @@ export const getChain = () => {
     const ccc = {
         chainKey: 'eip155:1:error',
         chainId: 1,
-        name: 'ErrorEth',
+        name: 'Unsupported Chain',
         logo: '/chain-logos/eip155-1-error.png',
         rgb: '99, 125, 234',
         rpc: 'https://cloudflare-eth.com/',

@@ -1,6 +1,8 @@
 import { UserProperty } from "@/app/storage/userPropertyStore";
 import { useRef } from "react";
 import {
+    getAccountAddr,
+    getChainObject,
     sendTransaction,
     signTextMessage,
     signTypedDataMessage,
@@ -10,6 +12,7 @@ export type Message = {
     msgType:
         | "reportReceived"
         | "connect"
+        | "wcReset"
         | "signMessage"
         | "signTypedData"
         | "signTransaction"
@@ -179,13 +182,18 @@ export const sendMsgUntilSuccess = async (
         } catch (e) {
             label = "error";
             if (cnt % 10 == 0) {
-                console.log("MainHost:warn, send to child error msg:", e);
+                console.log(
+                    "MainHost:warn, send to child error msg:",
+                    e,
+                    "childFrameObj:",
+                    childFrameObj
+                );
             }
             // console.log("MainHost:send to child error, retry.", e);
         }
         if (cnt % 10 == 0) {
             console.log(
-                `cnt=${cnt},label=${label},try sendMsgUntilSuccess to `,
+                `MainHost,cnt=${cnt},label=${label},try sendMsgUntilSuccess to `,
                 walletconnectHost,
                 msg
             );
@@ -208,7 +216,9 @@ async function handleMsgReceived(event: { origin: any; data: string }) {
         return;
     }
 
-    if (msg.msgType == "signMessage") {
+    if (msg.msgType == "wcReset") {
+        connect2WcHost(getChainObject().id, getAccountAddr());
+    } else if (msg.msgType == "signMessage") {
         await signTextMessage(msg);
     } else if (msg.msgType == "signTypedData") {
         await signTypedDataMessage(msg);
