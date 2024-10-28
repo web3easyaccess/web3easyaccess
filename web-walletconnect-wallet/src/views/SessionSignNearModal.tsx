@@ -49,7 +49,9 @@ export default function SessionSignNearModal() {
               type: 'DeployContract',
               params: {
                 ...action.deployContract,
-                args: Buffer.from(action.deployContract.code).toString()
+                args: Buffer.from(
+                  action.deployContract == undefined ? '' : action.deployContract.code
+                ).toString()
               }
             }
           }
@@ -58,7 +60,11 @@ export default function SessionSignNearModal() {
               type: 'FunctionCall',
               params: {
                 ...action.functionCall,
-                args: JSON.parse(Buffer.from(action.functionCall.args).toString())
+                args: JSON.parse(
+                  Buffer.from(
+                    action.functionCall == undefined ? '' : action.functionCall.args
+                  ).toString()
+                )
               }
             }
           }
@@ -73,7 +79,7 @@ export default function SessionSignNearModal() {
               type: 'Stake',
               params: {
                 ...action.stake,
-                publicKey: action.stake.publicKey.toString()
+                publicKey: action.stake == undefined ? '' : action.stake.publicKey.toString()
               }
             }
           }
@@ -82,7 +88,7 @@ export default function SessionSignNearModal() {
               type: 'AddKey',
               params: {
                 ...action.addKey,
-                publicKey: action.addKey.publicKey.toString()
+                publicKey: action.addKey == undefined ? '' : action.addKey.publicKey.toString()
               }
             }
           }
@@ -91,7 +97,8 @@ export default function SessionSignNearModal() {
               type: 'DeleteKey',
               params: {
                 ...action.deleteKey,
-                publicKey: action.deleteKey.publicKey.toString()
+                publicKey:
+                  action.deleteKey == undefined ? '' : action.deleteKey.publicKey.toString()
               }
             }
           }
