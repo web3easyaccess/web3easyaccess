@@ -24,6 +24,17 @@ export default function SessionSignModal() {
   const { topic, params } = requestEvent
   const { request, chainId } = params
 
+  //   console.log('ssmodal,xyz,:requestEvent:', requestEvent)
+  //   console.log('ssmodal,xyz,:params:', params)
+  //   console.log('ssmodal,xyz,:requestSession:', requestSession)
+  console.log('ssmodal,xyz,:requestAddress:', requestSession.namespaces.eip155.accounts[0])
+
+  const getReqAddress = () => {
+    // eip155:11155111:0x5ebc3dc13728004bBE83608d05F851136C9fD85C
+    const aaa = requestSession.namespaces.eip155.accounts[0].split(':')
+    return aaa[2]
+  }
+
   // Get message, convert it to UTF8 string if it is valid hex
   const message = getSignParamsMessage(request.params)
 
@@ -59,6 +70,7 @@ export default function SessionSignModal() {
       } catch (e) {
         setIsLoadingReject(false)
         styledToast((e as Error).message, 'error')
+        ModalStore.close()
         return
       }
       setIsLoadingReject(false)
@@ -75,11 +87,15 @@ export default function SessionSignModal() {
       approveLoader={{ active: isLoadingApprove }}
       rejectLoader={{ active: isLoadingReject }}
     >
-      <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
+      <RequesDetailsCard
+        chains={[chainId ?? '']}
+        address={getReqAddress()}
+        protocol={requestSession.relay.protocol}
+      />
       <Divider y={1} />
       <Row>
         <Col>
-          <Text h5>Message</Text>
+          <Text h5>Message2</Text>
           <Text color="$gray400" data-testid="request-message-text">
             {message}
           </Text>

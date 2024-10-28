@@ -5,7 +5,10 @@ import { UpdateUserProperty, UserProperty } from "../storage/userPropertyStore";
 
 import Dashboard from "./dashboard";
 
-import { getFactoryAddr } from "../serverside/blockchain/chainWriteClient";
+import {
+    getFactoryAddr,
+    queryHosts,
+} from "../serverside/blockchain/chainWriteClient";
 import { getW3eapAddr } from "../serverside/blockchain/chainWrite";
 
 import { queryAccount, queryAccountList } from "../lib/chainQuery";
@@ -56,6 +59,8 @@ export function useUserProperty({ email }: { email: string }) {
         w3eapAddr,
         factoryAddr,
         bigBrotherPasswdAddr,
+        myselfHost,
+        walletconnectHost,
     }: {
         email: string;
         testMode: boolean | undefined;
@@ -65,6 +70,8 @@ export function useUserProperty({ email }: { email: string }) {
         w3eapAddr: string | undefined;
         factoryAddr: string | undefined;
         bigBrotherPasswdAddr: string | undefined;
+        myselfHost: string | undefined;
+        walletconnectHost: string | undefined;
     }) => {
         if (email == null || email == undefined || email == "") {
             email = emailRef.current;
@@ -84,7 +91,6 @@ export function useUserProperty({ email }: { email: string }) {
         );
 
         const newProp: UserProperty = userPropertyStore.getUserProperty(email);
-        console.log("newProp in update:", newProp);
 
         if (oldProp.selectedChainCode != newProp.selectedChainCode) {
         }
@@ -98,6 +104,11 @@ export function useUserProperty({ email }: { email: string }) {
         } else {
             // if accountAddrList have data, must be called by loadUserData(), can't call repeat!
         }
+
+        newProp.myselfHost = myselfHost;
+        newProp.walletconnectHost = walletconnectHost;
+
+        console.log("newProp in update:", newProp);
 
         setUserProp(newProp);
     };
@@ -148,6 +159,8 @@ export function useUserProperty({ email }: { email: string }) {
             acctList
         );
 
+        const { myselfHost, walletconnectHost } = await queryHosts();
+
         updateUserProp({
             email: emailRef.current,
             testMode: myProp.testMode,
@@ -157,8 +170,10 @@ export function useUserProperty({ email }: { email: string }) {
             w3eapAddr: acctInfo.w3eapAddr,
             factoryAddr: acctInfo.factoryAddr,
             bigBrotherPasswdAddr: bigBrotherPasswdAddr,
+            myselfHost: myselfHost,
+            walletconnectHost: walletconnectHost,
         });
-
+        //setUserProp({ ...userProp, myselfHost: myselfHost, walletconnectHost });
         console.log("updateUserProp, init ....!");
     };
 

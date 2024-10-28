@@ -20,7 +20,7 @@ import Assets from "./assets";
 import Transactions from "./transactions";
 import SendTransaction from "./newtransaction/sendtransaction";
 import SendChgPrivateInfo from "./newtransaction/sendchgprivateinfo";
-import Connect2Dapps from "./connect2dapps";
+import Connect2Dapps from "./connect2dapps/connect2dapps";
 import UpgradeImpl from "./upgradeimpl";
 
 import { useRouter } from "next/navigation";

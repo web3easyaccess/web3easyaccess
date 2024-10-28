@@ -166,7 +166,17 @@ export function hashTypedDataMessage(msg: string): string {
     return ethUtil.bufferToHex(hash);
 }
 
+/*
+error:
+zzz1,encodeTypedDataMessage: {"types":{"EIP712Domain":[{"name":"name","type":"string"},{"name":"version","type":"string"},{"name":"chainId","type":"uint256"},{"name":"verifyingContract","type":"address"}],"PermitSingle":[{"name":"details","type":"PermitDetails"},{"name":"spender","type":"address"},{"name":"sigDeadline","type":"uint256"}],"PermitDetails":[{"name":"token","type":"address"},{"name":"amount","type":"uint160"},{"name":"expiration","type":"uint48"},{"name":"nonce","type":"uint48"}]},"primaryType":"PermitSingle","domain":{"name":"Permit2","chainId":"2810","verifyingContract":"0x9a5450d9c71fa9d6bf8df25e49313d7c3c42de60"},"message":{"details":{"token":"0x6dd7917d2558b88d7a4cb75ccbc05b83ee73ec0e","amount":"1461501637330902918203684832716283019655932542975","expiration":"1732583989","nonce":"0"},"spender":"0xc872fd87d4653146d6fb2af82c4bcc50595e4762","sigDeadline":"1729993789"}}
+
+ok:
+zzz1,encodeTypedDataMessage: {"types":{"EIP712Domain":[{"name":"name","type":"string"},{"name":"version","type":"string"},{"name":"chainId","type":"uint256"},{"name":"verifyingContract","type":"address"}],"Person":[{"name":"name","type":"string"},{"name":"wallet","type":"address"}],"Mail":[{"name":"from","type":"Person"},{"name":"to","type":"Person"},{"name":"contents","type":"string"}]},"primaryType":"Mail","domain":{"name":"Ether Mail","version":"1","chainId":1,"verifyingContract":"0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"},"message":{"from":{"name":"Cow","wallet":"0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826"},"to":{"name":"Bob","wallet":"0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"},"contents":"Hello, Bob!"}}
+
+*/
+
 export function encodeTypedDataMessage(msg: string): string {
+    console.log("zzz1,encodeTypedDataMessage:", msg);
     const data = TypedDataUtils.sanitizeData(JSON.parse(msg));
     const buf = Buffer.concat([
         Buffer.from("1901", "hex"),

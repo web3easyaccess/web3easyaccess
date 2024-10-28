@@ -63,6 +63,7 @@ export default function SessionSignKadenaModal() {
       } catch (e) {
         setIsLoadingReject(false)
         styledToast((e as Error).message, 'error')
+        ModalStore.close()
         return
       }
       setIsLoadingReject(false)
@@ -85,7 +86,7 @@ export default function SessionSignKadenaModal() {
         <>
           <Row>
             <Col>
-              <Text h5>Message</Text>
+              <Text h5>Message1</Text>
               <Text color="$gray400">{message}</Text>
             </Col>
           </Row>

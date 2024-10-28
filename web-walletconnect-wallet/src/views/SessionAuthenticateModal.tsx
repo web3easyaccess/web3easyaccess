@@ -130,10 +130,14 @@ export default function SessionAuthenticateModal() {
   // Handle reject action
   const onReject = useCallback(async () => {
     if (authRequest?.params?.authPayload) {
-      await web3wallet.engine.signClient.rejectSessionAuthenticate({
-        id: authRequest.id,
-        reason: getSdkError('USER_REJECTED')
-      })
+      try {
+        await web3wallet.engine.signClient.rejectSessionAuthenticate({
+          id: authRequest.id,
+          reason: getSdkError('USER_REJECTED')
+        })
+      } catch (e) {
+        console.log('aaa,reject error,', e)
+      }
       ModalStore.close()
     }
   }, [authRequest])

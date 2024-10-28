@@ -39,6 +39,7 @@ import { getWalletCapabilities } from '@/utils/EIP5792WalletUtil'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import { useRouter } from 'next/router'
 import { getW3eaAddress } from '@/w3ea/web3easyaccess'
+import { getChain } from '@/w3ea/ChainsData'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -218,6 +219,11 @@ export default function SessionProposalModal() {
 
           if (!chainData) return null
 
+          console.log('xyz123:chainData:', chainData)
+          if (getChain().chainId != Number(chainData.chainId)) {
+            return null
+          }
+
           return chainData
         })
         .filter(chain => chain), // removes null values
@@ -241,7 +247,7 @@ export default function SessionProposalModal() {
             .includes(chain!)
       )
   }, [proposal, supportedChains])
-  console.log('notSupportedChains', { notSupportedChains, supportedChains })
+  console.log('notSupportedChains1', { notSupportedChains, supportedChains })
   const getAddress = useCallback((namespace?: string) => {
     if (!namespace) return 'N/A'
     switch (namespace) {
@@ -321,13 +327,14 @@ export default function SessionProposalModal() {
       } catch (e) {
         setIsLoadingReject(false)
         styledToast((e as Error).message, 'error')
+        ModalStore.close()
         return
       }
     }
     setIsLoadingReject(false)
     ModalStore.close()
   }, [proposal])
-  console.log('notSupportedChains', notSupportedChains)
+  console.log('notSupportedChains2', notSupportedChains)
   return (
     <RequestModal
       metadata={proposal.params.proposer.metadata}
@@ -372,9 +379,9 @@ export default function SessionProposalModal() {
                   <ChainAddressMini key={i} address={getAddress(chain?.namespace) || 'test'} />
                 </Row>
               )
-            })) || <Row>Non available</Row>}
+            })) || <Row>Non available:</Row>}
 
-          <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
+          {/* <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
           {smartAccountEnabled &&
             namespaces &&
             getAvailableSmartAccountsOnNamespaceChains(namespaces.eip155.chains).map(
@@ -388,7 +395,7 @@ export default function SessionProposalModal() {
                   </Row>
                 )
               }
-            )}
+            )} */}
         </Grid>
         <Grid>
           <Row style={{ color: 'GrayText' }} justify="flex-end">
@@ -405,8 +412,8 @@ export default function SessionProposalModal() {
                   <ChainDataMini key={i} chainId={`${chain?.namespace}:${chain?.chainId}`} />
                 </Row>
               )
-            })) || <Row>Non available</Row>}
-          <Row style={{ color: 'GrayText' }} justify="flex-end">
+            })) || <Row>check Chain and Address</Row>}
+          {/* <Row style={{ color: 'GrayText' }} justify="flex-end">
             Chains
           </Row>
           {smartAccountEnabled &&
@@ -422,7 +429,7 @@ export default function SessionProposalModal() {
                   </Row>
                 )
               }
-            )}
+            )} */}
         </Grid>
       </Grid.Container>
     </RequestModal>

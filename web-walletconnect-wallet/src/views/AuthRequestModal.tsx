@@ -66,13 +66,18 @@ export default function AuthRequestModal() {
   const onReject = useCallback(async () => {
     if (request) {
       setIsLoadingReject(true)
-      await web3wallet.respondAuthRequest(
-        {
-          id: request.id,
-          error: getSdkError('USER_REJECTED')
-        },
-        iss
-      )
+      try {
+        await web3wallet.respondAuthRequest(
+          {
+            id: request.id,
+            error: getSdkError('USER_REJECTED')
+          },
+          iss
+        )
+      } catch (e) {
+        console.log('reject xxxx err:', e)
+      }
+
       setIsLoadingReject(false)
       ModalStore.close()
     }

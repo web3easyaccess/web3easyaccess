@@ -32,8 +32,8 @@ export type UserProperty = {
         factoryAddr: string;
         bigBrotherPasswdAddr: string;
     }>;
-    myselfHost: string;
-    walletconnectHost: string;
+    myselfHost: string | undefined;
+    walletconnectHost: string | undefined;
 
     /////
     // selectedAccountInfosXXX: {

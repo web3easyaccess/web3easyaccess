@@ -905,12 +905,16 @@ export default function SendTransaction({
                     factoryAddr,
                     acctAddr
                 );
-                setUpgradeMsg(
-                    "current implementation:" +
-                        rr.implAddr +
-                        ". new impl:" +
-                        rr.newImplAddr
-                );
+                let myMsg =
+                    "current Implementation:" +
+                    rr.implAddr +
+                    ". new Impl:" +
+                    rr.newImplAddr;
+                if (rr.implAddr.toLowerCase() == rr.newImplAddr.toLowerCase()) {
+                    myMsg = "It is currently the latest version";
+                    setUpgradeImpl(false);
+                }
+                setUpgradeMsg(myMsg);
             };
             showImplMsg();
         } else {

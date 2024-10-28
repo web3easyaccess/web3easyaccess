@@ -13,13 +13,14 @@ import { Fragment } from 'react'
  */
 interface IProps {
   chains: string[]
+  address: string
   protocol: string
 }
 
 /**
  * Component
  */
-export default function RequestDetailsCard({ chains, protocol }: IProps) {
+export default function RequestDetailsCard({ chains, address, protocol }: IProps) {
   return (
     <Fragment>
       <Row>
@@ -39,6 +40,9 @@ export default function RequestDetailsCard({ chains, protocol }: IProps) {
                   chain
               )
               .join(', ')}
+          </Text>
+          <Text color="red" h6>
+            {address}
           </Text>
         </Col>
       </Row>

@@ -11,8 +11,8 @@ import SettingsStore from '@/store/SettingsStore'
 import { useSnapshot } from 'valtio'
 import AccountCard from '@/components/AccountCard'
 import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS, EIP155_CHAINS } from '@/data/EIP155Data'
-import { getChainKey } from '@/w3ea/web3easyaccess'
-import W3eaChannel from '@/w3ea/W3eaChannel'
+import { getChainKey, receiverData } from '@/w3ea/web3easyaccess'
+import ChannelInWc from '@/w3ea/channelInWc'
 import { getChain } from '@/w3ea/ChainsData'
 
 export default function WalletConnectPage(params: { deepLink?: string }) {
@@ -22,6 +22,7 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
 
   const {
     testNets,
+    w3eaChainKey,
     w3eaAddress,
     eip155Address,
     cosmosAddress,
@@ -68,7 +69,12 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
     }
   }, [deepLink])
 
-  const currentChain = getChain()
+  const [currentChain, setCurrentChain] = useState(getChain())
+
+  useEffect(() => {
+    console.log('useeffect in wallect connect ...123')
+    setCurrentChain(getChain())
+  }, [w3eaChainKey])
 
   return (
     <Fragment>
@@ -82,14 +88,14 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
 
         <Text size={14} css={{ textAlign: 'left', marginTop: '$10', marginBottom: '$10' }}>
           In the DApp, select "WalletConnect". In the pop-up window, click "Copy Link". Then paste
-          the copied content here and click "connect".
+          the copied content here and click "Connect".
         </Text>
 
         <Input
           css={{ width: '100%' }}
           bordered
           aria-label="wc url connect input"
-          placeholder="e.g. wc:a281567bb3e4..."
+          placeholder="wc url. e.g. wc:a281567bb3e4..."
           onChange={e => setUri(e.target.value)}
           value={uri}
           data-testid="uri-input"
@@ -133,7 +139,7 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
             />
           ))} */}
 
-        <W3eaChannel></W3eaChannel>
+        <ChannelInWc></ChannelInWc>
       </>
     </Fragment>
   )

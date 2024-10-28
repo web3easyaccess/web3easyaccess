@@ -22,6 +22,7 @@ const MODULE_MANAGEMENT_ENABLED_KEY = 'MODULE_MANAGEMENT'
 interface State {
     testNets: boolean
     account: number
+    w3eaChainKey: string
     w3eaAddress: string
     eip155Address: string
     cosmosAddress: string
@@ -58,6 +59,7 @@ const state = proxy<State>({
             : true,
     account: 0,
     activeChainId: '1',
+    w3eaChainKey: '',
     w3eaAddress: '',
     eip155Address: '',
     cosmosAddress: '',
@@ -106,6 +108,10 @@ const SettingsStore = {
 
     setAccount(value: number) {
         state.account = value
+    },
+
+    setW3eaChainKey(w3eaChainKey: string) {
+        state.w3eaChainKey = w3eaChainKey
     },
 
     setW3eaAddress(w3eaAddress: string) {

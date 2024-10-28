@@ -12,10 +12,16 @@ contract DeployFactoryProxy is Script {
         // Use address provided in config to broadcast transactions
         vm.startBroadcast();
         // Deploy the ERC-20 token
+
         FactoryProxy mm = new FactoryProxy(
             0xd372F3c62a5b29515A7E41724F2cB12852C79cF5,
             ""
         );
+
+        // address mm = 0x8F8F94C5D5EEceE02A8adF5Ccd5050E51009608D;
+
+        //
+
         Factory(payable(address(mm))).init(
             // entryEOA:
             0x55b3448D38724997747083323992C88dB4AccE55,

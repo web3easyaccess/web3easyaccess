@@ -43,7 +43,7 @@ import { UserOperation } from 'permissionless/_types/types'
 import { paymasterActionsEip7677 } from 'permissionless/experimental'
 import { getSendCallData } from '@/utils/EIP5792WalletUtil'
 
-import { chat_signMessage, chat_sendTransaction } from "./W3eaChannel"
+import { chat_signMessage, chat_sendTransaction } from "./channelInWc"
 
 
 type SmartAccountLibOptions = {
@@ -149,7 +149,7 @@ export class W3eaWallet implements EIP155Wallet {
     // Promise<string>
     async _signTypedData(domain: any, types: any, data: any, _primaryType?: string) {
 
-        const typedData = {
+        let typedData = {
             types: {
                 EIP712Domain: [
                     { name: "name", type: "string" },
@@ -163,7 +163,24 @@ export class W3eaWallet implements EIP155Wallet {
             domain: domain,
             message: data,
         };
-        console.log("_signTypedData:", typedData);
+        if (typedData.domain.version == undefined) {
+            console.log("WARN, w3ea,_signTypedData,domain.version is not exists!");
+            typedData = {
+                types: {
+                    EIP712Domain: [
+                        { name: "name", type: "string" },
+                        // { name: "version", type: "string" },
+                        { name: "chainId", type: "uint256" },
+                        { name: "verifyingContract", type: "address" },
+                    ],
+                    ...types
+                },
+                primaryType: _primaryType,
+                domain: domain,
+                message: data,
+            };
+        }
+        console.log("w3ea,_signTypedData:", typedData);
         const message = JSON.stringify(
             typedData
         );

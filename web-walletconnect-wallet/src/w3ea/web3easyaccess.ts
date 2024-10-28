@@ -1,10 +1,9 @@
 
 import EIP155Lib from '@/lib/EIP155Lib';
 import { W3eaWallet } from './W3eaWallet';
+import { getReceiverData, getW3eaWallet, setW3eaWallet } from './channelInWc';
 
-export let w3eaWallet: W3eaWallet; // EIP155Lib;
 
-export let receiverData = { address: "", chainKey: "" }
 
 
 const testMnemonic = "elegant pyramid concert absurd grant price chimney expire jar car erase account artwork saddle tank enlist figure swamp oxygen coach evil urge genuine animal"
@@ -18,17 +17,17 @@ const testPrivate = () => {
 
 
 export const getChainKey = () => {
-    if (receiverData.chainKey == "") {
+    if (getReceiverData().chainKey == "") {
         loadW3eaWallet();
     }
-    return receiverData.chainKey;
+    return getReceiverData().chainKey;
 }
 
 export const getW3eaAddress = () => {
-    if (receiverData.address == "") {
+    if (getReceiverData().address == "") {
         loadW3eaWallet();
     }
-    return receiverData.address;
+    return getReceiverData().address;
 }
 
 
@@ -41,19 +40,21 @@ export const loadW3eaWallet = () => {
 
     // todo : send parent to get address. waiting server sent. and received
 
-    if (receiverData.address == "") {
-        receiverData.address = "0x0000";
+    if (getReceiverData().address == "") {
+        getReceiverData().address = "";
         console.log("error,address havn't received!");
+    } else {
+        console.log("loadW3eaWallet, receiverData.address: ", getReceiverData().address);
     }
-    if (w3eaWallet == null || w3eaWallet == undefined || w3eaWallet.getAddress() != receiverData.address) {
+    if (getW3eaWallet() == null || getW3eaWallet() == undefined || getW3eaWallet().getAddress() != getReceiverData().address || getW3eaWallet().getAddress() == "") {
         // EIP155Lib.init({ mnemonic: w3eatest })
-        w3eaWallet = new W3eaWallet(receiverData.address, testPrivate());
+        setW3eaWallet(new W3eaWallet(getReceiverData().address, testPrivate()));
     }
 
-    console.log("w3ea account address:", w3eaWallet.getAddress());
+    console.log("w3ea account address:", getW3eaWallet().getAddress());
     return {
-        w3eaWallet: w3eaWallet,
-        w3eaAddress: w3eaWallet.getAddress()
+        w3eaWallet: getW3eaWallet(),
+        w3eaAddress: getW3eaWallet().getAddress()
     }
 
 }

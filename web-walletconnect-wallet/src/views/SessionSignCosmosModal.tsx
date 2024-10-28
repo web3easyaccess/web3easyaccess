@@ -59,6 +59,7 @@ export default function SessionSignCosmosModal() {
       } catch (e) {
         setIsLoadingReject(false)
         styledToast((e as Error).message, 'error')
+        ModalStore.close()
         return
       }
       setIsLoadingReject(false)

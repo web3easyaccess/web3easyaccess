@@ -75,7 +75,7 @@ export default function Modal() {
 
   return (
     <NextModal
-      blur
+      blur={false}
       onClose={onClose}
       open={open}
       style={{ border: '1px solid rgba(139, 139, 139, 0.4)' }}
