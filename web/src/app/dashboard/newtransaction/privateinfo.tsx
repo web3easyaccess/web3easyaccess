@@ -262,7 +262,7 @@ export function PrivateInfo({
 
             fetchBigBrothersQuestionNos(myPin);
         }
-        console.log("privateinfo,pinBlur:", currentPriInfoRef.current);
+        // console.log("privateinfo,pinBlur:", currentPriInfoRef.current);
         //
     };
 
@@ -353,7 +353,7 @@ export function PrivateInfo({
                 }
             }
         }
-        console.log("privateinfo,q1answer blur:", currentPriInfoRef.current);
+        // console.log("privateinfo,q1answer blur:", currentPriInfoRef.current);
         //
     };
 
@@ -444,7 +444,7 @@ export function PrivateInfo({
                 }
             }
         }
-        console.log("privateinfo,q2answer blur:", currentPriInfoRef.current);
+        // console.log("privateinfo,q2answer blur:", currentPriInfoRef.current);
         //
     };
 
