@@ -109,7 +109,10 @@ const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 async function handleMsgReceived(event: { origin: any; data: string }) {
   console.log('handleMsgReceived,entry,event:', event)
   if (getW3eaMainHost() == '' || getW3eaMainHost() == undefined) {
-    if (event.origin != 'http://localhost:3000' && event.origin != 'https://web3easyaccess.link') {
+    if (
+      event.origin != 'http://localhost:3000' &&
+      event.origin != 'https://www.web3easyaccess.link'
+    ) {
       return
     }
   } else if (event.origin != getW3eaMainHost()) {
