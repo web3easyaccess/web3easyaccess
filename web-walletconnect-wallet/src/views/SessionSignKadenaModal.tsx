@@ -71,6 +71,15 @@ export default function SessionSignKadenaModal() {
     }
   }, [requestEvent, topic])
 
+  const getReqAddress = () => {
+    // eip155:11155111:0x5ebc3dc13728004bBE83608d05F851136C9fD85C
+    if (requestSession == undefined) {
+      return ''
+    }
+    const aaa = requestSession.namespaces.eip155.accounts[0].split(':')
+    return requestSession.namespaces.eip155.accounts[0] // aaa[2]
+  }
+
   return (
     <RequestModal
       intention="sign a Kadena message"
@@ -80,7 +89,11 @@ export default function SessionSignKadenaModal() {
       approveLoader={{ active: isLoadingApprove }}
       rejectLoader={{ active: isLoadingReject }}
     >
-      <RequestDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
+      <RequestDetailsCard
+        chains={[chainId ?? '']}
+        address={getReqAddress()}
+        protocol={requestSession.relay.protocol}
+      />
       <Divider y={1} />
       {message && (
         <>

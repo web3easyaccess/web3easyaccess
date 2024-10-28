@@ -70,6 +70,15 @@ export default function SessionSignMultiversxModal() {
     }
   }, [requestEvent, topic])
 
+  const getReqAddress = () => {
+    // eip155:11155111:0x5ebc3dc13728004bBE83608d05F851136C9fD85C
+    if (requestSession == undefined) {
+      return ''
+    }
+    const aaa = requestSession.namespaces.eip155.accounts[0].split(':')
+    return requestSession.namespaces.eip155.accounts[0] // aaa[2]
+  }
+
   return (
     <RequestModal
       intention="sign a MultiversX message"
@@ -79,7 +88,11 @@ export default function SessionSignMultiversxModal() {
       approveLoader={{ active: isLoadingApprove }}
       rejectLoader={{ active: isLoadingReject }}
     >
-      <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
+      <RequesDetailsCard
+        chains={[chainId ?? '']}
+        address={getReqAddress()}
+        protocol={requestSession.relay.protocol}
+      />
       <Divider y={1} />
       <RequestDataCard data={params} />
       <Divider y={1} />

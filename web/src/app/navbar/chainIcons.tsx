@@ -308,7 +308,7 @@ export const ChainIcons = ({
                 ></Switch>
 
                 {latestChains().map((cc) => (
-                    <Tooltip content={cc.title}>
+                    <Tooltip content={cc.title} key={cc.chainCode}>
                         <Avatar
                             src={cc.img}
                             size={cc.size}
@@ -393,7 +393,7 @@ export const SelectedChainIcon = ({ userProp }: { userProp: UserProperty }) => {
             {supportedChains
                 .filter((c) => c.chainCode == userProp.selectedChainCode)
                 .map((c) => (
-                    <div className="flex gap-3 items-center">
+                    <div className="flex gap-3 items-center" key={c.chainCode}>
                         <Badge content="" color="secondary">
                             <Tooltip content={c.title}>
                                 <Avatar

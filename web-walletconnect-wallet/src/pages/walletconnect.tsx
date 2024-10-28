@@ -11,7 +11,7 @@ import SettingsStore from '@/store/SettingsStore'
 import { useSnapshot } from 'valtio'
 import AccountCard from '@/components/AccountCard'
 import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS, EIP155_CHAINS } from '@/data/EIP155Data'
-import { getChainKey, receiverData } from '@/w3ea/web3easyaccess'
+
 import ChannelInWc from '@/w3ea/channelInWc'
 import { getChain } from '@/w3ea/ChainsData'
 
@@ -86,9 +86,9 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
           or use walletconnect uri
         </Text> */}
 
-        <Text size={14} css={{ textAlign: 'left', marginTop: '$10', marginBottom: '$10' }}>
-          In the DApp, select "WalletConnect". In the pop-up window, click "Copy Link". Then paste
-          the copied content here and click "Connect".
+        <Text size={14} css={{ textAlign: 'left', marginTop: '10px', marginBottom: '10px' }}>
+          {`In the DApp, select "WalletConnect". In the pop-up window, click "Copy Link". Then paste
+          the copied content here and click "Connect".`}
         </Text>
 
         <Input

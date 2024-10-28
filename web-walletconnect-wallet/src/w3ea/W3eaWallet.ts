@@ -9,7 +9,7 @@ import {
     Address
 } from 'viem'
 import { EIP155Wallet } from '../lib/EIP155Lib'
-import { providers, Wallet, utils, Contract } from 'ethers'
+import { providers, Wallet, utils, Contract, BytesLike } from 'ethers'
 
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { privateKeyToAccount } from 'viem/accounts'
@@ -77,50 +77,48 @@ export type TransactionRequest = {
 
 
 
-interface TransactionResponse {
+// interface TransactionResponse {
+//     to?: string;
+//     nonce: number;
+//     gasLimit: string;
+//     gasPrice?: string;
 
-    to?: string;
-    nonce: number;
+//     data: string;
+//     value: string;
+//     chainId: number;
 
-    gasLimit: string;
-    gasPrice?: string;
+//     r?: string;
+//     s?: string;
+//     v?: number;
 
-    data: string;
-    value: string;
-    chainId: number;
+//     // Typed-Transaction features
+//     type?: number | null;
 
-    r?: string;
-    s?: string;
-    v?: number;
+//     // EIP-2930; Type 1 & EIP-1559; Type 2
+//     accessList?: any; // AccessList;
 
-    // Typed-Transaction features
-    type?: number | null;
+//     // EIP-1559; Type 2
+//     maxPriorityFeePerGas?: string;
+//     maxFeePerGas?: string;
+//     //////
+//     hash: string;
 
-    // EIP-2930; Type 1 & EIP-1559; Type 2
-    accessList?: any; // AccessList;
+//     // Only if a transaction has been mined
+//     blockNumber?: number,
+//     blockHash?: string,
+//     timestamp?: number,
 
-    // EIP-1559; Type 2
-    maxPriorityFeePerGas?: string;
-    maxFeePerGas?: string;
-    //////
-    hash: string;
+//     confirmations: number,
 
-    // Only if a transaction has been mined
-    blockNumber?: number,
-    blockHash?: string,
-    timestamp?: number,
+//     // Not optional (as it is in Transaction)
+//     from: string;
 
-    confirmations: number,
+//     // The raw transaction
+//     raw?: string,
 
-    // Not optional (as it is in Transaction)
-    from: string;
-
-    // The raw transaction
-    raw?: string,
-
-    // This function waits until the transaction has been mined
-    // wait: (confirmations?: number) => Promise<TransactionReceipt>
-};
+//     // This function waits until the transaction has been mined
+//     // wait: (confirmations?: number) => Promise<TransactionReceipt>
+// };
 
 
 
@@ -190,7 +188,17 @@ export class W3eaWallet implements EIP155Wallet {
 
         // throw new Error('_signTypedData Method not implemented.@w3ea')
     }
-    async connect(provider: providers.JsonRpcProvider) {
+
+
+    connect(provider: providers.JsonRpcProvider) {
+
+        // return new Wallet("" as BytesLike);
+        // avoid build's error:
+        return this.connectAsync(provider) as unknown as Wallet;
+    }
+
+
+    async connectAsync(provider: providers.JsonRpcProvider) {
         const connectedWallet = {
             sendTransaction: async (tx: TransactionRequest) => {
                 const hash = chat_sendTransaction(tx);
