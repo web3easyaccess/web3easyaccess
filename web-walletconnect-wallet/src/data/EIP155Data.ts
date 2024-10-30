@@ -93,7 +93,7 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     'eip155:11155111': {
         chainId: 11155111,
         name: 'Ethereum Sepolia',
-        logo: '/chain-logos/eip155-1.png',
+        logo: '/chain-logos/eip155-11155111.png',
         rgb: '99, 125, 234',
         rpc: 'https://rpc2.sepolia.org',
         namespace: 'eip155',
@@ -177,6 +177,42 @@ export const EIP155_W3EA_CHAINS: Record<string, EIP155Chain> = {
         logo: '/chain-logos/eip155-1319.png',
         rgb: '99, 125, 234',
         rpc: 'https://aia-dataseed2.aiachain.org',
+        namespace: 'eip155',
+        smartAccountEnabled: true
+    },
+    'eip155:12227332': {
+        chainId: 12227332,
+        name: 'NeoX testnet',
+        logo: '/chain-logos/eip155-12227332.png',
+        rgb: '99, 125, 234',
+        rpc: 'https://neoxt4seed1.ngd.network',
+        namespace: 'eip155',
+        smartAccountEnabled: true
+    },
+    'eip155:59141': {
+        chainId: 59141,
+        name: 'Linea Sepolia',
+        logo: '/chain-logos/eip155-59141.png',
+        rgb: '99, 125, 234',
+        rpc: 'https://rpc.sepolia.linea.build',
+        namespace: 'eip155',
+        smartAccountEnabled: true
+    },
+    'eip155:59144': {
+        chainId: 59144,
+        name: 'Linea',
+        logo: '/chain-logos/eip155-59144.png',
+        rgb: '99, 125, 234',
+        rpc: 'https://rpc.linea.build',
+        namespace: 'eip155',
+        smartAccountEnabled: true
+    },
+    'eip155:534351': {
+        chainId: 534351,
+        name: 'Scroll Sepolia',
+        logo: '/chain-logos/eip155-534351.png',
+        rgb: '99, 125, 234',
+        rpc: 'https://sepolia-rpc.scroll.io',
         namespace: 'eip155',
         smartAccountEnabled: true
     },

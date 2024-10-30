@@ -18,7 +18,8 @@ import { ChainCode, chainCodeFromString } from "../lib/myTypes";
 import { UpdateUserProperty, UserProperty } from "../storage/userPropertyStore";
 import * as userPropertyStore from "../storage/userPropertyStore";
 
-const supportedChains: {
+const allChains: {
+    closed: boolean | undefined;
     chainCode: ChainCode;
     img: string;
     title: string;
@@ -27,6 +28,7 @@ const supportedChains: {
     bordered: boolean;
 }[] = [
     {
+        closed: false,
         chainCode: ChainCode.AIACHAIN_TEST_CHAIN,
         img: "/chain/aiachaintest.png",
         title: "AIA Testnet",
@@ -35,6 +37,7 @@ const supportedChains: {
         bordered: false,
     },
     {
+        closed: false,
         chainCode: ChainCode.NEOX_TEST_CHAIN,
         img: "/chain/neoxtest.png",
         title: "NeoX testnet",
@@ -43,6 +46,7 @@ const supportedChains: {
         bordered: false,
     },
     {
+        closed: false,
         chainCode: ChainCode.SOLANA_TEST_CHAIN,
         img: "/chain/solanatest.png",
         title: "Solana testnet",
@@ -51,6 +55,7 @@ const supportedChains: {
         bordered: false,
     },
     {
+        closed: false,
         chainCode: ChainCode.SEPOLIA_CHAIN,
         img: "/chain/sepolia.png",
         title: "Sepolia testnet",
@@ -59,6 +64,7 @@ const supportedChains: {
         bordered: false,
     },
     {
+        closed: false,
         chainCode: ChainCode.LINEA_TEST_CHAIN,
         img: "/chain/lineatest.png",
         title: "Linea Sepolia",
@@ -67,6 +73,7 @@ const supportedChains: {
         bordered: false,
     },
     {
+        closed: false,
         chainCode: ChainCode.SCROLL_TEST_CHAIN,
         img: "/chain/scrolltest.png",
         title: "Scroll Sepolia",
@@ -75,6 +82,7 @@ const supportedChains: {
         bordered: false,
     },
     {
+        closed: false,
         chainCode: ChainCode.MORPH_TEST_CHAIN,
         img: "/chain/morphl2test.png",
         title: "Morph testnet",
@@ -83,6 +91,7 @@ const supportedChains: {
         bordered: false,
     },
     {
+        closed: true,
         chainCode: ChainCode.DEFAULT_ANVIL_CHAIN,
         img: "/chain/anvil.png",
         title: "anvil testnet",
@@ -91,6 +100,7 @@ const supportedChains: {
         bordered: false,
     },
     {
+        closed: true,
         chainCode: ChainCode.ETHEREUM_MAIN_NET,
         img: "/chain/ethereum.png",
         title: "Ether eum",
@@ -99,6 +109,7 @@ const supportedChains: {
         bordered: false,
     },
     {
+        closed: true,
         chainCode: ChainCode.AIACHAIN_MAIN_CHAIN,
         img: "/chain/aiachain.png",
         title: "AIA Mainnet",
@@ -108,8 +119,12 @@ const supportedChains: {
     },
 ];
 
-const currentAllChains = (testMode: boolean) => {
-    return supportedChains.filter((s) => s.isTestnet == testMode);
+const supportedChains = () => {
+    return allChains.filter((c) => c.closed != true);
+};
+
+const showingChains = (testMode: boolean) => {
+    return supportedChains().filter((s) => s.isTestnet == testMode);
 };
 
 export const ChainIcons = ({
@@ -127,7 +142,7 @@ export const ChainIcons = ({
             userProp.email
         );
 
-        const allChains = currentAllChains(userProp.testMode);
+        const allChains = showingChains(userProp.testMode);
 
         const validLatestChains: {
             chainCode: ChainCode;
@@ -345,7 +360,7 @@ export const ChainIcons = ({
                     onSelectionChange={updateSelectedChain}
                 >
                     {(
-                        currentAllChains(
+                        showingChains(
                             userProp.testMode
                         ) as CollectionElement<object>
                     ).map((item: any) => (
@@ -390,7 +405,7 @@ export const SelectedChainIcon = ({ userProp }: { userProp: UserProperty }) => {
 
     return (
         <>
-            {supportedChains
+            {allChains
                 .filter((c) => c.chainCode == userProp.selectedChainCode)
                 .map((c) => (
                     <div className="flex gap-3 items-center" key={c.chainCode}>

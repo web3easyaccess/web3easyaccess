@@ -11,6 +11,7 @@ export enum Menu {
 
 export enum ChainCode {
     UNKNOW = "UNKNOW",
+    LINEA_CHAIN = "LINEA_CHAIN",
     ETHEREUM_MAIN_NET = "ETHEREUM_MAIN_NET",
     DEFAULT_ANVIL_CHAIN = "DEFAULT_ANVIL_CHAIN",
     MORPH_TEST_CHAIN = "MORPH_TEST_CHAIN",
@@ -27,6 +28,8 @@ export enum ChainCode {
 export function chainCodeFromString(chainCode: string) {
     if (chainCode == "ETHEREUM_MAIN_NET") {
         return ChainCode.ETHEREUM_MAIN_NET;
+    } else if (chainCode == "LINEA_CHAIN") {
+        return ChainCode.LINEA_CHAIN;
     } else if (chainCode == "DEFAULT_ANVIL_CHAIN") {
         return ChainCode.DEFAULT_ANVIL_CHAIN;
     } else if (chainCode == "MORPH_TEST_CHAIN") {
