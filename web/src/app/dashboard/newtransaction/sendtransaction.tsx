@@ -944,6 +944,17 @@ export default function SendTransaction({
     //     updateInputFillInChange();
     // }, [upgradeImpl, setUpgradeImpl]);
 
+    const tmpUserProp4L1Chain: UserProperty = {
+        bigBrotherOwnerId: "",
+        email: "",
+        emailDisplay: "",
+        testMode: false,
+        selectedChainCode: bridgeProps.l1ChainCode,
+        accountInfos: undefined,
+        myselfHost: undefined,
+        walletconnectHost: undefined,
+    }; // bridgeProps.l2ChainCode
+
     return (
         <>
             <div id="var_tmp" style={{ display: "none" }}>
@@ -1285,10 +1296,10 @@ export default function SendTransaction({
                                     From:
                                 </Chip>
                                 <SelectedChainIcon
-                                    chainCodeState={
+                                    userProp={
                                         bridgeL1ToL2
-                                            ? bridgeProps.l1ChainCode
-                                            : bridgeProps.l2ChainCode
+                                            ? tmpUserProp4L1Chain
+                                            : userProp // bridgeProps.l2ChainCode
                                     }
                                 ></SelectedChainIcon>
                                 <p>{acctAddr}</p>
@@ -1313,10 +1324,10 @@ export default function SendTransaction({
                                     To: &nbsp;&nbsp;&nbsp;
                                 </Chip>
                                 <SelectedChainIcon
-                                    chainCodeState={
+                                    userProp={
                                         bridgeL1ToL2
-                                            ? bridgeProps.l2ChainCode
-                                            : bridgeProps.l1ChainCode
+                                            ? userProp // bridgeProps.l2ChainCode
+                                            : tmpUserProp4L1Chain
                                     }
                                 ></SelectedChainIcon>
                                 <p>{acctAddr}</p>
