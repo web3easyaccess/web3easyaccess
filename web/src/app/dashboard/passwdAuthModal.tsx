@@ -1,14 +1,20 @@
 "use client";
 
-import { Button, Input } from "@nextui-org/button";
 import {
     Autocomplete,
     AutocompleteItem,
+    Avatar,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
     Popover,
     PopoverContent,
     PopoverTrigger,
     Switch,
     Textarea,
+    useDisclosure,
 } from "@nextui-org/react";
 import {
     Card,
@@ -17,6 +23,9 @@ import {
     Divider,
     Checkbox,
     Tooltip,
+    Image,
+    Button,
+    Input,
 } from "@nextui-org/react";
 
 import { getInputValueById, setInputValueById } from "../lib/elementById";
@@ -74,12 +83,290 @@ const pwdRegex = new RegExp(
     "(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[^a-zA-Z0-9]).{11,30}"
 );
 
-let closeModal = (passwdState: "Yes" | "No" | "New" = "New") => {};
+type PasswdState = "OK" | "ERROR" | "Blank" | "BigBrotherNotCreated";
 
 let fetchPasswdAddr: () => Promise<string>;
 
-export function PrivateInfoModal({
-    onModalClose,
+export function MenuItemOfPasswdAuth({ userProp }: { userProp: UserProperty }) {
+    const [passwdAuthMenuClickedCount, setPasswdAuthMenuClickedCount] =
+        useState(0);
+    const onClickPasswdAuthMenu = () => {
+        console.log(
+            "onClickPasswdAuthMenu, old count:",
+            passwdAuthMenuClickedCount
+        );
+        setPasswdAuthMenuClickedCount(passwdAuthMenuClickedCount + 1);
+    };
+
+    const [passwdState, setPasswdState] = useState("Blank" as PasswdState);
+    const updatePasswdState = (s: PasswdState) => {
+        setPasswdState(s);
+    };
+
+    const getPasswdStateMsg = (ps: PasswdState) => {
+        if (ps == "OK") {
+            return "The password you filled in is correct";
+        } else if (ps == "ERROR") {
+            return "The password you filled in is wrong";
+        } else if (ps == "Blank") {
+            return "To initiate a transaction, you need to fill in the password information first";
+        } else if (ps == "BigBrotherNotCreated") {
+            return "You have not yet created your first account . To initiate a transaction,you need to enter the same password information again.";
+        }
+    };
+
+    const getPasswdStateImg = (ps: PasswdState) => {
+        passwdState == "OK" ? "/pwdSuccess.png" : "/pwdWarning.png";
+        if (ps == "OK") {
+            return "/pwdSuccess.png";
+        } else if (ps == "ERROR") {
+            return "/pwdError.png";
+        } else if (ps == "Blank") {
+            return "/pwdWarning.png";
+        } else if (ps == "BigBrotherNotCreated") {
+            return "/pwdWarning.png";
+        }
+    };
+
+    const unlockBeginTime = useRef(Date.now());
+
+    return (
+        <div>
+            {" "}
+            <ModalPasswdBox
+                passwdAuthMenuClickedCount={passwdAuthMenuClickedCount}
+                updatePasswdState={updatePasswdState}
+                userProp={userProp}
+                unlockBeginTime={unlockBeginTime}
+            ></ModalPasswdBox>
+            <Tooltip content={getPasswdStateMsg(passwdState)}>
+                <div className="flex">
+                    <Avatar
+                        radius="none"
+                        size="sm"
+                        src="/pwdLock.png"
+                        color="default" // default | primary | secondary | success | warning | danger
+                    />
+                    <p
+                        style={{
+                            marginLeft: "10px",
+                            fontSize: "14px",
+                            fontWeight: "bold",
+                            cursor: "pointer",
+                        }}
+                        onClick={(event) => onClickPasswdAuthMenu()}
+                    >
+                        {"Passwd Auth"}
+                    </p>
+                    &nbsp;
+                    <Image
+                        width={30}
+                        radius="none"
+                        alt=""
+                        src={getPasswdStateImg(passwdState)}
+                    />
+                </div>
+            </Tooltip>
+        </div>
+    );
+}
+
+function ModalPasswdBox({
+    passwdAuthMenuClickedCount,
+    updatePasswdState,
+    userProp,
+    unlockBeginTime,
+}: {
+    passwdAuthMenuClickedCount: number;
+    updatePasswdState: (s: PasswdState) => void;
+    userProp: UserProperty;
+    unlockBeginTime: MutableRefObject<number>;
+}) {
+    console.log("ModalPasswdBox, userProp:", userProp);
+    const { isOpen, onOpen, onOpenChange } = useDisclosure();
+    useEffect(() => {
+        if (
+            passwdAuthMenuClickedCount == undefined ||
+            passwdAuthMenuClickedCount == 0
+        ) {
+            return;
+        }
+        onOpen();
+    }, [passwdAuthMenuClickedCount]);
+
+    const piInit: PrivateInfoType = {
+        email: "",
+        pin: "",
+        question1answer: "",
+        question2answer: "",
+        firstQuestionNo: "01",
+        secondQuestionNo: "01",
+        confirmedSecondary: true,
+    };
+    const currentPriInfoRef = useRef(piInit);
+    const oldPriInfoRef = useRef(piInit);
+
+    return (
+        <>
+            {/* <Button onPress={onOpen}>Open Modal</Button> */}
+            <Modal
+                isOpen={isOpen}
+                onOpenChange={onOpenChange}
+                isDismissable={false}
+                isKeyboardDismissDisabled={false}
+                size="4xl"
+                scrollBehavior={"inside"}
+            >
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalBody>
+                                <div style={{ overflow: "scroll" }}>
+                                    <PasswdAuthDetail
+                                        userProp={userProp}
+                                        forTransaction={false}
+                                        currentPriInfoRef={currentPriInfoRef}
+                                        oldPriInfoRef={oldPriInfoRef}
+                                        updateFillInOk={() => {}}
+                                        privateinfoHidden={false}
+                                        updatePrivateinfoHidden={function (
+                                            hidden: boolean
+                                        ): void {
+                                            throw new Error(
+                                                "Function not implemented."
+                                            );
+                                        }}
+                                        closeModal={(
+                                            passwdState: PasswdState
+                                        ) => {
+                                            console.log(
+                                                "passwdState from PasswdAuthDetail:",
+                                                passwdState
+                                            );
+                                            updatePasswdState(passwdState);
+                                            onClose();
+                                        }}
+                                        unlockBeginTime={unlockBeginTime}
+                                    ></PasswdAuthDetail>
+                                </div>
+                            </ModalBody>
+                            <ModalFooter>
+                                {/* <Button
+                                    color="danger"
+                                    variant="light"
+                                    onPress={onClose}
+                                >
+                                    Close
+                                </Button> */}
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+        </>
+    );
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+function LockScreen({
+    currentPriInfoRef,
+    unlockBeginTime,
+    locked,
+    updateLocked,
+}: {
+    currentPriInfoRef: React.MutableRefObject<PrivateInfoType>;
+    unlockBeginTime: MutableRefObject<number>;
+    locked: boolean;
+    updateLocked: (newLocked: boolean) => void;
+}) {
+    const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+
+    useEffect(() => {
+        console.log("xxxxxx8888:", locked);
+        if (locked) {
+            onOpen();
+        } else {
+            onClose();
+        }
+    }, [locked]);
+
+    const [pre4pc, setPre4pc] = useState("");
+
+    const myOnClose = () => {
+        console.log("myOnClose....:isOpen:", isOpen);
+        // to close....check it.
+        if (currentPriInfoRef.current.pin.length > 4) {
+            if (
+                pre4pc.substring(0, 4) ==
+                currentPriInfoRef.current.pin.substring(0, 4)
+            ) {
+                setPre4pc("");
+                updateLocked(false);
+            } else {
+                alert("First 4 characters of the pin code are invalid");
+                onOpen(); // reOpen.
+            }
+        } else {
+            updateLocked(false);
+        }
+    };
+
+    return (
+        <>
+            {" "}
+            <div></div>
+            <Modal
+                backdrop={"blur"}
+                isOpen={isOpen}
+                onClose={myOnClose}
+                onOpenChange={onOpenChange}
+                isDismissable={false}
+                isKeyboardDismissDisabled={false}
+            >
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1">
+                                Unlock
+                            </ModalHeader>
+                            <ModalBody>
+                                <p>
+                                    to unlock, please enter the first 4
+                                    characters of the pin code
+                                </p>
+                                <Input
+                                    type="password"
+                                    label="First 4 characters of the pin code"
+                                    placeholder=""
+                                    defaultValue={pre4pc}
+                                    value={pre4pc}
+                                    onValueChange={setPre4pc}
+                                />
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button
+                                    color="danger"
+                                    variant="light"
+                                    onPress={
+                                        //onClose
+                                        () => {
+                                            onClose();
+                                        }
+                                    }
+                                >
+                                    OK
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+        </>
+    );
+}
+
+function PasswdAuthDetail({
     userProp,
     forTransaction,
     currentPriInfoRef,
@@ -87,8 +374,9 @@ export function PrivateInfoModal({
     updateFillInOk,
     privateinfoHidden,
     updatePrivateinfoHidden,
+    closeModal,
+    unlockBeginTime,
 }: {
-    onModalClose: (passwdState?: "Yes" | "No" | "New") => void;
     userProp: UserProperty;
     forTransaction: boolean;
     currentPriInfoRef: React.MutableRefObject<PrivateInfoType>;
@@ -96,9 +384,9 @@ export function PrivateInfoModal({
     updateFillInOk: any;
     privateinfoHidden: boolean;
     updatePrivateinfoHidden: (hidden: boolean) => void;
+    closeModal: (passwdState: PasswdState) => void;
+    unlockBeginTime: MutableRefObject<number>;
 }) {
-    closeModal = onModalClose;
-
     const questions = pq.questions[1];
     console.log("PrivateInfo Modal, userProp :", userProp);
     let opTypeInit = OP_TYPE.OP_infoForPermit;
@@ -300,9 +588,62 @@ export function PrivateInfoModal({
         );
     }, []);
 
+    const lockTime = 10 * 1000;
+    const [locked, setLocked] = useState(false);
+
+    const updateLocked = (newLocked: boolean) => {
+        setLocked(newLocked);
+        if (newLocked == false) {
+            unlockBeginTime.current = Date.now();
+        }
+    };
+
+    useEffect(() => {
+        const watch = async () => {
+            while (true) {
+                await sleep(10);
+                if (locked) {
+                    break;
+                }
+
+                if (
+                    currentPriInfoRef == undefined ||
+                    currentPriInfoRef.current == undefined ||
+                    currentPriInfoRef.current.pin == undefined
+                ) {
+                    continue;
+                }
+                if (currentPriInfoRef.current.pin.length <= 4) {
+                    continue;
+                }
+                if (
+                    unlockBeginTime == undefined ||
+                    unlockBeginTime.current == undefined
+                ) {
+                    continue;
+                }
+                if (unlockBeginTime.current == 0) {
+                    continue;
+                }
+                if (Date.now() - unlockBeginTime.current > lockTime) {
+                    console.log("lock time xyz.");
+                    updateLocked(true);
+                }
+                await sleep(2000);
+            }
+        };
+        watch();
+    }, []);
+
     return (
         <>
             <div style={{ display: "flex" }}>
+                <LockScreen
+                    currentPriInfoRef={currentPriInfoRef}
+                    unlockBeginTime={unlockBeginTime}
+                    locked={locked}
+                    updateLocked={updateLocked}
+                ></LockScreen>
                 <p
                     style={{
                         fontWeight: "bold",
@@ -490,6 +831,7 @@ export function PrivateInfoModal({
                                     updateFillInOk={updateFillInOk}
                                     submitOpType={submitOpType}
                                     updateSubmitOpType={updateSubmitOpType}
+                                    closeModal={closeModal}
                                 />
                             </>
                         </div>
@@ -590,6 +932,7 @@ function SubmitMessage({
     updateFillInOk,
     submitOpType,
     updateSubmitOpType,
+    closeModal,
 }: {
     email: string;
     verifyingContract: string;
@@ -598,6 +941,7 @@ function SubmitMessage({
     updateFillInOk: any;
     submitOpType: string;
     updateSubmitOpType: any;
+    closeModal: (passwdState: PasswdState) => void;
 }) {
     console.log("SubmitMessage....in,,,,:", submitOpType);
 
@@ -669,53 +1013,22 @@ function SubmitMessage({
             chainObj.chainCode
         );
 
-        let passwdState: "Yes" | "No" | "New" = "New";
-        let chainPasswdAddr = await fetchPasswdAddr();
-        if (chainPasswdAddr == "" || chainPasswdAddr == undefined) {
-            passwdState = "New";
-        } else if (chainPasswdAddr == passwdAccount.address) {
-            passwdState = "Yes";
-        } else {
-            passwdState = "No";
-        }
-
-        // // //
+        let passwdState: PasswdState;
         if (
-            submitOpType == OP_TYPE.OP_newInfoFirstTime ||
-            submitOpType == OP_TYPE.OP_newInfoSecondTime
+            pin1 == "" ||
+            question1_answer_1 == "" ||
+            question2_answer_1 == ""
         ) {
-            // // keccak256(abi.encode(...));
-            // // generate local temporary signature
-            // let argumentsHash = keccak256("0x1234567890abcdef");
-            // console.log(
-            //     "local temporary signature, argumentsHash:",
-            //     argumentsHash
-            // );
-            // let chainId = chainObj.id;
-            // let withZeroNonce = true;
-            // const sign = await signAuth(
-            //     passwdAccount,
-            //     chainId,
-            //     verifyingContract,
-            //     chainObj,
-            //     argumentsHash, // "0xE249dfD432B37872C40c0511cC5A3aE13906F77A0511cC5A3aE13906F77AAA11" // argumentsHash
-            //     withZeroNonce
-            // );
-            // if (submitOpType == OP_TYPE.OP_newInfoFirstTime) {
-            //     setInputValueById(
-            //         "id_private_new_first_time_sign",
-            //         sign.signature
-            //     );
-            // } else if (submitOpType == OP_TYPE.OP_newInfoSecondTime) {
-            //     setInputValueById(
-            //         "id_private_new_second_time_sign",
-            //         sign.signature
-            //     );
-            // }
+            passwdState = "Blank";
         } else {
-            console.log("private ok clicked.");
-            currentPriInfoRef.current.confirmedSecondary = true;
-            updateFillInOk();
+            let chainPasswdAddr = await fetchPasswdAddr();
+            if (chainPasswdAddr == "" || chainPasswdAddr == undefined) {
+                passwdState = "BigBrotherNotCreated";
+            } else if (chainPasswdAddr == passwdAccount.address) {
+                passwdState = "OK";
+            } else {
+                passwdState = "ERROR";
+            }
         }
 
         closeModal(passwdState);
