@@ -1,5 +1,6 @@
 export enum Menu {
     OOOO,
+    PasswdAuth,
     Asset,
     Transactions,
     SendTransaction,

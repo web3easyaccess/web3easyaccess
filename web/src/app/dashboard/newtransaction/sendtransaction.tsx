@@ -245,19 +245,19 @@ export default function SendTransaction({
 
         console.log("xxxxxx110C:", bridgeL1ToL2, currentTabTagRef.current);
         if (bridgeL1ToL2 && currentTabTagRef.current == "bridgeL2AndL1") {
-            console.log("xxxxxx111:");
+            // console.log("xxxxxx111:");
             setInterval(async () => {
                 const cpc = chainPublicClient(
                     bridgeProps.l1ChainCode,
                     factoryAddr
                 );
-                console.log(
-                    "xxxxxx112:",
-                    lineaBridge.getL1MessageServiceContract(
-                        bridgeProps.l1ChainCode
-                    ),
-                    cpc
-                );
+                // console.log(
+                //     "xxxxxx112:",
+                //     lineaBridge.getL1MessageServiceContract(
+                //         bridgeProps.l1ChainCode
+                //     ),
+                //     cpc
+                // );
                 const logs = await cpc.publicClient.getLogs({
                     address: lineaBridge
                         .getL1MessageServiceContract(bridgeProps.l1ChainCode)
@@ -294,8 +294,8 @@ export default function SendTransaction({
                 });
                 // 这里args里需要同时输入 from、to、messagehash才行，不可行。transactionHash也不能作为参数。 只能事先根据自己的transactionHash找到所在的fromBlock，然后找出这里所有的event，然后后面根据from和to进行过滤.
 
-                console.log("xxxxxx113:", logs);
-            }, 1000 * 6);
+                // console.log("xxxxxx113:", logs);
+            }, 1000 * 10);
         }
     }, [
         bridgeL1ToL2,

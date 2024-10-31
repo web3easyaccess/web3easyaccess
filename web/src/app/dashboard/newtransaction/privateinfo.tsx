@@ -47,7 +47,7 @@ import { useRef, useState, useEffect, MutableRefObject } from "react";
 
 import { Menu, UserInfo, uiToString, Transaction } from "../../lib/myTypes";
 import { getChainObj } from "../../lib/myChain";
-import { UserProperty } from "@/app/storage/LocalStore";
+import { UserProperty } from "@/app/storage/userPropertyStore";
 import {
     accountAddrCreated,
     bigBrotherAccountCreated,
@@ -89,7 +89,7 @@ export function PrivateInfo({
     updatePrivateinfoHidden: (hidden: boolean) => void;
 }) {
     const questions = pq.questions[1];
-
+    console.log("PrivateInfo, userProp:", userProp);
     let opTypeInit = OP_TYPE.OP_infoForPermit;
     if (bigBrotherAccountCreated(userProp)) {
         opTypeInit = OP_TYPE.OP_infoForPermit;

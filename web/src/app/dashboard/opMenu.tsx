@@ -1,5 +1,5 @@
 "use client";
-import React, { MutableRefObject } from "react";
+import React, { MutableRefObject, useState } from "react";
 
 import { Key } from "react";
 
@@ -44,7 +44,6 @@ export default function OpMenu({
 }) {
     console.log("selectedMenu ::::", selectedMenu);
     const route = useRouter();
-    const defaultContent = "";
 
     const handlePress = (e: any) => {
         const clickedElement = e.target; // Access the clicked element
@@ -133,7 +132,7 @@ export default function OpMenu({
     };
 
     return (
-        <div style={{ width: "240px" }}>
+        <div>
             <Card>
                 <CardBody>
                     <MenuItem menu={Menu.Asset}></MenuItem>
@@ -177,31 +176,20 @@ export function ShowMain({
 }) {
     // const chainObj = getChainObj(currentUserInfo.chainCode);
 
+    console.log("ShowMain, selectedMenu:", selectedMenu);
     if (selectedMenu == Menu.Asset) {
-        console.log("selectedMenu11111111111:", selectedMenu);
         return <Assets userProp={userProp} />;
     } else if (selectedMenu == Menu.Transactions) {
-        console.log("selectedMenu11111111122:", selectedMenu);
         return <Transactions userProp={userProp} />;
     } else if (selectedMenu == Menu.SendTransaction) {
-        console.log("selectedMenu11111111133:", selectedMenu);
         return (
             <SendTransaction userProp={userProp} loadUserData={loadUserData} />
         );
     } else if (selectedMenu == Menu.PrivateSetting) {
-        console.log("selectedMenu11111111144:", selectedMenu);
-        // alert("coming soon!");
-        // return (
-        //     <div>
-        //         <h3 style={{ fontSize: "40px" }}>coming soon ... </h3>
-        //     </div>
-        // );
         return <SendChgPrivateInfo userProp={userProp} />;
     } else if (selectedMenu == Menu.Connect2Dapps) {
-        console.log("selectedMenu1111111xxxx:", selectedMenu);
         return <Connect2Dapps userProp={userProp} />;
     } else if (selectedMenu == Menu.UpgradeImpl) {
-        console.log("selectedMenu11111111166:", selectedMenu);
         return <UpgradeImpl userProp={userProp} />;
     } else {
         return (
@@ -210,5 +198,4 @@ export function ShowMain({
             </div>
         );
     }
-    console.log("selectedMenu11111111133000:", selectedMenu);
 }

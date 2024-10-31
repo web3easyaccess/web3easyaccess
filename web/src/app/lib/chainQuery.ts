@@ -398,6 +398,48 @@ export async function queryQuestionIdsEnc(
     }
 }
 
+
+
+export async function queryPasswdAddr(
+    chainCode: string,
+    factoryAddr: string,
+    accountAddr: string
+) {
+    try {
+        if (libsolana.isSolana(chainCode)) {
+            return "";
+            // return await libsolana.queryPasswdAddr(
+            //     chainCode,
+            //     factoryAddr,
+            //     accountAddr
+            // );
+        }
+
+        const cpc = chainPublicClient(chainCode, factoryAddr);
+        // console.log("rpc:", cpc.rpcUrl);
+        console.log("factoryAddr in queryPasswdAddr:", chainCode, factoryAddr);
+
+        const passwdAddr = await cpc.publicClient.readContract({
+            account: accountOnlyForRead,
+            address: accountAddr,
+            abi: abis.passwdAddr,
+            functionName: "passwdAddr",
+            args: [],
+        });
+        return passwdAddr;
+    } catch (e) {
+        console.log(
+            "==================queryPasswdAddr error======================, accountAddr=" +
+            accountAddr,
+            e
+        );
+        return "";
+    }
+}
+
+
+
+
 export async function queryTokenDetail(
     chainCode: string,
     factoryAddr: string,
