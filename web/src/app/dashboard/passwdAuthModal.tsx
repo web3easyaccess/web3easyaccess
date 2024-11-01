@@ -12,6 +12,7 @@ import {
     Popover,
     PopoverContent,
     PopoverTrigger,
+    Progress,
     Switch,
     Textarea,
     useDisclosure,
@@ -87,7 +88,54 @@ type PasswdState = "OK" | "ERROR" | "Blank" | "BigBrotherNotCreated";
 
 let fetchPasswdAddr: () => Promise<string>;
 
+export let getAuthPasswdAccount: () => any = () => {
+    throw Error("getAuthPasswdAccount uninitialized");
+};
+
+let setAuthPasswdAccount: (passwdAccount: any) => void = (
+    passwdAccount: any
+) => {
+    throw Error("setAuthPasswdAccount uninitialized");
+};
+
+const LOCK_TIME = 600 * 1000; //
+let getLocked: () => boolean = () => {
+    throw Error("getLocked uninitialized");
+};
+let setLocked: (newLocked: boolean) => void = (newLocked: boolean) => {
+    throw Error("setLocked uninitialized");
+};
+
+let setProgressValue: (r: number, pgMax: number) => void = (
+    r: number,
+    pgMax: number
+) => {
+    throw Error("setProgressValue uninitialized");
+};
+
 export function MenuItemOfPasswdAuth({ userProp }: { userProp: UserProperty }) {
+    const myPasswdAccount = useRef();
+    getAuthPasswdAccount = () => {
+        if (passwdState != "OK") {
+            alert("please input password info first.");
+            throw Error("please input password info first.");
+        }
+        return myPasswdAccount.current;
+    };
+    setAuthPasswdAccount = (passwdAccount: any) => {
+        myPasswdAccount.current = passwdAccount;
+    };
+
+    const [locked, set0Locked] = useState(false);
+    getLocked = () => {
+        return locked;
+    };
+    setLocked = (newLocked: boolean) => {
+        set0Locked(newLocked);
+    };
+
+    /////
+
     const [passwdAuthMenuClickedCount, setPasswdAuthMenuClickedCount] =
         useState(0);
     const onClickPasswdAuthMenu = () => {
@@ -130,6 +178,17 @@ export function MenuItemOfPasswdAuth({ userProp }: { userProp: UserProperty }) {
 
     const unlockBeginTime = useRef(Date.now());
 
+    const [progressValue, set0ProgressValue] = useState(0);
+    const progressMax = useRef(LOCK_TIME);
+    setProgressValue = (r: number, pgMax: number) => {
+        if (pgMax != undefined && pgMax > 0) {
+            progressMax.current = pgMax;
+        }
+        set0ProgressValue(
+            r > progressMax.current ? 100 : (r / progressMax.current) * 100
+        );
+    };
+
     return (
         <div>
             {" "}
@@ -139,6 +198,7 @@ export function MenuItemOfPasswdAuth({ userProp }: { userProp: UserProperty }) {
                 userProp={userProp}
                 unlockBeginTime={unlockBeginTime}
             ></ModalPasswdBox>
+            <Progress size="sm" aria-label="Loading..." value={progressValue} />
             <Tooltip content={getPasswdStateMsg(passwdState)}>
                 <div className="flex">
                     <Avatar
@@ -471,7 +531,8 @@ function PasswdAuthDetail({
 
     const handlePinBlur = () => {
         console.log("handlePinBlur,ac:", forTransaction);
-        let pinX = getInputValueById("id_private_pin_1") as string;
+        let pinX = getInputValueById("aa_id_private_pin_1") as string;
+        console.log("handlePinBlur,pinX.length:", pinX.length);
         if (pinX.length == 0 || !pwdRegex.test(pinX)) {
             setPinErrorMsg(
                 "PIN required: The length is greater than 10, contains special characters for upper and lower case letters"
@@ -484,7 +545,7 @@ function PasswdAuthDetail({
         let myPin = "";
 
         // just see pin1 ,forTransaction
-        let pin1 = getInputValueById("id_private_pin_1");
+        let pin1 = getInputValueById("aa_id_private_pin_1");
         if (pin1.length > 0) {
             currentPriInfoRef.current = {
                 ...currentPriInfoRef.current,
@@ -509,7 +570,7 @@ function PasswdAuthDetail({
 
         // just see question1answer1 ,forTransaction
         let question1answer1 = getInputValueById(
-            "id_private_question1_answer_1"
+            "aa_id_private_question1_answer_1"
         );
         if (question1answer1.length > 0) {
             currentPriInfoRef.current = {
@@ -532,7 +593,7 @@ function PasswdAuthDetail({
 
         // just see question2answer1 ,forTransaction
         let question2answer1 = getInputValueById(
-            "id_private_question2_answer_1"
+            "aa_id_private_question2_answer_1"
         );
         if (question2answer1.length > 0) {
             currentPriInfoRef.current = {
@@ -577,34 +638,29 @@ function PasswdAuthDetail({
         setIsShowWarning(true);
 
         //
-        setInputValueById("id_private_pin_1", currentPriInfoRef.current.pin);
+        setInputValueById("aa_id_private_pin_1", currentPriInfoRef.current.pin);
         setInputValueById(
-            "id_private_question1_answer_1",
+            "aa_id_private_question1_answer_1",
             currentPriInfoRef.current.question1answer
         );
         setInputValueById(
-            "id_private_question2_answer_1",
+            "aa_id_private_question2_answer_1",
             currentPriInfoRef.current.question2answer
         );
     }, []);
-
-    const lockTime = 10 * 1000;
-    const [locked, setLocked] = useState(false);
 
     const updateLocked = (newLocked: boolean) => {
         setLocked(newLocked);
         if (newLocked == false) {
             unlockBeginTime.current = Date.now();
+            setProgressValue(0, LOCK_TIME);
         }
     };
 
     useEffect(() => {
         const watch = async () => {
             while (true) {
-                await sleep(10);
-                if (locked) {
-                    break;
-                }
+                await sleep(100);
 
                 if (
                     currentPriInfoRef == undefined ||
@@ -625,11 +681,13 @@ function PasswdAuthDetail({
                 if (unlockBeginTime.current == 0) {
                     continue;
                 }
-                if (Date.now() - unlockBeginTime.current > lockTime) {
+                const xxx = Date.now() - unlockBeginTime.current;
+                if (xxx > LOCK_TIME) {
                     console.log("lock time xyz.");
                     updateLocked(true);
                 }
-                await sleep(2000);
+                setProgressValue(xxx, 0);
+                await sleep(900);
             }
         };
         watch();
@@ -641,7 +699,7 @@ function PasswdAuthDetail({
                 <LockScreen
                     currentPriInfoRef={currentPriInfoRef}
                     unlockBeginTime={unlockBeginTime}
-                    locked={locked}
+                    locked={getLocked()}
                     updateLocked={updateLocked}
                 ></LockScreen>
                 <p
@@ -722,7 +780,7 @@ function PasswdAuthDetail({
 
                             <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
                                 <Passwd
-                                    id="id_private_pin_1"
+                                    id="aa_id_private_pin_1"
                                     label="pin code"
                                     hint="input private pin code"
                                     onMyBlur={handlePinBlur}
@@ -767,7 +825,7 @@ function PasswdAuthDetail({
                             </Autocomplete>
                             <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
                                 <Passwd
-                                    id="id_private_question1_answer_1"
+                                    id="aa_id_private_question1_answer_1"
                                     label="first question's answer"
                                     hint="input first question's answer"
                                     onMyBlur={handleQuestion1AnswerBlur}
@@ -812,7 +870,7 @@ function PasswdAuthDetail({
                             </Autocomplete>
                             <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
                                 <Passwd
-                                    id="id_private_question2_answer_1"
+                                    id="aa_id_private_question2_answer_1"
                                     label="second question's answer"
                                     hint="input second question's answer"
                                     onMyBlur={handleQuestion2AnswerBlur}
@@ -972,22 +1030,22 @@ function SubmitMessage({
             event.preventDefault();
         }
 
-        let pin1 = getInputValueById("id_private_pin_1");
+        let pin1 = getInputValueById("aa_id_private_pin_1");
         let question1_answer_1 = getInputValueById(
-            "id_private_question1_answer_1"
+            "aa_id_private_question1_answer_1"
         );
         let question2_answer_1 = getInputValueById(
-            "id_private_question2_answer_1"
+            "aa_id_private_question2_answer_1"
         );
 
-        let pin2 = getInputValueById("id_private_pin_2");
+        let pin2 = getInputValueById("aa_id_private_pin_2");
 
         let question1_answer_2 = getInputValueById(
-            "id_private_question1_answer_2"
+            "aa_id_private_question1_answer_2"
         );
 
         let question2_answer_2 = getInputValueById(
-            "id_private_question2_answer_2"
+            "aa_id_private_question2_answer_2"
         );
 
         if (
@@ -1012,6 +1070,7 @@ function SubmitMessage({
             currentPriInfoRef.current,
             chainObj.chainCode
         );
+        setAuthPasswdAccount(passwdAccount);
 
         let passwdState: PasswdState;
         if (

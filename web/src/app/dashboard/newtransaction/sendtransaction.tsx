@@ -105,6 +105,8 @@ import {
     UpdateUserProperty,
 } from "@/app/storage/userPropertyStore";
 
+import { getAuthPasswdAccount } from "@/app/dashboard/passwdAuthModal";
+
 const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
     let questionNosEnc = qNo1 + qNo2 + generateRandomString();
     console.log("questionNosEnc1:", questionNosEnc);
@@ -656,10 +658,11 @@ export default function SendTransaction({
                     currentPriInfoRef.current.question2answer != "" &&
                     currentPriInfoRef.current.confirmedSecondary == true
                 ) {
-                    const passwdAccount = getPasswdAccount(
-                        currentPriInfoRef.current,
-                        chainObj.chainCode
-                    );
+                    // const passwdAccount = getPasswdAccount(
+                    //     currentPriInfoRef.current,
+                    //     chainObj.chainCode
+                    // );
+                    const passwdAccount = getAuthPasswdAccount();
 
                     const questionNosEnc = questionNosEncode(
                         currentPriInfoRef.current.firstQuestionNo,
@@ -1588,10 +1591,11 @@ function CreateTransaction({
             return;
         }
         // myOwnerId
-        const passwdAccount = getPasswdAccount(
-            currentPriInfoRef.current,
-            chainObj.chainCode
-        );
+        // const passwdAccount = getPasswdAccount(
+        //     currentPriInfoRef.current,
+        //     chainObj.chainCode
+        // );
+        const passwdAccount = getAuthPasswdAccount();
 
         // keccak256(abi.encode(...));
         console.log("encodeAbiParameters1111zzzz:", receiverAddr, amount);
