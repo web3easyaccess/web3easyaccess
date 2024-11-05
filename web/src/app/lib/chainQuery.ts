@@ -433,7 +433,7 @@ export async function queryPasswdAddr(
             accountAddr,
             e
         );
-        return "";
+        return "0x0";
     }
 }
 

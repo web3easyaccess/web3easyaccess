@@ -210,6 +210,11 @@ export const sendMsgUntilSuccess = async (
 };
 
 async function handleMsgReceived(event: { origin: any; data: string }) {
+    console.log("Main,handleMsgReceived,event:", event);
+    console.log(
+        "Main,handleMsgReceived,getWalletConnectHost:",
+        getWalletConnectHost()
+    );
     if (event.origin != getWalletConnectHost()) {
         return;
     }

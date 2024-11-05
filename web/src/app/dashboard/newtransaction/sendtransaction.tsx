@@ -44,6 +44,7 @@ import {
     TableRow,
     TableCell,
     Textarea,
+    Progress,
 } from "@nextui-org/react";
 
 import { Button } from "@nextui-org/button";
@@ -80,7 +81,7 @@ import {
 } from "../../lib/chainQuery";
 import { getInputValueById, setInputValueById } from "../../lib/elementById";
 
-import { PrivateInfo } from "./privateinfo";
+// import { PrivateInfo } from "./privateinfo";
 
 import { getChainObj } from "../../lib/myChain";
 
@@ -105,7 +106,7 @@ import {
     UpdateUserProperty,
 } from "@/app/storage/userPropertyStore";
 
-import { getAuthPasswdAccount } from "@/app/dashboard/passwdAuthModal";
+import { getAuthPasswdAccount } from "@/app/dashboard/passwdauth/passwdAuthModal";
 
 const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
     let questionNosEnc = qNo1 + qNo2 + generateRandomString();
@@ -396,11 +397,6 @@ export default function SendTransaction({
         };
     };
 
-    const [privateinfoHidden, setPrivateinfoHidden] = useState(false);
-    const updatePrivateinfoHidden = (hidden: boolean) => {
-        setPrivateinfoHidden(hidden);
-    };
-
     const [buttonText, setButtonText] = useState("Send ETH");
 
     const [privateFillInOk, setPrivateFillInOk] = useState(0);
@@ -589,32 +585,6 @@ export default function SendTransaction({
 
     const [myAccountCreated, setMyAccountCreated] = useState(false);
 
-    const piInit: PrivateInfoType = {
-        email: "",
-        pin: "",
-        question1answer: "",
-        question2answer: "",
-        firstQuestionNo: "01",
-        secondQuestionNo: "01",
-        confirmedSecondary: true,
-    };
-    const currentPriInfoRef = useRef(piInit);
-    const oldPriInfoRef = useRef(piInit);
-
-    // const [myPrivateInfo, setMyPrivateInfo] = useState({
-    //     email: "",
-    //     pin: "",
-    //     questionNos: "",
-    //     question1answer: "",
-    //     question2answer: "",
-    //     bigBrotherCreated: true,
-    // });
-    // const myPrivateInfoRef = useRef(myPrivateInfo);
-    // const updateTransactionByPriInfo = (private_info: any) => {
-    //     setMyPrivateInfo(private_info);
-    //     myPrivateInfoRef.current = private_info;
-    // };
-
     const [currentTx, setCurrentTx] = useState("");
     const updateCurrentTx = (tx: string) => {
         setCurrentTx(tx);
@@ -634,7 +604,6 @@ export default function SendTransaction({
         const refreshFee = async () => {
             console.log("please waiting ...123.");
             setTransactionFee("Please Waiting ... ");
-            setPrivateinfoHidden(false);
             setCurrentTx("");
             try {
                 const {
@@ -649,26 +618,12 @@ export default function SendTransaction({
                     `readReceiverInfo, tokenAddr=${tokenAddr}, nftId=${nftId}`
                 );
 
-                if (
-                    receiverAddr != "" &&
-                    (amount != "" || nftId != "") &&
-                    currentPriInfoRef.current.email != "" &&
-                    currentPriInfoRef.current.pin != "" &&
-                    currentPriInfoRef.current.question1answer != "" &&
-                    currentPriInfoRef.current.question2answer != "" &&
-                    currentPriInfoRef.current.confirmedSecondary == true
-                ) {
+                if (receiverAddr != "" && (amount != "" || nftId != "")) {
                     // const passwdAccount = getPasswdAccount(
                     //     currentPriInfoRef.current,
                     //     chainObj.chainCode
                     // );
                     const passwdAccount = getAuthPasswdAccount();
-
-                    const questionNosEnc = questionNosEncode(
-                        currentPriInfoRef.current.firstQuestionNo,
-                        currentPriInfoRef.current.secondQuestionNo,
-                        currentPriInfoRef.current.pin
-                    );
 
                     let eFee;
                     if (
@@ -729,10 +684,10 @@ export default function SendTransaction({
                             transferTokenData,
                             chainObj,
                             theAccountCreated,
-                            questionNosEnc,
+                            // questionNosEnc,
                             preparedPriceRef,
                             bridgeDirection,
-                            currentPriInfoRef,
+                            // currentPriInfoRef,
                             nativeCoinSymbol,
                             upgradeImpl
                         );
@@ -747,10 +702,10 @@ export default function SendTransaction({
                             "",
                             chainObj,
                             myAccountCreated,
-                            questionNosEnc,
+                            // questionNosEnc,
                             preparedPriceRef,
                             bridgeDirection,
-                            currentPriInfoRef,
+                            // currentPriInfoRef,
                             nativeCoinSymbol,
                             upgradeImpl
                         );
@@ -761,11 +716,9 @@ export default function SendTransaction({
                         console.log(
                             "[ERROR]:" +
                                 eFee.feeDisplay +
-                                "....currentPriInfoRef.current:",
-                            currentPriInfoRef.current
+                                "....currentPriInfoRef.current:"
                         );
                     } else {
-                        setPrivateinfoHidden(true);
                         if (privateFillInOk == 0) {
                             updateFillInOk();
                         }
@@ -828,20 +781,11 @@ export default function SendTransaction({
         //
         refreshFee();
     }, [
-        privateFillInOk,
-        setPrivateFillInOk,
+        // privateFillInOk,
+        // setPrivateFillInOk,
         inputFillInChange,
         setInputFillInChange,
     ]);
-
-    //   const privateInfo: PrivateInfoType = {
-    //     email: email,
-    //     pin: pin1,
-    //     question1answer: question1_answer_1,
-    //     question2answer: question2_answer_1,
-    //   };
-
-    // className="max-w-[400px]"
 
     useEffect(() => {
         const fetchMyAccountStatus = async () => {
@@ -1415,17 +1359,7 @@ export default function SendTransaction({
                         ? { display: "block" }
                         : { display: "none" }
                 }
-            >
-                <PrivateInfo
-                    userProp={userProp}
-                    forTransaction={true}
-                    currentPriInfoRef={currentPriInfoRef}
-                    oldPriInfoRef={oldPriInfoRef}
-                    updateFillInOk={updateFillInOk}
-                    privateinfoHidden={privateinfoHidden}
-                    updatePrivateinfoHidden={updatePrivateinfoHidden}
-                ></PrivateInfo>
-            </div>
+            ></div>
             <div
                 style={
                     transactionFee.indexOf("ERROR") >= 0
@@ -1449,6 +1383,7 @@ export default function SendTransaction({
                     placeholder=""
                     defaultValue={transactionFee}
                     value={transactionFee}
+                    title={transactionFee}
                     radius="sm"
                     style={{ fontWeight: "bold", fontSize: "16px" }}
                 />
@@ -1505,7 +1440,6 @@ export default function SendTransaction({
                         chainObj={chainObj}
                         buttonText={buttonText}
                         myAccountCreated={myAccountCreated}
-                        currentPriInfoRef={currentPriInfoRef}
                         preparedPriceRef={preparedPriceRef}
                         updateCurrentTx={updateCurrentTx}
                         readReceiverInfo={readReceiverInfo}
@@ -1530,7 +1464,6 @@ function CreateTransaction({
     chainObj,
     buttonText,
     myAccountCreated,
-    currentPriInfoRef,
     preparedPriceRef,
     updateCurrentTx,
     readReceiverInfo,
@@ -1544,7 +1477,6 @@ function CreateTransaction({
     chainObj: any;
     buttonText: string;
     myAccountCreated: boolean;
-    currentPriInfoRef: React.MutableRefObject<PrivateInfoType>;
     preparedPriceRef: any;
     updateCurrentTx: any;
     readReceiverInfo: any;
@@ -1552,152 +1484,126 @@ function CreateTransaction({
     nativeCoinSymbol: string;
     upgradeImpl: boolean;
 }) {
-    const { pending } = useFormStatus();
+    // const { pending } = useFormStatus();
+
+    const [btnDisable, setBtnDisable] = useState(false);
 
     const handleClick = async (event) => {
-        if (pending) {
-            event.preventDefault();
-            return;
-        }
-
-        const {
-            receiverAddr,
-            amount,
-            tokenAddr,
-            amountDecimals,
-            nftId,
-            bridgeDirection,
-        } = readReceiverInfo();
-
-        if (isNaN(parseFloat(amount)) && nftId == "") {
-            alert("NFT ID or Amount invalid!");
-            return;
-        }
-
-        // let pin1 = getInputValueById("id_private_pin_1");
-        // let question1_answer_1 = getInputValueById(
-        //     "id_private_question1_answer_1"
-        // );
-        // let question2_answer_1 = getInputValueById(
-        //     "id_private_question2_answer_1"
-        // );
-        if (
-            currentPriInfoRef.current.pin == "" ||
-            currentPriInfoRef.current.question1answer == "" ||
-            currentPriInfoRef.current.question2answer == ""
-        ) {
-            console.log("private info invalid:", currentPriInfoRef.current);
-            alert("please input private info first!");
-            return;
-        }
-        // myOwnerId
-        // const passwdAccount = getPasswdAccount(
-        //     currentPriInfoRef.current,
-        //     chainObj.chainCode
-        // );
-        const passwdAccount = getAuthPasswdAccount();
-
-        // keccak256(abi.encode(...));
-        console.log("encodeAbiParameters1111zzzz:", receiverAddr, amount);
-        let myDetectEstimatedFee = BigInt(0);
-
-        const questionNosEnc = questionNosEncode(
-            currentPriInfoRef.current.firstQuestionNo,
-            currentPriInfoRef.current.secondQuestionNo,
-            currentPriInfoRef.current.pin
-        );
-
-        let tx = "";
-
-        if (
-            tokenAddr != undefined &&
-            tokenAddr != null &&
-            tokenAddr.length > 2
-        ) {
-            let amountETH = "0";
-            let transferTokenData;
-            let theAccountCreated = myAccountCreated;
-            if (bridgeDirection != "") {
-                // bridge between L1 and L2linea.
-                const packedRes = lineaBridge.packDataOfBridgingETH(
-                    bridgeDirection,
-                    receiverAddr,
-                    amount
-                );
-                transferTokenData = packedRes.data;
-                amountETH = packedRes.amountETH;
-                if (bridgeDirection == "L1ToL2") {
-                    console.log("queryAccount...4");
-                    const acct = await queryAccount(
-                        chainObj.l1ChainCode,
-                        factoryAddr, // if l1 and l2 's factoryAddr is different, it may be error.
-                        myOwnerId
-                    );
-                    theAccountCreated = acct.created;
-                }
-            } else if (nftId != "") {
-                console.log("nft transer From 2...");
-                transferTokenData = encodeFunctionData({
-                    abi: abis.transferFrom,
-                    functionName: "transferFrom",
-                    args: [verifyingContract, receiverAddr, BigInt(nftId)],
-                });
-            } else {
-                // to address, value uint256;
-                transferTokenData = encodeFunctionData({
-                    abi: abis.transfer,
-                    functionName: "transfer",
-                    args: [receiverAddr, parseUnits(amount, amountDecimals)],
-                });
-            }
-            tx = await executeTransaction(
-                myOwnerId,
-                verifyingContract,
-                passwdAccount,
-                tokenAddr,
-                amountETH,
-                transferTokenData,
-                chainObj,
-                theAccountCreated,
-                questionNosEnc,
-                preparedPriceRef,
-                bridgeDirection,
-                currentPriInfoRef,
-                nativeCoinSymbol,
-                upgradeImpl
-            );
-        } else {
-            tx = await executeTransaction(
-                myOwnerId,
-                verifyingContract,
-                passwdAccount,
+        // if (pending) {
+        //     event.preventDefault();
+        //     return;
+        // }
+        setBtnDisable(true);
+        try {
+            const {
                 receiverAddr,
                 amount,
-                "",
-                chainObj,
-                myAccountCreated,
-                questionNosEnc,
-                preparedPriceRef,
-                "",
-                currentPriInfoRef,
-                nativeCoinSymbol,
-                upgradeImpl
-            );
+                tokenAddr,
+                amountDecimals,
+                nftId,
+                bridgeDirection,
+            } = readReceiverInfo();
+
+            if (isNaN(parseFloat(amount)) && nftId == "") {
+                alert("NFT ID or Amount invalid!");
+                return;
+            }
+
+            const passwdAccount = getAuthPasswdAccount();
+
+            // keccak256(abi.encode(...));
+            console.log("encodeAbiParameters1111zzzz:", receiverAddr, amount);
+            let myDetectEstimatedFee = BigInt(0);
+
+            let tx = "";
+
+            if (
+                tokenAddr != undefined &&
+                tokenAddr != null &&
+                tokenAddr.length > 2
+            ) {
+                let amountETH = "0";
+                let transferTokenData;
+                let theAccountCreated = myAccountCreated;
+                if (bridgeDirection != "") {
+                    // bridge between L1 and L2linea.
+                    const packedRes = lineaBridge.packDataOfBridgingETH(
+                        bridgeDirection,
+                        receiverAddr,
+                        amount
+                    );
+                    transferTokenData = packedRes.data;
+                    amountETH = packedRes.amountETH;
+                    if (bridgeDirection == "L1ToL2") {
+                        console.log("queryAccount...4");
+                        const acct = await queryAccount(
+                            chainObj.l1ChainCode,
+                            factoryAddr, // if l1 and l2 's factoryAddr is different, it may be error.
+                            myOwnerId
+                        );
+                        theAccountCreated = acct.created;
+                    }
+                } else if (nftId != "") {
+                    console.log("nft transer From 2...");
+                    transferTokenData = encodeFunctionData({
+                        abi: abis.transferFrom,
+                        functionName: "transferFrom",
+                        args: [verifyingContract, receiverAddr, BigInt(nftId)],
+                    });
+                } else {
+                    // to address, value uint256;
+                    transferTokenData = encodeFunctionData({
+                        abi: abis.transfer,
+                        functionName: "transfer",
+                        args: [
+                            receiverAddr,
+                            parseUnits(amount, amountDecimals),
+                        ],
+                    });
+                }
+                tx = await executeTransaction(
+                    myOwnerId,
+                    verifyingContract,
+                    passwdAccount,
+                    tokenAddr,
+                    amountETH,
+                    transferTokenData,
+                    chainObj,
+                    theAccountCreated,
+                    // questionNosEnc,
+                    preparedPriceRef,
+                    bridgeDirection,
+                    // currentPriInfoRef,
+                    nativeCoinSymbol,
+                    upgradeImpl
+                );
+            } else {
+                tx = await executeTransaction(
+                    myOwnerId,
+                    verifyingContract,
+                    passwdAccount,
+                    receiverAddr,
+                    amount,
+                    "",
+                    chainObj,
+                    myAccountCreated,
+                    // questionNosEnc,
+                    preparedPriceRef,
+                    bridgeDirection,
+                    // currentPriInfoRef,
+                    nativeCoinSymbol,
+                    upgradeImpl
+                );
+            }
+
+            updateCurrentTx(tx);
+        } catch (e) {
+            console.log("create transaction error:", e);
         }
-
-        updateCurrentTx(tx);
-
-        // signature: signature, eoa: eoa, nonce: nonce.toString()
-        // document.getElementById("id_newtrans_owner_id").value = ownerId;
-        // document.getElementById("id_newtrans_signature").value = sign.signature;
-        // document.getElementById("id_newtrans_passwd_addr").value = sign.eoa;
-        // document.getElementById("id_newtrans_nonce").value = sign.nonce;
+        setBtnDisable(false);
     };
 
     return (
-        // <button aria-disabled={pending} type="submit" onClick={handleClick}>
-        //   Login
-        // </button>
         <div
             style={{
                 marginTop: "10px",
@@ -1710,8 +1616,10 @@ function CreateTransaction({
                     <p style={{ fontSize: "14px" }}>Add to Batch</p>
                 </Checkbox> */}
             </div>
+
             <Button
-                disabled={pending}
+                // disabled={pending}
+                isDisabled={btnDisable}
                 type="button"
                 onPress={handleClick}
                 color="primary"
@@ -1719,6 +1627,15 @@ function CreateTransaction({
             >
                 {buttonText}
             </Button>
+            {btnDisable ? (
+                <Progress
+                    size="sm"
+                    isIndeterminate
+                    aria-label="Loading..."
+                    className="max-w-md"
+                    style={{ marginTop: "6px" }}
+                />
+            ) : null}
         </div>
     );
 }
@@ -1742,10 +1659,10 @@ async function estimateTransFee(
         l1ChainCode: ChainCode;
     },
     myAccountCreated: boolean,
-    questionNos: string,
+    // questionNos: string,
     preparedPriceRef: any,
     bridgeDirection: string,
-    currentPriInfoRef: React.MutableRefObject<PrivateInfoType>,
+    // currentPriInfoRef: React.MutableRefObject<PrivateInfoType>,
     nativeCoinSymbol: string,
     upgradeImpl: boolean
 ) {
@@ -1850,7 +1767,7 @@ async function estimateTransFee(
                 BigInt(0),
                 BigInt(0),
                 bridgeDirection,
-                currentPriInfoRef.current,
+                "", // currentPriInfoRef.current,
                 upgradeImpl
             );
         } else {
@@ -1863,7 +1780,7 @@ async function estimateTransFee(
                 chainObj.chainCode,
                 myOwnerId,
                 passwdAccount.address,
-                questionNos,
+                "", // questionNos,
                 receiverAddr,
                 receiverAmt,
                 receiverData,
@@ -1874,7 +1791,7 @@ async function estimateTransFee(
                 BigInt(0),
                 BigInt(0),
                 bridgeDirection,
-                currentPriInfoRef.current
+                "" // currentPriInfoRef.current
             );
         }
 
@@ -1956,10 +1873,10 @@ export async function executeTransaction(
         l1ChainCode: ChainCode;
     },
     myAccountCreated: boolean,
-    questionNos: string,
+    // questionNos: string,
     preparedPriceRef: any,
     bridgeDirection: string,
-    currentPriInfoRef: React.MutableRefObject<PrivateInfoType>,
+    //   currentPriInfoRef: React.MutableRefObject<PrivateInfoType>,
     nativeCoinSymbol: string,
     upgradeImpl: boolean
 ) {
@@ -1972,10 +1889,10 @@ export async function executeTransaction(
         receiverData,
         chainObj,
         myAccountCreated,
-        questionNos,
+        // questionNos,
         preparedPriceRef,
         bridgeDirection,
-        currentPriInfoRef,
+        //    currentPriInfoRef,
         nativeCoinSymbol,
         upgradeImpl
     );
@@ -2080,7 +1997,7 @@ export async function executeTransaction(
             preparedPriceRef.current.preparedMaxFeePerGas,
             preparedPriceRef.current.preparedGasPrice,
             bridgeDirection,
-            currentPriInfoRef.current,
+            "", // currentPriInfoRef.current,
             upgradeImpl
         );
     } else {
@@ -2093,7 +2010,7 @@ export async function executeTransaction(
             chainObj.chainCode,
             myOwnerId,
             passwdAccount.address,
-            questionNos,
+            "", // questionNos,
             receiverAddr,
             receiverAmt,
             receiverData,
@@ -2104,7 +2021,7 @@ export async function executeTransaction(
             preparedPriceRef.current.preparedMaxFeePerGas,
             preparedPriceRef.current.preparedGasPrice,
             bridgeDirection,
-            currentPriInfoRef.current
+            "" // currentPriInfoRef.current
         );
     }
 

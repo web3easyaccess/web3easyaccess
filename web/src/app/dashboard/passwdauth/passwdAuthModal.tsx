@@ -29,12 +29,12 @@ import {
     Input,
 } from "@nextui-org/react";
 
-import { getInputValueById, setInputValueById } from "../lib/elementById";
-import { aesEncrypt, aesDecrypt } from "../lib/crypto.mjs";
+import { getInputValueById, setInputValueById } from "../../lib/elementById";
+import { aesEncrypt, aesDecrypt } from "../../lib/crypto.mjs";
 import {
     generateRandomDigitInteger,
     generateRandomString,
-} from "../lib/myRandom";
+} from "../../lib/myRandom";
 
 import {
     keccak256,
@@ -44,19 +44,20 @@ import {
     parseEther,
 } from "viem";
 import { useRouter } from "next/navigation";
-import { queryPasswdAddr, queryQuestionIdsEnc } from "../lib/chainQuery";
+import { queryPasswdAddr, queryQuestionIdsEnc } from "../../lib/chainQuery";
 
-import pq from "./privateinfo/passwdQuestion.json";
+import pq from "../privateinfo/passwdQuestion.json";
 
-import Passwd from "./privateinfo/passwd2";
-import { getPasswdAccount, PrivateInfoType } from "../lib/client/keyTools";
-import { signAuth } from "../lib/client/signAuthTypedData";
+import Passwd from "../privateinfo/passwd2";
+import PasswdInput from "./passwdInput";
+import { getPasswdAccount, PrivateInfoType } from "../../lib/client/keyTools";
+import { signAuth } from "../../lib/client/signAuthTypedData";
 
-import popularAddr from "../lib/client/popularAddr";
+import popularAddr from "../../lib/client/popularAddr";
 import { useRef, useState, useEffect, MutableRefObject } from "react";
 
-import { Menu, UserInfo, uiToString, Transaction } from "../lib/myTypes";
-import { getChainObj } from "../lib/myChain";
+import { Menu, UserInfo, uiToString, Transaction } from "../../lib/myTypes";
+import { getChainObj } from "../../lib/myChain";
 import {
     bigBrotherAccountCreated,
     UserProperty,
@@ -98,6 +99,16 @@ let setAuthPasswdAccount: (passwdAccount: any) => void = (
     throw Error("setAuthPasswdAccount uninitialized");
 };
 
+let getAuthPasswdAccountTmp: () => any = () => {
+    throw Error("getAuthPasswdAccountTmp uninitialized");
+};
+
+let setAuthPasswdAccountTmp: (passwdAccount: any) => void = (
+    passwdAccount: any
+) => {
+    throw Error("setAuthPasswdAccountTmp uninitialized");
+};
+
 const LOCK_TIME = 600 * 1000; //
 let getLocked: () => boolean = () => {
     throw Error("getLocked uninitialized");
@@ -113,17 +124,121 @@ let setProgressValue: (r: number, pgMax: number) => void = (
     throw Error("setProgressValue uninitialized");
 };
 
+type PasswdInfo = {
+    pinCode: string;
+    questoin1No: string;
+    question1Ans: string;
+    question2No: string;
+    question2Ans: string;
+};
+
+let setPasswdInfo: (pwd: PasswdInfo) => void = (pwd: PasswdInfo) => {
+    throw Error("setPasswdInfo uninit...");
+};
+
+let getPasswdInfo: () => PasswdInfo = () => {
+    throw Error("getPasswdInfo uninit...");
+};
+
+let setPinCodeValue: (val: string) => void = (val: string) => {
+    throw Error("setPinCodeValue uninit...");
+};
+
+let getPinCodeValue: () => string = () => {
+    throw Error("getPinCodeValue uninit...");
+};
+
+let setQuestion1AnsValue: (val: string) => void = (val: string) => {
+    throw Error("setQuestion1AnsValue uninit...");
+};
+
+let getQuestion1AnsValue: () => string = () => {
+    throw Error("getQuestion1AnsValue uninit...");
+};
+
+let setQuestion2AnsValue: (val: string) => void = (val: string) => {
+    throw Error("setQuestion2AnsValue uninit...");
+};
+
+let getQuestion2AnsValue: () => string = () => {
+    throw Error("getQuestion2AnsValue uninit...");
+};
+
+let clickPopButton: (msg: string) => void = (msg: string) => {
+    throw Error("clickPopButton uninit...");
+};
+
 export function MenuItemOfPasswdAuth({ userProp }: { userProp: UserProperty }) {
-    const myPasswdAccount = useRef();
+    console.log("MenuItemOfPasswdAuth init ...");
+
+    const [pinCodeValue, set0PinCodeValue] = useState("");
+    setPinCodeValue = (val: string) => {
+        set0PinCodeValue(val);
+    };
+    getPinCodeValue = () => {
+        return pinCodeValue;
+    };
+
+    const [question1AnsValue, set0Question1AnsValue] = useState("");
+    setQuestion1AnsValue = (val: string) => {
+        set0Question1AnsValue(val);
+    };
+    getQuestion1AnsValue = () => {
+        return question1AnsValue;
+    };
+
+    const [question2AnsValue, set0Question2AnsValue] = useState("");
+    setQuestion2AnsValue = (val: string) => {
+        set0Question2AnsValue(val);
+    };
+    getQuestion2AnsValue = () => {
+        return question2AnsValue;
+    };
+
+    const passwdInfoRef = useRef({
+        pinCode: "",
+        questoin1No: "",
+        question1Ans: "",
+        question2No: "",
+        question2Ans: "",
+    } as PasswdInfo);
+    const [passwdInfo, set0PasswdInfo] = useState(passwdInfoRef.current);
+    setPasswdInfo = (pwd: PasswdInfo) => {
+        passwdInfoRef.current = pwd;
+        set0PasswdInfo(pwd);
+    };
+    getPasswdInfo = () => {
+        return passwdInfoRef.current;
+    };
+
+    const authPasswdAccount = useRef();
     getAuthPasswdAccount = () => {
         if (passwdState != "OK") {
-            alert("please input password info first.");
-            throw Error("please input password info first.");
+            let msg =
+                "Please click [Passwd Auth] on the left and enter the correct password information";
+            clickPopButton(msg);
+            throw Error(msg);
         }
-        return myPasswdAccount.current;
+        if (getLocked()) {
+            let msg =
+                "Please click [Passwd Auth] on the left and unlock the password form";
+            clickPopButton(msg);
+            throw Error(msg);
+        }
+        return authPasswdAccount.current;
     };
+
     setAuthPasswdAccount = (passwdAccount: any) => {
-        myPasswdAccount.current = passwdAccount;
+        authPasswdAccount.current = passwdAccount;
+    };
+
+    // when need input twice, first passwd store here tmp.
+    const authPasswdAccountTmp = useRef();
+    getAuthPasswdAccountTmp = () => {
+        return authPasswdAccountTmp.current;
+    };
+    setAuthPasswdAccountTmp = (passwdAccount: any) => {
+        authPasswdAccountTmp.current = passwdAccount;
     };
 
     const [locked, set0Locked] = useState(false);
@@ -189,16 +304,45 @@ export function MenuItemOfPasswdAuth({ userProp }: { userProp: UserProperty }) {
         );
     };
 
+    const [popMsg, setPopMsg] = useState("");
+    const popBtnRef = useRef(null as HTMLButtonElement | null);
+    clickPopButton = (msg: string) => {
+        setPopMsg(msg);
+        popBtnRef.current?.click();
+        setTimeout(() => {
+            popBtnRef.current?.click();
+        }, 5000);
+    };
+
     return (
         <div>
-            {" "}
+            <div style={{ height: "0px" }}>
+                <Popover placement="top-start" color={"warning"}>
+                    <PopoverTrigger style={{ height: "0px" }}>
+                        <Button ref={popBtnRef}></Button>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                        <div className="px-1 py-2">
+                            {/* <div className="text-small font-bold">
+                                Passwd Auth
+                            </div> */}
+                            <div className="text-small">{popMsg}</div>
+                        </div>
+                    </PopoverContent>
+                </Popover>
+            </div>{" "}
             <ModalPasswdBox
                 passwdAuthMenuClickedCount={passwdAuthMenuClickedCount}
                 updatePasswdState={updatePasswdState}
                 userProp={userProp}
                 unlockBeginTime={unlockBeginTime}
             ></ModalPasswdBox>
-            <Progress size="sm" aria-label="Loading..." value={progressValue} />
+            <Progress
+                size="sm"
+                aria-label="Loading..."
+                color={progressValue == 100 ? "danger" : "primary"}
+                value={progressValue}
+            />
             <Tooltip content={getPasswdStateMsg(passwdState)}>
                 <div className="flex">
                     <Avatar
@@ -274,7 +418,7 @@ function ModalPasswdBox({
                 onOpenChange={onOpenChange}
                 isDismissable={false}
                 isKeyboardDismissDisabled={false}
-                size="4xl"
+                size="3xl"
                 scrollBehavior={"inside"}
             >
                 <ModalContent>
@@ -287,7 +431,6 @@ function ModalPasswdBox({
                                         forTransaction={false}
                                         currentPriInfoRef={currentPriInfoRef}
                                         oldPriInfoRef={oldPriInfoRef}
-                                        updateFillInOk={() => {}}
                                         privateinfoHidden={false}
                                         updatePrivateinfoHidden={function (
                                             hidden: boolean
@@ -431,7 +574,6 @@ function PasswdAuthDetail({
     forTransaction,
     currentPriInfoRef,
     oldPriInfoRef,
-    updateFillInOk,
     privateinfoHidden,
     updatePrivateinfoHidden,
     closeModal,
@@ -441,7 +583,6 @@ function PasswdAuthDetail({
     forTransaction: boolean;
     currentPriInfoRef: React.MutableRefObject<PrivateInfoType>;
     oldPriInfoRef: React.MutableRefObject<PrivateInfoType>;
-    updateFillInOk: any;
     privateinfoHidden: boolean;
     updatePrivateinfoHidden: (hidden: boolean) => void;
     closeModal: (passwdState: PasswdState) => void;
@@ -449,15 +590,6 @@ function PasswdAuthDetail({
 }) {
     const questions = pq.questions[1];
     console.log("PrivateInfo Modal, userProp :", userProp);
-    let opTypeInit = OP_TYPE.OP_infoForPermit;
-
-    const [submitOpType, setSubmitOpType] = useState(opTypeInit);
-    const updateSubmitOpType = (newType: any) => {
-        setSubmitOpType(newType);
-    };
-    useEffect(() => {
-        updateSubmitOpType(opTypeInit);
-    }, [opTypeInit]);
 
     console.log("PrivateInfo, currentPriInfoRef init...1");
     if (currentPriInfoRef.current.email == "") {
@@ -515,15 +647,18 @@ function PasswdAuthDetail({
     };
 
     fetchPasswdAddr = async () => {
-        if (!bigBrotherAccountCreated(userProp)) {
+        console.log("fetchPasswdAddr,1,", userProp);
+        const bbac = bigBrotherAccountCreated(userProp);
+        if (!bbac) {
             return "";
         }
-
+        console.log("fetchPasswdAddr,2,", bbac);
         const passwdAddr = await queryPasswdAddr(
             userProp.selectedChainCode,
             readFactoryAddr(userProp),
             readBigBrotherAcctAddr(userProp)
         );
+        console.log("fetchPasswdAddr,3,", passwdAddr);
         return "" + passwdAddr;
     };
 
@@ -531,9 +666,11 @@ function PasswdAuthDetail({
 
     const handlePinBlur = () => {
         console.log("handlePinBlur,ac:", forTransaction);
-        let pinX = getInputValueById("aa_id_private_pin_1") as string;
-        console.log("handlePinBlur,pinX.length:", pinX.length);
-        if (pinX.length == 0 || !pwdRegex.test(pinX)) {
+        console.log("handlePinBlur,pinX.length:", getPinCodeValue().length);
+        if (
+            getPinCodeValue().length == 0 ||
+            !pwdRegex.test(getPinCodeValue())
+        ) {
             setPinErrorMsg(
                 "PIN required: The length is greater than 10, contains special characters for upper and lower case letters"
             );
@@ -545,11 +682,10 @@ function PasswdAuthDetail({
         let myPin = "";
 
         // just see pin1 ,forTransaction
-        let pin1 = getInputValueById("aa_id_private_pin_1");
-        if (pin1.length > 0) {
+        if (getPinCodeValue().length > 0) {
             currentPriInfoRef.current = {
                 ...currentPriInfoRef.current,
-                pin: pin1,
+                pin: getPinCodeValue(),
             };
         } else {
             currentPriInfoRef.current = {
@@ -568,14 +704,10 @@ function PasswdAuthDetail({
     const handleQuestion1AnswerBlur = () => {
         // here, has created bigBrother.
 
-        // just see question1answer1 ,forTransaction
-        let question1answer1 = getInputValueById(
-            "aa_id_private_question1_answer_1"
-        );
-        if (question1answer1.length > 0) {
+        if (getQuestion1AnsValue().length > 0) {
             currentPriInfoRef.current = {
                 ...currentPriInfoRef.current,
-                question1answer: question1answer1,
+                question1answer: getQuestion1AnsValue(),
             };
         } else {
             currentPriInfoRef.current = {
@@ -591,14 +723,10 @@ function PasswdAuthDetail({
     const handleQuestion2AnswerBlur = () => {
         // here, has created bigBrother.
 
-        // just see question2answer1 ,forTransaction
-        let question2answer1 = getInputValueById(
-            "aa_id_private_question2_answer_1"
-        );
-        if (question2answer1.length > 0) {
+        if (getQuestion2AnsValue().length > 0) {
             currentPriInfoRef.current = {
                 ...currentPriInfoRef.current,
-                question2answer: question2answer1,
+                question2answer: getQuestion2AnsValue(),
             };
         } else {
             currentPriInfoRef.current = {
@@ -606,9 +734,6 @@ function PasswdAuthDetail({
                 question2answer: "",
             };
         }
-
-        // console.log("privateinfo,q2answer blur:", currentPriInfoRef.current);
-        //
     };
 
     const [myFirstQuestionNo, setMyFirstQuestionNo] = useState(
@@ -638,15 +763,11 @@ function PasswdAuthDetail({
         setIsShowWarning(true);
 
         //
-        setInputValueById("aa_id_private_pin_1", currentPriInfoRef.current.pin);
-        setInputValueById(
-            "aa_id_private_question1_answer_1",
-            currentPriInfoRef.current.question1answer
-        );
-        setInputValueById(
-            "aa_id_private_question2_answer_1",
-            currentPriInfoRef.current.question2answer
-        );
+        setPinCodeValue(currentPriInfoRef.current.pin);
+        setQuestion1AnsValue(currentPriInfoRef.current.question1answer);
+        setQuestion2AnsValue(currentPriInfoRef.current.question2answer);
+
+        setAuthPasswdAccountTmp(null);
     }, []);
 
     const updateLocked = (newLocked: boolean) => {
@@ -779,12 +900,19 @@ function PasswdAuthDetail({
                             </div>
 
                             <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
-                                <Passwd
+                                {/* <Passwd
                                     id="aa_id_private_pin_1"
                                     label="pin code"
                                     hint="input private pin code"
                                     onMyBlur={handlePinBlur}
-                                ></Passwd>
+                                ></Passwd> */}
+                                <PasswdInput
+                                    label="pin code"
+                                    hint="input private pin code"
+                                    onMyBlur={handlePinBlur}
+                                    value={getPinCodeValue()}
+                                    setValue={setPinCodeValue}
+                                ></PasswdInput>
                             </div>
                             <Divider
                                 style={{
@@ -824,12 +952,13 @@ function PasswdAuthDetail({
                                 ))}
                             </Autocomplete>
                             <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
-                                <Passwd
-                                    id="aa_id_private_question1_answer_1"
+                                <PasswdInput
                                     label="first question's answer"
                                     hint="input first question's answer"
                                     onMyBlur={handleQuestion1AnswerBlur}
-                                ></Passwd>
+                                    value={getQuestion1AnsValue()}
+                                    setValue={setQuestion1AnsValue}
+                                ></PasswdInput>
                             </div>
                             <Divider
                                 style={{
@@ -869,12 +998,13 @@ function PasswdAuthDetail({
                                 ))}
                             </Autocomplete>
                             <div className="flex w-full flex-wrap md:flex-nowrap gap-4">
-                                <Passwd
-                                    id="aa_id_private_question2_answer_1"
+                                <PasswdInput
                                     label="second question's answer"
                                     hint="input second question's answer"
                                     onMyBlur={handleQuestion2AnswerBlur}
-                                ></Passwd>
+                                    value={getQuestion2AnsValue()}
+                                    setValue={setQuestion2AnsValue}
+                                ></PasswdInput>
                             </div>
                             <>
                                 {/*todo need show multi chain when modifying....*/}
@@ -886,10 +1016,8 @@ function PasswdAuthDetail({
                                     )}
                                     chainObj={chainObj}
                                     currentPriInfoRef={currentPriInfoRef}
-                                    updateFillInOk={updateFillInOk}
-                                    submitOpType={submitOpType}
-                                    updateSubmitOpType={updateSubmitOpType}
                                     closeModal={closeModal}
+                                    userProp={userProp}
                                 />
                             </>
                         </div>
@@ -924,38 +1052,7 @@ function WarnMessage() {
     );
 }
 
-function checkInfo(
-    diffCheck,
-    pin1,
-    pin2,
-    question1_answer_1,
-    question1_answer_2,
-    question2_answer_1,
-    question2_answer_2
-) {
-    if (diffCheck) {
-        if (pin1 != pin2) {
-            alert("two pin is not equal!");
-            throw new Error("two pin is not equal!");
-
-            return;
-        }
-        if (question1_answer_1 != question1_answer_2) {
-            alert("The two answers of the first question are different!");
-            throw new Error(
-                "The two answers of the first question are different!"
-            );
-            return;
-        }
-        if (question2_answer_1 != question2_answer_2) {
-            alert("The two answers of the second question are different!");
-            throw new Error(
-                "The two answers of the second question are different!"
-            );
-            return;
-        }
-    }
-
+function checkInfo(pin1, question1_answer_1, question2_answer_1) {
     if (pin1 == "" || pin1 == undefined || pin1.length == 0) {
         alert("pin code cann't be empty!");
         throw new Error("pin code cann't be empty!");
@@ -987,66 +1084,36 @@ function SubmitMessage({
     verifyingContract,
     chainObj,
     currentPriInfoRef,
-    updateFillInOk,
-    submitOpType,
-    updateSubmitOpType,
     closeModal,
+    userProp,
 }: {
     email: string;
     verifyingContract: string;
     chainObj: any;
     currentPriInfoRef: React.MutableRefObject<PrivateInfoType>;
-    updateFillInOk: any;
-    submitOpType: string;
-    updateSubmitOpType: any;
     closeModal: (passwdState: PasswdState) => void;
+    userProp: UserProperty;
 }) {
-    console.log("SubmitMessage....in,,,,:", submitOpType);
-
     const { pending } = useFormStatus();
     const router = useRouter();
     let buttonType = "button";
     let buttonShowMsg = "Confirm First";
     let marginLeft = "0px";
 
-    console.log("private info, submitMessage, submitOpType:", submitOpType);
+    console.log("private info, submitMessage");
 
-    if (submitOpType == OP_TYPE.OP_newInfoFirstTime) {
-        buttonType = "button";
-        buttonShowMsg = "First Confirm";
-        marginLeft = "0px";
-    } else if (submitOpType == OP_TYPE.OP_newInfoSecondTime) {
-        buttonType = "button";
-        buttonShowMsg = "fill input again and Second Confirm";
-        marginLeft = "200px";
-    } else {
-        buttonType = "button";
-        buttonShowMsg = "PrivateInfo OK.";
-        marginLeft = "400px";
-    }
+    buttonType = "button";
+    buttonShowMsg = "PrivateInfo OK.";
+    marginLeft = "350px";
 
     const handleClick = async (event: any) => {
         if (pending) {
             event.preventDefault();
         }
 
-        let pin1 = getInputValueById("aa_id_private_pin_1");
-        let question1_answer_1 = getInputValueById(
-            "aa_id_private_question1_answer_1"
-        );
-        let question2_answer_1 = getInputValueById(
-            "aa_id_private_question2_answer_1"
-        );
-
-        let pin2 = getInputValueById("aa_id_private_pin_2");
-
-        let question1_answer_2 = getInputValueById(
-            "aa_id_private_question1_answer_2"
-        );
-
-        let question2_answer_2 = getInputValueById(
-            "aa_id_private_question2_answer_2"
-        );
+        let pin1 = getPinCodeValue();
+        let question1_answer_1 = getQuestion1AnsValue();
+        let question2_answer_1 = getQuestion2AnsValue();
 
         if (
             currentPriInfoRef.current.firstQuestionNo == "" ||
@@ -1056,15 +1123,7 @@ function SubmitMessage({
             return;
         }
 
-        checkInfo(
-            false,
-            pin1,
-            pin2,
-            question1_answer_1,
-            question1_answer_2,
-            question2_answer_1,
-            question2_answer_2
-        );
+        checkInfo(pin1, question1_answer_1, question2_answer_1);
 
         let passwdAccount = getPasswdAccount(
             currentPriInfoRef.current,
@@ -1088,6 +1147,37 @@ function SubmitMessage({
             } else {
                 passwdState = "ERROR";
             }
+            console.log("xyz,passwdState2:", passwdState);
+        }
+
+        if (passwdState == "BigBrotherNotCreated") {
+            const acctTmp = getAuthPasswdAccountTmp();
+            if (
+                acctTmp != undefined &&
+                acctTmp != null &&
+                acctTmp.address != undefined &&
+                acctTmp.address != ""
+            ) {
+                // has input twice
+                if (acctTmp.address != passwdAccount.address) {
+                    setMarginTopTmp(marginTopTmp == "10px" ? "30px" : "10px");
+                    setTwiceMsg(
+                        "The two password information you entered did not match"
+                    );
+                    return;
+                }
+            } else {
+                setAuthPasswdAccountTmp(passwdAccount);
+                setPinCodeValue("");
+                setQuestion1AnsValue("");
+                setQuestion2AnsValue("");
+                setMarginTopTmp(marginTopTmp == "10px" ? "30px" : "10px");
+                setTwiceMsg(
+                    "This is the first new account under your email, please enter the password information again"
+                );
+                return;
+            }
+            passwdState = "OK";
         }
 
         closeModal(passwdState);
@@ -1095,8 +1185,18 @@ function SubmitMessage({
 
     console.log("button's submit type:", buttonType);
 
+    const [twiceMsg, setTwiceMsg] = useState("");
+    const [marginTopTmp, setMarginTopTmp] = useState("10px");
     return (
         <div>
+            <p
+                style={{
+                    marginTop: marginTopTmp,
+                    color: "red",
+                }}
+            >
+                {twiceMsg}
+            </p>
             <Button
                 disabled={pending}
                 type={buttonType}

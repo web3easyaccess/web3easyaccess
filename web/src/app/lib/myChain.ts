@@ -1,6 +1,9 @@
 import { defineChain } from "viem";
 
-import { scrollSepolia, lineaSepolia, sepolia, arbitrumSepolia, mainnet } from "viem/chains";
+import {
+    scrollSepolia, lineaSepolia, sepolia, arbitrumSepolia,
+    mainnet, optimism, optimismSepolia,
+} from "viem/chains";
 
 import { clusterApiUrl as solanaClusterApiUrl } from "@solana/web3.js";
 
@@ -336,6 +339,16 @@ export const getChainObj = (
         rtn = { ...mainnet };
         rtn.rpcUrls.default.http.unshift(
             "https://eth-mainnet.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
+        );
+    } else if (chainCode == ChainCode.OPTIMISM_MAIN_CHAIN) {
+        rtn = { ...optimism };
+        rtn.rpcUrls.default.http.unshift(
+            "https://opt-mainnet.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
+        );
+    } else if (chainCode == ChainCode.OPTIMISM_TEST_CHAIN) {
+        rtn = { ...optimismSepolia };
+        rtn.rpcUrls.default.http.unshift(
+            "https://opt-sepolia.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
         );
     } else if (chainCode == ChainCode.AIACHAIN_MAIN_CHAIN) {
         rtn = aiachainMainnet;

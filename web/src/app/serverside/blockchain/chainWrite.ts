@@ -400,6 +400,9 @@ export async function createTransaction(
         // console.log("dataSendToAccount:", dataSendToAccount);
 
         if (onlyQueryFee) {
+            console.log(
+                `createTransaction detected2. detectEstimatedFee=,realEstimatedFee, maxFeePerGas,gasPrice=`
+            );
             request = await myClient.walletClient.prepareTransactionRequest({
                 account: myClient.account,
                 to: accountAddr,

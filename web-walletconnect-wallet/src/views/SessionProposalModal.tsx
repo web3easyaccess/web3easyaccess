@@ -1,5 +1,5 @@
 import { Col, Grid, Row, Text, styled } from '@nextui-org/react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import DoneIcon from '@mui/icons-material/Done'
@@ -210,6 +210,7 @@ export default function SessionProposalModal() {
     return [...new Set([...required.flat(), ...optional.flat()])]
   }, [proposal])
 
+  const noMatchedChainMsg = useRef('')
   // the chains that are supported by the wallet from the proposal
   const supportedChains = useMemo(
     () =>
@@ -229,6 +230,12 @@ export default function SessionProposalModal() {
         .filter(chain => chain), // removes null values
     [requestedChains]
   )
+
+  if (supportedChains.length == 0) {
+    noMatchedChainMsg.current = `your chain [${getChain().name}|${
+      getChain().chainId
+    }]  may be not supported by the dapp`
+  }
 
   // get required chains that are not supported by the wallet
   const notSupportedChains = useMemo(() => {
@@ -412,7 +419,7 @@ export default function SessionProposalModal() {
                   <ChainDataMini key={i} chainId={`${chain?.namespace}:${chain?.chainId}`} />
                 </Row>
               )
-            })) || <Row>check Chain and Address</Row>}
+            })) || <Row>{noMatchedChainMsg.current}</Row>}
           {/* <Row style={{ color: 'GrayText' }} justify="flex-end">
             Chains
           </Row>

@@ -73,7 +73,8 @@ export default function SessionSignTezosModal() {
       return ''
     }
     const aaa = requestSession.namespaces.eip155.accounts[0].split(':')
-    return requestSession.namespaces.eip155.accounts[0] // aaa[2]
+    console.log('w3ea,getReqAddress,xa:', aaa)
+    return aaa[2]
   }
 
   return (

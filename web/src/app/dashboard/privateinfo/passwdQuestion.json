@@ -3,11 +3,11 @@
         "1": [
             {
                 "idx": "01",
-                "question": "1.What'sthe name of the city where I was born? (Does not include its parent name)"
+                "question": "1.What's the name of the city where I was born? (Does not include its parent name)"
             },
             {
                 "idx": "02",
-                "question": "2.What'sthe full name of the hospital where I was born?"
+                "question": "2.What's the full name of the hospital where I was born?"
             },
             {
                 "idx": "03",
@@ -21,43 +21,43 @@
             },
             {
                 "idx": "07",
-                "question": "7.What'sthe full name of my first child?"
+                "question": "7.What's the full name of my first child?"
             },
             {
                 "idx": "08",
-                "question": "8.What'sthe full name of the most impressive teacher in elementary school days?"
+                "question": "8.What's the full name of the most impressive teacher in elementary school days?"
             },
             {
                 "idx": "09",
-                "question": "9.What'sthe full name of the most impressive teacher in junior high school?"
+                "question": "9.What's the full name of the most impressive teacher in junior high school?"
             },
             {
                 "idx": "10",
-                "question": "10.What'sthe full name of the most impressive teacher in high school?"
+                "question": "10.What's the full name of the most impressive teacher in high school?"
             },
             {
                 "idx": "11",
-                "question": "11.What'sthe full name of the most impressive teacher in college?"
+                "question": "11.What's the full name of the most impressive teacher in college?"
             },
             {
                 "idx": "12",
-                "question": "12.What'sthe full name of the closest classmate in primary school?"
+                "question": "12.What's the full name of the closest classmate in primary school?"
             },
             {
                 "idx": "13",
-                "question": "13.What'sthe full name of the most closely related students in junior high school?"
+                "question": "13.What's the full name of the most closely related students in junior high school?"
             },
             {
                 "idx": "14",
-                "question": "14.What'sthe full name of your closest classmate in high school?"
+                "question": "14.What's the full name of your closest classmate in high school?"
             },
             {
                 "idx": "15",
-                "question": "15.What'sthe full name of the classmate who is closest to you in college?"
+                "question": "15.What's the full name of the classmate who is closest to you in college?"
             },
             {
                 "idx": "16",
-                "question": "16.What'sthe full name of the first classmate you know when you just entered junior high school?"
+                "question": "16.What's the full name of the first classmate you know when you just entered junior high school?"
             },
             {
                 "idx": "17",
@@ -69,11 +69,11 @@
             },
             {
                 "idx": "19",
-                "question": "19.What'sthe full name of the first teacher who taught me when I first entered primary school?"
+                "question": "19.What's the full name of the first teacher who taught me when I first entered primary school?"
             },
             {
                 "idx": "20",
-                "question": "20.What'sthe full name of the first teacher who gave me a class when I first entered junior high school?"
+                "question": "20.What's the full name of the first teacher who gave me a class when I first entered junior high school?"
             },
             {
                 "idx": "21",

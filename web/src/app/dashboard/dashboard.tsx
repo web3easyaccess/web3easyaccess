@@ -38,7 +38,7 @@ import { UpdateUserProperty, UserProperty } from "../storage/userPropertyStore";
 import * as userPropertyStore from "../storage/userPropertyStore";
 
 import { PrivateInfoType } from "../lib/client/keyTools";
-import { MenuItemOfPasswdAuth } from "./passwdAuthModal";
+import { MenuItemOfPasswdAuth } from "./passwdauth/passwdAuthModal";
 
 export default function Dashboard({
     userProp,

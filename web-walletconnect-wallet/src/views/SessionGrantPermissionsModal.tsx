@@ -85,7 +85,8 @@ export default function SessionGrantPermissionsModal() {
   const getReqAddress = () => {
     // eip155:11155111:0x5ebc3dc13728004bBE83608d05F851136C9fD85C
     const aaa = requestSession.namespaces.eip155.accounts[0].split(':')
-    return requestSession.namespaces.eip155.accounts[0] // aaa[2]
+    console.log('w3ea,getReqAddress,x2:', aaa)
+    return aaa[2]
   }
 
   return (

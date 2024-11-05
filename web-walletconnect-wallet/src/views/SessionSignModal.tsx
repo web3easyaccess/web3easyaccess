@@ -35,7 +35,8 @@ export default function SessionSignModal() {
       return ''
     }
     const aaa = requestSession.namespaces.eip155.accounts[0].split(':')
-    return requestSession.namespaces.eip155.accounts[0] // aaa[2]
+    console.log('w3ea,getReqAddress,x5:', aaa)
+    return aaa[2]
   }
 
   // Get message, convert it to UTF8 string if it is valid hex

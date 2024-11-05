@@ -21,6 +21,8 @@ interface IProps {
  * Component
  */
 export default function RequestDetailsCard({ chains, address, protocol }: IProps) {
+  console.log('w3ea,RequestDetailsCard,chains123:', chains, address)
+
   return (
     <Fragment>
       <Row>

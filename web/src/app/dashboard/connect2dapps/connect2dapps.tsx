@@ -44,6 +44,7 @@ import ChannelInMain, {
     setWalletConnectHost,
     TransactionRequest,
 } from "./channelInMain";
+import { getAuthPasswdAccount } from "../passwdauth/passwdAuthModal";
 
 const piInit: PrivateInfoType = {
     email: "",
@@ -87,7 +88,7 @@ export default function Connect2Dapps({
     userProp: UserProperty;
 }) {
     /////
-
+    console.log("Connect2Dapps init ...");
     const currentPriInfoRef = useRef(piInit);
     const oldPriInfoRef = useRef(piInit);
 
@@ -159,20 +160,10 @@ export default function Connect2Dapps({
             <ChannelInMain></ChannelInMain>
             {accountAddrCreated(userProp) ? (
                 <>
-                    <PrivateInfo
-                        userProp={userProp}
-                        forTransaction={true}
-                        currentPriInfoRef={currentPriInfoRef}
-                        oldPriInfoRef={oldPriInfoRef}
-                        updateFillInOk={updateFillInOk}
-                        privateinfoHidden={privateinfoHidden}
-                        updatePrivateinfoHidden={updatePrivateinfoHidden}
-                    ></PrivateInfo>
                     <IframeWallet
                         getWalletConnectHostFun={getWalletConnectHost}
-                        privateinfoHidden={privateinfoHidden}
                     ></IframeWallet>
-                    : <></>
+                    <></>
                 </>
             ) : (
                 <p>
@@ -185,15 +176,14 @@ export default function Connect2Dapps({
 
 const IframeWallet = ({
     getWalletConnectHostFun,
-    privateinfoHidden,
 }: {
     getWalletConnectHostFun: () => string;
-    privateinfoHidden: boolean;
 }) => {
     let src = "";
     if (getWalletConnectHostFun != undefined) {
         src = getWalletConnectHostFun();
     }
+    const iframe = useRef(document.createElement("iframe"));
 
     useEffect(() => {
         console.log("MainHost:iframeWallet,src:", src);
@@ -203,13 +193,17 @@ const IframeWallet = ({
 
         const child = document.getElementById("w3eaWalletconnect");
         if (child == null || child == undefined) {
-            const iframe = document.createElement("iframe");
-            iframe.src = src + "/walletconnect";
-            iframe.style.width = "800px";
-            iframe.style.height = "500px";
-            iframe.id = "w3eaWalletconnect";
+            // const iframe = document.createElement("iframe");
+            if (iframe.current.src == "") {
+                console.log("iframe init ...");
+                iframe.current.src = src + "/walletconnect";
+                iframe.current.style.width = "800px";
+                iframe.current.style.height = "500px";
+                iframe.current.id = "w3eaWalletconnect";
+            }
+
             const container = document.getElementById("div_w3eaWalletconnect");
-            container.appendChild(iframe);
+            container.appendChild(iframe.current);
         }
 
         // return () => {
@@ -217,14 +211,7 @@ const IframeWallet = ({
         // };
     }, [src]);
 
-    return (
-        <div
-            id="div_w3eaWalletconnect"
-            style={
-                privateinfoHidden ? { display: "block" } : { display: "none" }
-            }
-        ></div>
-    );
+    return <div id="div_w3eaWalletconnect"></div>;
 };
 
 ///////////
@@ -333,7 +320,8 @@ const signMessage = async (
         msgHash: string;
     } = { signature: "", eoa: "", nonce: "", msgHash: "" };
 
-    const passwdAccount = getPasswdAccount(privateInfo, chainObj.chainCode);
+    // const passwdAccount = getPasswdAccount(privateInfo, chainObj.chainCode);
+    const passwdAccount = getAuthPasswdAccount();
 
     let argumentsHash = "";
     if (libsolana.isSolana(chainObj.chainCode)) {
@@ -366,10 +354,11 @@ const signMessage = async (
 };
 
 export const sendTransaction = async (msg: Message) => {
-    const passwdAccount = getPasswdAccount(
-        getPrivateInfo(),
-        getChainObject().chainCode
-    );
+    // const passwdAccount = getPasswdAccount(
+    //     getPrivateInfo(),
+    //     getChainObject().chainCode
+    // );
+    const passwdAccount = getAuthPasswdAccount();
 
     checkAddr(msg);
 
@@ -401,10 +390,10 @@ export const sendTransaction = async (msg: Message) => {
         txReq.data,
         getChainObject(),
         true,
-        "",
+        // "",
         getPreparedPriceRef(),
         "",
-        getPrivateInfo(),
+        // getPrivateInfo(),
         "ETH",
         false
     );
