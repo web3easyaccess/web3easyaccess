@@ -194,32 +194,32 @@ export default function Transactions({ userProp }: { userProp: UserProperty }) {
                     }}
                 >
                     <Table
-                        removeWrapper
+                        isStriped
                         aria-label="Example static collection table"
-                        style={{ width: "1600px" }}
+                        style={{ width: "1000px" }}
                     >
                         <TableHeader>
-                            <TableColumn style={{ width: "100px" }}>
+                            <TableColumn style={{ width: "200px" }}>
                                 From
                             </TableColumn>
-                            <TableColumn style={{ width: "100px" }}>
+                            <TableColumn style={{ width: "200px" }}>
                                 To
                             </TableColumn>
-                            <TableColumn style={{ width: "100px" }}>
+                            <TableColumn style={{ width: "200px" }}>
                                 Amount
                             </TableColumn>
-                            <TableColumn style={{ width: "100px" }}>
+                            <TableColumn style={{ width: "200px" }}>
                                 Timestamp
                             </TableColumn>
-                            <TableColumn style={{ width: "100px" }}>
+                            <TableColumn style={{ width: "200px" }}>
                                 Transaction Hash
                             </TableColumn>
-                            <TableColumn style={{ width: "100px" }}>
+                            {/* <TableColumn style={{ width: "100px" }}>
                                 Transaction Order
                             </TableColumn>
                             <TableColumn style={{ width: "100px" }}>
                                 Gas Fee({nativeCoinSymbol})
-                            </TableColumn>
+                            </TableColumn> */}
                         </TableHeader>
                         <TableBody>
                             {txList
@@ -285,10 +285,10 @@ export default function Transactions({ userProp }: { userProp: UserProperty }) {
                                                 {shortTrans(tx.hash)}
                                             </Link>
                                         </TableCell>
-                                        <TableCell>
+                                        {/* <TableCell>
                                             {txOrder(tx.hash)}
                                         </TableCell>
-                                        <TableCell>{calGasFee(tx)}</TableCell>
+                                        <TableCell>{calGasFee(tx)}</TableCell> */}
                                     </TableRow>
                                 ))}
                         </TableBody>
@@ -305,9 +305,9 @@ export default function Transactions({ userProp }: { userProp: UserProperty }) {
                     }}
                 >
                     <Table
-                        removeWrapper
+                        isStriped
                         aria-label="Example static collection table"
-                        style={{ width: "1000px" }}
+                        style={{ width: "800px" }}
                     >
                         <TableHeader>
                             <TableColumn style={{ width: "100px" }}>

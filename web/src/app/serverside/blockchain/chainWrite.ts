@@ -19,6 +19,7 @@ import { queryAccount } from "../../lib/chainQuery";
 import abis from "./abi/abis";
 
 import * as libsolana from "@/app/lib/client/solana/libsolana";
+import { ChainCode } from "@/app/lib/myTypes";
 
 function sleep(time) {
     return new Promise((resolve) => setTimeout(resolve, time));
@@ -253,30 +254,42 @@ export async function newAccountAndTransferETH(
             );
 
             console.log("xxxxxxx---2a,");
-            const _l1DataFee = await getL1DataFee(
-                myClient,
-                encodePacked(
-                    // from,to,value,data,nonce,gasPrice,gasLimit
-                    [
-                        "address",
-                        "address",
-                        "uint256",
-                        "bytes",
-                        "uint256",
-                        "uint256",
-                        "uint256",
-                    ],
-                    [
-                        myClient.account?.address,
-                        myClient.factoryAddr,
-                        BigInt(0),
-                        newAccountData,
-                        BigInt(999999),
-                        BigInt(999999999),
-                        BigInt(99999),
-                    ]
-                )
-            );
+            let _l1DataFee = BigInt(0);
+            if (chainCode == ChainCode.OPTIMISM_MAIN_CHAIN || chainCode == ChainCode.OPTIMISM_TEST_CHAIN) {
+                _l1DataFee = await myClient.walletClient.estimateL1Fee({
+                    account: myClient.account,
+                    to: myClient.factoryAddr,
+                    value: BigInt(0), // parseEther("0.0"),
+                    data: newAccountData,
+                })
+                console.log("L1 data fee of OPSTACK:", _l1DataFee);
+            } else {
+                _l1DataFee = await getL1DataFee(
+                    myClient,
+                    encodePacked(
+                        // from,to,value,data,nonce,gasPrice,gasLimit
+                        [
+                            "address",
+                            "address",
+                            "uint256",
+                            "bytes",
+                            "uint256",
+                            "uint256",
+                            "uint256",
+                        ],
+                        [
+                            myClient.account?.address,
+                            myClient.factoryAddr,
+                            BigInt(0),
+                            newAccountData,
+                            BigInt(999999),
+                            BigInt(999999999),
+                            BigInt(99999),
+                        ]
+                    )
+                );
+            }
+
 
             return {
                 success: true,
@@ -436,31 +449,43 @@ export async function createTransaction(
                     request: request,
                 }
             );
+            let _l1DataFee = BigInt(0);
+            if (chainCode == ChainCode.OPTIMISM_MAIN_CHAIN || chainCode == ChainCode.OPTIMISM_TEST_CHAIN) {
+                _l1DataFee = await myClient.walletClient.estimateL1Fee({
+                    account: myClient.account,
+                    to: accountAddr,
+                    value: BigInt(0), // parseEther("0.0"),
+                    data: dataSendToAccount,
+                })
+                console.log("L1 data fee of OPSTACK:", _l1DataFee);
+            } else {
+                _l1DataFee = await getL1DataFee(
+                    myClient,
+                    encodePacked(
+                        // from,to,value,data,nonce,gasPrice,gasLimit
+                        [
+                            "address",
+                            "address",
+                            "uint256",
+                            "bytes",
+                            "uint256",
+                            "uint256",
+                            "uint256",
+                        ],
+                        [
+                            myClient.account?.address,
+                            accountAddr,
+                            BigInt(0),
+                            dataSendToAccount,
+                            BigInt(999999),
+                            BigInt(999999999),
+                            BigInt(99999),
+                        ]
+                    )
+                );
+            }
 
-            const _l1DataFee = await getL1DataFee(
-                myClient,
-                encodePacked(
-                    // from,to,value,data,nonce,gasPrice,gasLimit
-                    [
-                        "address",
-                        "address",
-                        "uint256",
-                        "bytes",
-                        "uint256",
-                        "uint256",
-                        "uint256",
-                    ],
-                    [
-                        myClient.account?.address,
-                        accountAddr,
-                        BigInt(0),
-                        dataSendToAccount,
-                        BigInt(999999),
-                        BigInt(999999999),
-                        BigInt(99999),
-                    ]
-                )
-            );
+
 
             return {
                 success: true,

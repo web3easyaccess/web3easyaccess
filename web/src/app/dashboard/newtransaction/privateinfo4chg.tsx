@@ -106,7 +106,7 @@ export function PrivateInfo({
         updateSubmitOpType(opTypeInit);
     }, [opTypeInit]);
 
-    console.log("PrivateInfo, currentPriInfoRef init...1");
+    console.log("PrivateInfo,chgpwd, currentPriInfoRef init...1:", userProp);
     if (currentPriInfoRef.current.email == "") {
         console.log("PrivateInfo, currentPriInfoRef init...2");
         currentPriInfoRef.current.email = userProp.email;
@@ -1012,7 +1012,8 @@ function SubmitMessage({
     console.log(
         "SubmitMessage....in,,,,:",
         bigBrotherAccountCreated,
-        submitOpType
+        submitOpType,
+        bigBrotherPasswdAddr
     );
 
     const { pending } = useFormStatus();

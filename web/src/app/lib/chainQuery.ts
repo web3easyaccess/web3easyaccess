@@ -22,6 +22,7 @@ import { getOwnerIdLittleBrother } from "../lib/client/keyTools";
 
 import abis from "../serverside/blockchain/abi/abis";
 import * as userPropertyStore from "../storage/userPropertyStore";
+import { erc20tokens } from "./supportedTokens";
 
 const accountOnlyForRead = privateKeyToAccount(
     "0x1000000000000000000000000000000000000000000000000000000000000000"
@@ -868,6 +869,10 @@ export async function queryAssets(
     }
 
     let tokenList = [];
+    if (erc20tokens.has(chainCode)) {
+        tokenList = erc20tokens.get(chainCode).slice(0, 5);
+    }
+
     const result = [];
     try {
         const cpc = chainPublicClient(chainCode, factoryAddr);
@@ -901,6 +906,18 @@ export async function queryAssets(
 
         for (let k = 0; k < tokenList.length; k++) {
             const tknAddr = tokenList[k];
+            console.log("query token addr:", tknAddr);
+
+            let balance = await cpc.publicClient.readContract({
+                account: accountOnlyForRead,
+                address: tknAddr,
+                abi: abis.balanceOf,
+                functionName: "balanceOf",
+                args: [addr],
+            });
+            if (balance <= 0) {
+                continue;
+            }
             const symbol = await cpc.publicClient.readContract({
                 account: accountOnlyForRead,
                 address: tknAddr,
@@ -915,13 +932,6 @@ export async function queryAssets(
                 abi: abis.decimals,
                 functionName: "decimals",
                 args: [],
-            });
-            let balance = await cpc.publicClient.readContract({
-                account: accountOnlyForRead,
-                address: tknAddr,
-                abi: abis.balanceOf,
-                functionName: "balanceOf",
-                args: [addr],
             });
 
             balance = formatEther(balance);
@@ -962,7 +972,9 @@ export async function queryTransactions(
         chainCode == "NEOX_TEST_CHAIN" ||
         chainCode == "AIACHAIN_MAIN_CHAIN" ||
         chainCode == "AIACHAIN_TEST_CHAIN" ||
-        chainCode == "ARBITRUM_TEST_CHAIN"
+        chainCode == "ARBITRUM_TEST_CHAIN" ||
+        chainCode == ChainCode.OPTIMISM_TEST_CHAIN ||
+        chainCode == ChainCode.OPTIMISM_MAIN_CHAIN
     ) {
         const res = await _queryTransactions(chainCode, addr);
         return res;
@@ -1038,6 +1050,14 @@ const CHAIN_PROPS = {
         scanApiKey: "M8YBQ2W5RCFR9A71Y17XBY6AF8XCBGJPYN",
         startBlock: 90137319,
     },
+    OPTIMISM_TEST_CHAIN: {
+        scanApiKey: "XH8CU3I81U378WUTG5AGG17V8UCNZP6CRU",
+        startBlock: 19500650,
+    },
+    OPTIMISM_MAIN_CHAIN: {
+        scanApiKey: "XH8CU3I81U378WUTG5AGG17V8UCNZP6CRU",
+        startBlock: 127633028,
+    }
 };
 
 async function _queryTransactions(
@@ -1050,14 +1070,15 @@ async function _queryTransactions(
     const startBlock = CHAIN_PROPS[chainCode].startBlock;
 
     const apiUrl = getChainObj(chainCode).blockExplorers.default.apiUrl;
-    const normalTransactionsUrl = `${apiUrl}?module=account&action=txlist&address=${addr}&startblock=${startBlock}&endblock=99999999&page=1&offset=200&sort=asc&apikey=${LINEASCAN_APIKEY}`;
-    const internalTransactionsUrl = `${apiUrl}?module=account&action=txlistinternal&address=${addr}&startblock=${startBlock}&endblock=99999999&page=1&offset=200&sort=asc&apikey=${LINEASCAN_APIKEY}`;
+    const normalTransactionsUrl = `${apiUrl}?module=account&action=txlist&address=${addr}&startblock=${startBlock}&endblock=9999999999999999&page=1&offset=200&sort=asc&apikey=${LINEASCAN_APIKEY}`;
+    const internalTransactionsUrl = `${apiUrl}?module=account&action=txlistinternal&address=${addr}&startblock=${startBlock}&endblock=9999999999999999&page=1&offset=200&sort=asc&apikey=${LINEASCAN_APIKEY}`;
 
     const resultData: Transaction[] = [];
     if (chainCode == ChainCode.NEOX_TEST_CHAIN.toString()) {
         return resultData;
     }
     let data;
+    const normalTrans = new Map();
     try {
         console.log(
             chainCode,
@@ -1073,6 +1094,8 @@ async function _queryTransactions(
         }
 
         data.result.forEach((e: any) => {
+            console.log("query transactions,a row:", e);
+            normalTrans.set(e.hash, "");
             const aRow: Transaction = {
                 timestamp: formatTimestamp(e.timeStamp),
                 block_number: e.blockNumber,
@@ -1087,6 +1110,7 @@ async function _queryTransactions(
                 value: formatEther(BigInt(e.value)),
             };
             resultData.push(aRow);
+
         });
     } catch (error) {
         console.log("data1:", data);
@@ -1114,21 +1138,27 @@ async function _queryTransactions(
             data = response;
         }
 
+        const internalTrans = new Map();
+
         data.result.forEach((e: any) => {
-            const aRow: Transaction = {
-                timestamp: formatTimestamp(e.timeStamp),
-                block_number: e.blockNumber,
-                result: e.isError == "0" ? "success" : "fail",
-                to: e.to,
-                hash: e.hash + "::" + "/" + "::" + "/",
-                gas_price: formatEther(BigInt("0")),
-                gas_used: e.gasUsed,
-                gas_limit: e.gas,
-                l1_fee: 0, //
-                from: e.from,
-                value: formatEther(BigInt(e.value)),
-            };
-            resultData.push(aRow);
+            let hash = e.hash ? e.hash : e.transactionHash;
+            if (e.callType != "delegatecall") {
+                console.log("query internal transactions,a row:", e);
+                const aRow: Transaction = {
+                    timestamp: formatTimestamp(e.timeStamp),
+                    block_number: e.blockNumber,
+                    result: e.isError == "0" ? "success" : "fail",
+                    to: e.to,
+                    hash: hash + "::" + "/" + "::" + "/",
+                    gas_price: formatEther(BigInt("0")),
+                    gas_used: e.gasUsed,
+                    gas_limit: e.gas,
+                    l1_fee: 0, //
+                    from: e.from,
+                    value: formatEther(BigInt(e.value)),
+                };
+                resultData.push(aRow);
+            }
         });
     } catch (error) {
         console.log("data2:", data);

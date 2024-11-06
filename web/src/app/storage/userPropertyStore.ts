@@ -142,6 +142,7 @@ export function readBigBrotherAcctAddr(prop: UserProperty) {
 }
 
 export function readBigBrotherPasswdAddr(prop: UserProperty) {
+    // console.log("in readBigBrotherPasswdAddr,:", prop);
     const acct = prop.accountInfos[prop.selectedChainCode];
     if (acct == undefined || acct == null) {
         return "";

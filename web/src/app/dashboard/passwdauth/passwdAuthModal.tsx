@@ -164,12 +164,16 @@ let getQuestion2AnsValue: () => string = () => {
     throw Error("getQuestion2AnsValue uninit...");
 };
 
+export let getPrivateInfosQuestionNosEnc: () => string = () => {
+    throw Error("getPrivateInfosQuestionNosEnc uninit...");
+};
+
 let clickPopButton: (msg: string) => void = (msg: string) => {
     throw Error("clickPopButton uninit...");
 };
 
 export function MenuItemOfPasswdAuth({ userProp }: { userProp: UserProperty }) {
-    console.log("MenuItemOfPasswdAuth init ...");
+    // console.log("MenuItemOfPasswdAuth init ...");
 
     const [pinCodeValue, set0PinCodeValue] = useState("");
     setPinCodeValue = (val: string) => {
@@ -217,13 +221,13 @@ export function MenuItemOfPasswdAuth({ userProp }: { userProp: UserProperty }) {
             let msg =
                 "Please click [Passwd Auth] on the left and enter the correct password information";
             clickPopButton(msg);
-            throw Error(msg);
+            return null;
         }
         if (getLocked()) {
             let msg =
                 "Please click [Passwd Auth] on the left and unlock the password form";
             clickPopButton(msg);
-            throw Error(msg);
+            return null;
         }
         return authPasswdAccount.current;
     };
@@ -386,7 +390,7 @@ function ModalPasswdBox({
     userProp: UserProperty;
     unlockBeginTime: MutableRefObject<number>;
 }) {
-    console.log("ModalPasswdBox, userProp:", userProp);
+    // console.log("ModalPasswdBox, userProp:", userProp.emailDisplay);
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     useEffect(() => {
         if (
@@ -409,6 +413,18 @@ function ModalPasswdBox({
     };
     const currentPriInfoRef = useRef(piInit);
     const oldPriInfoRef = useRef(piInit);
+
+    getPrivateInfosQuestionNosEnc = () => {
+        //zzz
+        const qNo1 = currentPriInfoRef.current.firstQuestionNo;
+        const qNo2 = currentPriInfoRef.current.secondQuestionNo;
+        const pin = currentPriInfoRef.current.pin;
+        let questionNosEnc = qNo1 + qNo2 + generateRandomString();
+        console.log("questionNosEnc1,x:", questionNosEnc);
+        questionNosEnc = aesEncrypt(questionNosEnc, pin);
+        console.log("questionNosEnc2,y:", questionNosEnc);
+        return questionNosEnc;
+    };
 
     return (
         <>
@@ -515,6 +531,20 @@ function LockScreen({
         }
     };
 
+    const btnRef = useRef();
+
+    useEffect(() => {
+        if (
+            btnRef.current != undefined &&
+            btnRef.current != null &&
+            pre4pc.length >= 4 &&
+            pre4pc.substring(0, 4) ==
+                currentPriInfoRef.current.pin.substring(0, 4)
+        ) {
+            btnRef.current.click();
+        }
+    }, [pre4pc]);
+
     return (
         <>
             {" "}
@@ -551,6 +581,7 @@ function LockScreen({
                                 <Button
                                     color="danger"
                                     variant="light"
+                                    ref={btnRef}
                                     onPress={
                                         //onClose
                                         () => {
@@ -1018,6 +1049,7 @@ function PasswdAuthDetail({
                                     currentPriInfoRef={currentPriInfoRef}
                                     closeModal={closeModal}
                                     userProp={userProp}
+                                    updateLocked={updateLocked}
                                 />
                             </>
                         </div>
@@ -1086,6 +1118,7 @@ function SubmitMessage({
     currentPriInfoRef,
     closeModal,
     userProp,
+    updateLocked,
 }: {
     email: string;
     verifyingContract: string;
@@ -1093,6 +1126,7 @@ function SubmitMessage({
     currentPriInfoRef: React.MutableRefObject<PrivateInfoType>;
     closeModal: (passwdState: PasswdState) => void;
     userProp: UserProperty;
+    updateLocked: (newLocked: boolean) => void;
 }) {
     const { pending } = useFormStatus();
     const router = useRouter();
@@ -1179,7 +1213,9 @@ function SubmitMessage({
             }
             passwdState = "OK";
         }
-
+        if (passwdState == "OK") {
+            updateLocked(false);
+        }
         closeModal(passwdState);
     };
 

@@ -5,6 +5,8 @@ import {
     mainnet, optimism, optimismSepolia,
 } from "viem/chains";
 
+import { publicActionsL2 } from 'viem/op-stack'
+
 import { clusterApiUrl as solanaClusterApiUrl } from "@solana/web3.js";
 
 import { ChainCode } from "./myTypes";
@@ -350,6 +352,11 @@ export const getChainObj = (
         rtn.rpcUrls.default.http.unshift(
             "https://opt-sepolia.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
         );
+        // rtn.blockExplorers.default = {
+        //     name: 'Sepolia Optimism Explorer',
+        //     url: 'https://sepolia-optimism.etherscan.io',
+        //     apiUrl: 'https://api-sepolia-optimistic.etherscan.io/api',
+        // };
     } else if (chainCode == ChainCode.AIACHAIN_MAIN_CHAIN) {
         rtn = aiachainMainnet;
     } else if (chainCode == ChainCode.AIACHAIN_TEST_CHAIN) {

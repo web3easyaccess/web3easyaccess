@@ -138,7 +138,10 @@ export function useUserProperty({ email }: { email: string }) {
         }
 
         let bigBrotherPasswdAddr = acctInfo.bigBrotherPasswdAddr;
-        if (bigBrotherPasswdAddr == undefined || bigBrotherPasswdAddr == "") {
+        if (
+            bigBrotherPasswdAddr == undefined ||
+            bigBrotherPasswdAddr.length < 10
+        ) {
             const bigBrotherAcct = await queryAccount(
                 myProp.selectedChainCode,
                 acctInfo.factoryAddr,

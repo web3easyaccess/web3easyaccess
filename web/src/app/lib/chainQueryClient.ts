@@ -2,7 +2,10 @@ import { createPublicClient, http } from "viem";
 
 import { createWalletClient, custom } from "viem";
 
+import { publicActionsL2 } from 'viem/op-stack'
+
 import { getChainObj } from "./myChain";
+import { ChainCode } from "./myTypes";
 
 // DEFAULT_ANVIL_CHAIN, MORPH_TEST_CHAIN
 export function chainPublicClient(chainCode, factoryAddr) {
@@ -18,19 +21,28 @@ export function chainPublicClient(chainCode, factoryAddr) {
         return {};
     }
 
+    let pClient = createPublicClient({
+        batch: {
+            multicall: true,
+        },
+        chain: chainObj,
+        transport: http(),
+    });
+
+    let wClient = createWalletClient({
+        chain: chainObj,
+        transport: http(),
+    });
+
+    if (chainCode == ChainCode.OPTIMISM_MAIN_CHAIN || chainCode == ChainCode.OPTIMISM_TEST_CHAIN) {
+        pClient = pClient.extend(publicActionsL2());
+        wClient = wClient.extend(publicActionsL2());
+    }
+
     return {
         factoryAddr: `0x${factoryAddr.substring(2)}`,
-        publicClient: createPublicClient({
-            batch: {
-                multicall: true,
-            },
-            chain: chainObj,
-            transport: http(),
-        }),
-        walletClient: createWalletClient({
-            chain: chainObj,
-            transport: http(),
-        }),
+        publicClient: pClient,
+        walletClient: wClient,
         // rpcUrl: currentRpcUrl,
     };
 }

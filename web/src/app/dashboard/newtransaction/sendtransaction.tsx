@@ -106,15 +106,10 @@ import {
     UpdateUserProperty,
 } from "@/app/storage/userPropertyStore";
 
-import { getAuthPasswdAccount } from "@/app/dashboard/passwdauth/passwdAuthModal";
-
-const questionNosEncode = (qNo1: string, qNo2: string, pin: string) => {
-    let questionNosEnc = qNo1 + qNo2 + generateRandomString();
-    console.log("questionNosEnc1:", questionNosEnc);
-    questionNosEnc = aesEncrypt(questionNosEnc, pin);
-    console.log("questionNosEnc2:", questionNosEnc);
-    return questionNosEnc;
-};
+import {
+    getAuthPasswdAccount,
+    getPrivateInfosQuestionNosEnc,
+} from "@/app/dashboard/passwdauth/passwdAuthModal";
 
 export default function SendTransaction({
     userProp,
@@ -619,11 +614,11 @@ export default function SendTransaction({
                 );
 
                 if (receiverAddr != "" && (amount != "" || nftId != "")) {
-                    // const passwdAccount = getPasswdAccount(
-                    //     currentPriInfoRef.current,
-                    //     chainObj.chainCode
-                    // );
                     const passwdAccount = getAuthPasswdAccount();
+                    if (passwdAccount == null || passwdAccount == undefined) {
+                        setTransactionFee(`? ${nativeCoinSymbol}.`);
+                        return;
+                    }
 
                     let eFee;
                     if (
@@ -786,6 +781,9 @@ export default function SendTransaction({
         inputFillInChange,
         setInputFillInChange,
     ]);
+    const estimateFee = () => {
+        setInputFillInChange(inputFillInChange + 1);
+    };
 
     useEffect(() => {
         const fetchMyAccountStatus = async () => {
@@ -1350,16 +1348,15 @@ export default function SendTransaction({
                     </div>
                 </Tab>
             </Tabs>
+
             <div
-                style={
-                    currentTabTagRef.current == "sendETH" ||
-                    currentTabTagRef.current == "sendToken" ||
-                    currentTabTagRef.current == "sendNFT" ||
-                    currentTabTagRef.current == "bridgeL2AndL1"
-                        ? { display: "block" }
-                        : { display: "none" }
-                }
-            ></div>
+                className="flex flex-wrap gap-4 items-center"
+                style={{ marginLeft: "290px" }}
+            >
+                <Button color="secondary" onPress={estimateFee}>
+                    Estimated Cost
+                </Button>
+            </div>
             <div
                 style={
                     transactionFee.indexOf("ERROR") >= 0
@@ -1388,6 +1385,7 @@ export default function SendTransaction({
                     style={{ fontWeight: "bold", fontSize: "16px" }}
                 />
             </div>
+
             <div
                 style={
                     currentTx != ""
@@ -1780,7 +1778,7 @@ async function estimateTransFee(
                 chainObj.chainCode,
                 myOwnerId,
                 passwdAccount.address,
-                "", // questionNos,
+                getPrivateInfosQuestionNosEnc(),
                 receiverAddr,
                 receiverAmt,
                 receiverData,
@@ -1831,15 +1829,18 @@ async function estimateTransFee(
             break;
         } else {
             console.log("Infinity ... detectRes:", detectRes);
+            // myDetectEstimatedFee = BigInt(
+            //     Number(detectRes.realEstimatedFee) +
+            //         Number(
+            //             detectRes.maxFeePerGas != undefined &&
+            //                 detectRes.maxFeePerGas > 0
+            //                 ? detectRes.maxFeePerGas
+            //                 : detectRes.gasPrice
+            //         ) *
+            //             1000
+            // );
             myDetectEstimatedFee = BigInt(
-                Number(detectRes.realEstimatedFee) +
-                    Number(
-                        detectRes.maxFeePerGas != undefined &&
-                            detectRes.maxFeePerGas > 0
-                            ? detectRes.maxFeePerGas
-                            : detectRes.gasPrice
-                    ) *
-                        1000
+                parseInt("" + Number(detectRes.realEstimatedFee) * 1.06, 10)
             );
         }
     }
@@ -2010,7 +2011,7 @@ export async function executeTransaction(
             chainObj.chainCode,
             myOwnerId,
             passwdAccount.address,
-            "", // questionNos,
+            getPrivateInfosQuestionNosEnc(),
             receiverAddr,
             receiverAmt,
             receiverData,
