@@ -139,6 +139,7 @@ export function useUserProperty({ email }: { email: string }) {
 
         let bigBrotherPasswdAddr = acctInfo.bigBrotherPasswdAddr;
         if (
+            1 == 1 ||
             bigBrotherPasswdAddr == undefined ||
             bigBrotherPasswdAddr.length < 10
         ) {
