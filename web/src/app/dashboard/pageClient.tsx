@@ -11,7 +11,11 @@ import {
 } from "../serverside/blockchain/chainWriteClient";
 import { getW3eapAddr } from "../serverside/blockchain/chainWrite";
 
-import { queryAccount, queryAccountList } from "../lib/chainQuery";
+import {
+    queryAccount,
+    queryAccountList,
+    queryAccountNoCache,
+} from "../lib/chainQuery";
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 
 import {
@@ -143,7 +147,7 @@ export function useUserProperty({ email }: { email: string }) {
             bigBrotherPasswdAddr == undefined ||
             bigBrotherPasswdAddr.length < 10
         ) {
-            const bigBrotherAcct = await queryAccount(
+            const bigBrotherAcct = await queryAccountNoCache(
                 myProp.selectedChainCode,
                 acctInfo.factoryAddr,
                 myProp.bigBrotherOwnerId

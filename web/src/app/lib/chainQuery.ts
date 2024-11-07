@@ -248,7 +248,36 @@ export async function queryImplMsg(
 export async function queryAccount(
     chainCode: string,
     factoryAddr: string,
-    ownerId: string
+    ownerId: string,
+) {
+    const rtn = await _queryAccount(
+        chainCode,
+        factoryAddr,
+        ownerId,
+        true,
+    );
+    return rtn;
+}
+
+export async function queryAccountNoCache(
+    chainCode: string,
+    factoryAddr: string,
+    ownerId: string,
+) {
+    const rtn = await _queryAccount(
+        chainCode,
+        factoryAddr,
+        ownerId,
+        false,
+    );
+    return rtn;
+}
+
+async function _queryAccount(
+    chainCode: string,
+    factoryAddr: string,
+    ownerId: string,
+    useCache: boolean,
 ) {
     console.log(
         "queryAccount--888:",
@@ -287,19 +316,23 @@ export async function queryAccount(
     }
 
     try {
-        const cache = userPropertyStore.getCacheQueryAccount(
-            chainCode,
-            factoryAddr,
-            ownerId
-        );
-        console.log("getCacheQueryAccount:", cache);
-        if (
-            cache != null &&
-            cache.accountAddr != null &&
-            cache.accountAddr.length > 0
-        ) {
-            return cache;
+        console.log("query account ,use Cache:", useCache);
+        if (useCache) {
+            const cache = userPropertyStore.getCacheQueryAccount(
+                chainCode,
+                factoryAddr,
+                ownerId
+            );
+            console.log("getCacheQueryAccount:", cache);
+            if (
+                cache != null &&
+                cache.accountAddr != null &&
+                cache.accountAddr.length > 0
+            ) {
+                return cache;
+            }
         }
+
         const cpc = chainPublicClient(chainCode, factoryAddr);
 
         // console.log("rpc:", cpc.rpcUrl);
