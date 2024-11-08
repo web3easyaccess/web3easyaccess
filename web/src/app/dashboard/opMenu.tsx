@@ -169,10 +169,12 @@ export function ShowMain({
     selectedMenu,
     userProp,
     loadUserData,
+    passwdState,
 }: {
     selectedMenu: Menu;
     userProp: UserProperty;
     loadUserData: (myProp: UserProperty) => Promise<void>;
+    passwdState: string;
 }) {
     // const chainObj = getChainObj(currentUserInfo.chainCode);
 
@@ -188,7 +190,7 @@ export function ShowMain({
     } else if (selectedMenu == Menu.PrivateSetting) {
         return <SendChgPrivateInfo userProp={userProp} />;
     } else if (selectedMenu == Menu.Connect2Dapps) {
-        return <Connect2Dapps userProp={userProp} />;
+        return <Connect2Dapps userProp={userProp} passwdState={passwdState} />;
     } else if (selectedMenu == Menu.UpgradeImpl) {
         return <UpgradeImpl userProp={userProp} />;
     } else {

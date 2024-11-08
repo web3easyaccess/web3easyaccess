@@ -36,15 +36,13 @@ import { testIsValidSignature } from "../../lib/chainQuery";
 import { PrivateInfo } from "../newtransaction/privateinfo";
 import { executeTransaction } from "../newtransaction/sendtransaction";
 import ChannelInMain, {
-    connect2WcHost,
-    getWalletConnectHost,
+    syncAddress2WcHost,
     Message,
-    sendMsgUntilSuccess,
-    setMainHost,
-    setWalletConnectHost,
+    sendMsgToWcHost,
     TransactionRequest,
 } from "./channelInMain";
 import { getAuthPasswdAccount } from "../passwdauth/passwdAuthModal";
+import IframeWallet from "./iframeWallet";
 
 const piInit: PrivateInfoType = {
     email: "",
@@ -82,13 +80,33 @@ let getPreparedPriceRef: () => MutableRefObject<{
     preparedGasPrice: undefined;
 }>;
 
+export let getWalletConnectHost: () => string = () => {
+    throw Error("getWalletConnectHost un init");
+};
+export let getMainHost: () => string = () => {
+    throw Error("getMainHost un init");
+};
+
+export let getChannelId: () => string = () => {
+    throw Error("getChannelId un init");
+};
+
 export default function Connect2Dapps({
     userProp,
+    passwdState,
 }: {
     userProp: UserProperty;
+    passwdState: string;
 }) {
     /////
     console.log("Connect2Dapps init ...");
+    const channelId = useRef("" + new Date().getTime());
+
+    getChannelId = () => {
+        console.log("main,getChannelId123:", channelId.current);
+        return channelId.current;
+    };
+
     const currentPriInfoRef = useRef(piInit);
     const oldPriInfoRef = useRef(piInit);
 
@@ -108,6 +126,26 @@ export default function Connect2Dapps({
         return getChainObj(userProp.selectedChainCode);
     };
 
+    const walletconnectHost = useRef(userProp.walletconnectHost);
+    const mainHost = useRef(userProp.myselfHost);
+
+    getWalletConnectHost = () => {
+        if (
+            walletconnectHost.current == "" ||
+            walletconnectHost.current == undefined
+        ) {
+            return "http://localhost:3001";
+        }
+        return walletconnectHost.current;
+    };
+
+    getMainHost = () => {
+        if (mainHost.current == "" || mainHost.current == undefined) {
+            return "http://localhost:3000";
+        }
+        return mainHost.current;
+    };
+
     const lastEffectPropJson = useRef("");
     useEffect(() => {
         const propJson = JSON.stringify(userProp);
@@ -123,10 +161,9 @@ export default function Connect2Dapps({
             userProp.bigBrotherOwnerId != undefined &&
             userProp.bigBrotherOwnerId != ""
         ) {
-            setMainHost(userProp.myselfHost);
-            setWalletConnectHost(userProp.walletconnectHost);
-
-            connect2WcHost(getChainObject().id, getAccountAddr());
+            // mainHost.current = userProp.myselfHost;
+            // walletconnectHost.current = userProp.walletconnectHost;
+            syncAddress2WcHost(getChainObject().id, getAccountAddr());
         }
     }, [userProp]);
 
@@ -161,58 +198,23 @@ export default function Connect2Dapps({
             {accountAddrCreated(userProp) ? (
                 <>
                     <IframeWallet
-                        getWalletConnectHostFun={getWalletConnectHost}
+                        channelId={getChannelId()}
+                        mainHostUrl={getMainHost()}
+                        walletConnectHostUrl={getWalletConnectHost()}
+                        passwdState={passwdState}
                     ></IframeWallet>
                     <></>
                 </>
             ) : (
                 <p>
                     this account[ {readAccountAddr(userProp)} ] has not created!
+                    You can create it by send first transaction.For example,
+                    send yourself a transaction with a value of 0
                 </p>
             )}
         </div>
     );
 }
-
-const IframeWallet = ({
-    getWalletConnectHostFun,
-}: {
-    getWalletConnectHostFun: () => string;
-}) => {
-    let src = "";
-    if (getWalletConnectHostFun != undefined) {
-        src = getWalletConnectHostFun();
-    }
-    const iframe = useRef(document.createElement("iframe"));
-
-    useEffect(() => {
-        console.log("MainHost:iframeWallet,src:", src);
-        if (src == null || src == undefined || src == "") {
-            return;
-        }
-
-        const child = document.getElementById("w3eaWalletconnect");
-        if (child == null || child == undefined) {
-            // const iframe = document.createElement("iframe");
-            if (iframe.current.src == "") {
-                console.log("iframe init ...");
-                iframe.current.src = src + "/walletconnect";
-                iframe.current.style.width = "800px";
-                iframe.current.style.height = "500px";
-                iframe.current.id = "w3eaWalletconnect";
-            }
-
-            const container = document.getElementById("div_w3eaWalletconnect");
-            container.appendChild(iframe.current);
-        }
-
-        // return () => {
-        //     container.removeChild(iframe);
-        // };
-    }, [src]);
-
-    return <div id="div_w3eaWalletconnect"></div>;
-};
 
 ///////////
 
@@ -251,6 +253,7 @@ export const signTextMessage = async (msg: Message) => {
     }
     console.log("MainHost:signMessage x,signature:", signature);
     const signedMessage: Message = {
+        channelId: getChannelId(),
         msgType: "signMessage",
         chainKey: "",
         address: "",
@@ -260,7 +263,7 @@ export const signTextMessage = async (msg: Message) => {
             content: signature,
         },
     };
-    await sendMsgUntilSuccess(getWalletConnectHost(), signedMessage);
+    await sendMsgToWcHost(getWalletConnectHost(), signedMessage);
     // writeWalletConnectData("signMessage", chatId, signature);
 };
 
@@ -283,6 +286,7 @@ export const signTypedDataMessage = async (msg: Message) => {
     }
     console.log("MainHost:signMessage y,signature:", signature);
     const signedMessage: Message = {
+        channelId: getChannelId(),
         msgType: "signMessage",
         chainKey: "",
         address: "",
@@ -292,7 +296,7 @@ export const signTypedDataMessage = async (msg: Message) => {
             content: signature,
         },
     };
-    await sendMsgUntilSuccess(getWalletConnectHost(), signedMessage);
+    await sendMsgToWcHost(getWalletConnectHost(), signedMessage);
 };
 
 const signMessage = async (
@@ -402,6 +406,7 @@ export const sendTransaction = async (msg: Message) => {
         throw Error("executeTransaction error!");
     }
     const txMsg: Message = {
+        channelId: getChannelId(),
         msgType: "sendTransaction",
         chainKey: "",
         address: "",
@@ -411,5 +416,5 @@ export const sendTransaction = async (msg: Message) => {
             content: tx,
         },
     };
-    await sendMsgUntilSuccess(getWalletConnectHost(), txMsg);
+    await sendMsgToWcHost(getWalletConnectHost(), txMsg);
 };

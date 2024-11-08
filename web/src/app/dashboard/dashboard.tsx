@@ -62,6 +62,11 @@ export default function Dashboard({
         setSelectedMenu(oldMenu);
     }, []);
 
+    const [passwdState, setPasswdState] = useState("");
+    const updatePasswdState = (ps: string) => {
+        setPasswdState(ps);
+    };
+
     return (
         <>
             <Navbar
@@ -86,6 +91,8 @@ export default function Dashboard({
                         <CardBody>
                             <MenuItemOfPasswdAuth
                                 userProp={userProp}
+                                passwdState={passwdState}
+                                updatePasswdState={updatePasswdState}
                             ></MenuItemOfPasswdAuth>
                         </CardBody>
                     </div>
@@ -106,6 +113,7 @@ export default function Dashboard({
                             selectedMenu={selectedMenu}
                             userProp={userProp}
                             loadUserData={loadUserData}
+                            passwdState={passwdState}
                         />
                     </CardBody>
                 </Card>

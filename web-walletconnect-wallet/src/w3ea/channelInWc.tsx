@@ -1,12 +1,13 @@
 type Message = {
+  channelId: string
   msgType:
     | 'reportReceived'
-    | 'connect'
-    | 'wcReset'
+    | 'syncAddress'
     | 'signMessage'
     | 'signTypedData'
     | 'signTransaction'
     | 'sendTransaction'
+    | 'checkPasswd'
   chainKey: string
   address: string
   msgIdx: number
@@ -40,12 +41,28 @@ import SettingsStore from '@/store/SettingsStore'
 import { TransactionRequest, W3eaWallet } from './W3eaWallet'
 import { japanese } from 'viem/accounts'
 
-let setW3eaMainHost: (host: string) => void
 let getW3eaMainHost = () => {
   return ''
 }
 
-export default function ChannelInWc() {
+let getChannelId: () => string = () => {
+  throw Error('getChannelId un init.')
+}
+
+export default function ChannelInWc({
+  mainHostUrl,
+  walletConnectHostUrl,
+  channelId
+}: {
+  mainHostUrl: string
+  walletConnectHostUrl: string
+  channelId: string
+}) {
+  const myChannelId = useRef(channelId)
+  getChannelId = () => {
+    return myChannelId.current
+  }
+
   const w3eaWallet = useRef(new W3eaWallet('', ''))
   const receiverData = useRef({ address: '', chainKey: '' })
 
@@ -84,11 +101,8 @@ export default function ChannelInWc() {
     return receivedMsgBox.current.delete(msgIdx)
   }
 
-  const w3eaMainHost = useRef('')
-
-  setW3eaMainHost = (host: string) => {
-    w3eaMainHost.current = host
-  }
+  const walletconnectHost = useRef(walletConnectHostUrl)
+  const w3eaMainHost = useRef(mainHostUrl)
 
   getW3eaMainHost = () => {
     return w3eaMainHost.current
@@ -105,9 +119,10 @@ export default function ChannelInWc() {
 
   useEffect(() => {
     //
-    const reset = async () => {
+    const sa = async () => {
       const msg2Parent: Message = {
-        msgType: 'wcReset',
+        channelId: getChannelId(),
+        msgType: 'syncAddress',
         chainKey: '',
         address: '',
         msgIdx: new Date().getTime(),
@@ -119,7 +134,7 @@ export default function ChannelInWc() {
       console.log('child reset...')
       await sendMsgOnce(msg2Parent)
     }
-    reset()
+    sa()
   }, [])
 
   /////////////////////////////////////////
@@ -132,31 +147,33 @@ const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 async function handleMsgReceived(event: { origin: any; data: string }) {
   console.log('child:handleMsgReceived,entry,event:', event)
   console.log('child:handleMsgReceived,entry,getW3eaMainHost:', getW3eaMainHost())
-  if (getW3eaMainHost() == '' || getW3eaMainHost() == undefined) {
-    if (
-      event.origin != 'http://localhost:3000' &&
-      event.origin != 'https://www.web3easyaccess.link'
-    ) {
-      return
-    }
-  } else if (event.origin != getW3eaMainHost()) {
+  if (event.origin != getW3eaMainHost()) {
     return
   }
 
   const msg: Message = JSON.parse(event.data)
+  if (msg.channelId != getChannelId()) {
+    console.log(
+      'in wc,channelId error.getChannelId()=' + getChannelId(),
+      'msg.channelId=' + msg.channelId,
+      msg.msgType
+    )
+    return
+  }
 
   //
-  const msg2Parent: Message = {
-    msgType: 'reportReceived',
-    chainKey: '',
-    address: '',
-    msgIdx: msg.msgIdx,
-    msg: {
-      chatId: '',
-      content: {}
-    }
-  }
-  await sendMsgOnce(msg2Parent)
+  //   const msg2Parent: Message = {
+  //     channelId: getChannelId(),
+  //     msgType: 'reportReceived',
+  //     chainKey: '',
+  //     address: '',
+  //     msgIdx: msg.msgIdx,
+  //     msg: {
+  //       chatId: '',
+  //       content: {}
+  //     }
+  //   }
+  //   await sendMsgOnce(msg2Parent)
 
   //
 
@@ -168,12 +185,11 @@ async function handleMsgReceived(event: { origin: any; data: string }) {
   }
   setLatestReceivedMsgIdx(msg.msgIdx)
 
-  if (msg.msgType == 'connect') {
+  if (msg.msgType == 'syncAddress') {
     const content = msg.msg.content as {
       mainHost: string
       walletconnectHost: string
     }
-    setW3eaMainHost(content.mainHost)
     //
     if (getReceiverData().address != msg.address || getReceiverData().chainKey != msg.chainKey) {
       console.log('child:trigger render...msg:', msg)
@@ -191,25 +207,13 @@ async function handleMsgReceived(event: { origin: any; data: string }) {
 ////
 
 const sendMsgOnce = async (msg: Message) => {
-  if (msg.msgType == 'wcReset') {
-    // target parent host uncertain
-    parent.postMessage(JSON.stringify(msg), '*')
-    return
-  }
-  if (getW3eaMainHost() != null && getW3eaMainHost() != undefined && getW3eaMainHost() != '') {
-    msg.chainKey = getReceiverData().chainKey
-    msg.address = getReceiverData().address
-    console.log('ChildWcHost:sendMsgOnce, w3eaMainHost:', getW3eaMainHost(), msg)
-    parent.postMessage(JSON.stringify(msg), getW3eaMainHost())
-  } else {
-    console.log('ChildWcHost:warn,,,,main host error2, maybe have not connected!')
-  }
+  msg.chainKey = getReceiverData().chainKey
+  msg.address = getReceiverData().address
+  console.log('ChildWcHost:sendMsgOnce, w3eaMainHost:', getW3eaMainHost(), msg)
+  parent.postMessage(JSON.stringify(msg), getW3eaMainHost())
 }
 
 const sendMsgAndWaitResponse = async (msg: Message) => {
-  if (getW3eaMainHost() == null || getW3eaMainHost() == undefined || getW3eaMainHost() == '') {
-    throw Error('main host error, maybe have not connected!')
-  }
   msg.chainKey = getReceiverData().chainKey
   msg.address = getReceiverData().address
   parent.postMessage(JSON.stringify(msg), getW3eaMainHost())
@@ -237,6 +241,24 @@ const sendMsgAndWaitResponse = async (msg: Message) => {
 
 ////
 
+export const chat_checkMainPasswd = () => {
+  const msg2Parent: Message = {
+    channelId: getChannelId(),
+    msgType: 'checkPasswd',
+    chainKey: '',
+    address: '',
+    msgIdx: new Date().getTime(),
+    msg: {
+      chatId: '',
+      content: {}
+    }
+  }
+  console.log('child reset...')
+  sendMsgOnce(msg2Parent)
+}
+
+////
+
 function getRandomInt(max: number) {
   return Math.floor(Math.random() * max)
 }
@@ -244,6 +266,7 @@ function getRandomInt(max: number) {
 
 export const chat_signMessage = async (userMessage: string, isTypedData: boolean) => {
   const msg: Message = {
+    channelId: getChannelId(),
     msgType: isTypedData ? 'signTypedData' : 'signMessage',
     chainKey: '',
     address: '',
@@ -263,6 +286,7 @@ export const chat_signMessage = async (userMessage: string, isTypedData: boolean
 
 export const chat_sendTransaction = async (userMessage: TransactionRequest) => {
   const msg: Message = {
+    channelId: getChannelId(),
     msgType: 'sendTransaction',
     chainKey: '',
     address: '',

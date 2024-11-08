@@ -85,7 +85,7 @@ const pwdRegex = new RegExp(
     "(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])(?=.*[^a-zA-Z0-9]).{11,30}"
 );
 
-type PasswdState = "OK" | "ERROR" | "Blank" | "BigBrotherNotCreated";
+type PasswdState = "OK" | "ERROR" | "Blank" | "BigBrotherNotCreated" | "Locked";
 
 let fetchPasswdAddr: () => Promise<string>;
 
@@ -172,7 +172,19 @@ let clickPopButton: (msg: string) => void = (msg: string) => {
     throw Error("clickPopButton uninit...");
 };
 
-export function MenuItemOfPasswdAuth({ userProp }: { userProp: UserProperty }) {
+export let getPasswdState: () => PasswdState = () => {
+    throw Error("getPasswdState uninit...");
+};
+
+export function MenuItemOfPasswdAuth({
+    userProp,
+    passwdState,
+    updatePasswdState,
+}: {
+    userProp: UserProperty;
+    passwdState: string;
+    updatePasswdState: (ps: string) => void;
+}) {
     // console.log("MenuItemOfPasswdAuth init ...");
 
     const [pinCodeValue, set0PinCodeValue] = useState("");
@@ -265,10 +277,14 @@ export function MenuItemOfPasswdAuth({ userProp }: { userProp: UserProperty }) {
         setPasswdAuthMenuClickedCount(passwdAuthMenuClickedCount + 1);
     };
 
-    const [passwdState, setPasswdState] = useState("Blank" as PasswdState);
-    const updatePasswdState = (s: PasswdState) => {
-        setPasswdState(s);
-    };
+    // const [passwdState, setPasswdState] = useState("Blank" as PasswdState);
+    // const updatePasswdState = (s: PasswdState) => {
+    //     setPasswdState(s);
+    // };
+
+    // getPasswdState = () => {
+    //     return passwdState;
+    // };
 
     const getPasswdStateMsg = (ps: PasswdState) => {
         if (ps == "OK") {
@@ -283,14 +299,17 @@ export function MenuItemOfPasswdAuth({ userProp }: { userProp: UserProperty }) {
     };
 
     const getPasswdStateImg = (ps: PasswdState) => {
+        // console.log("getPasswdStateImg, passwdState:", ps);
         passwdState == "OK" ? "/pwdSuccess.png" : "/pwdWarning.png";
         if (ps == "OK") {
             return "/pwdSuccess.png";
-        } else if (ps == "ERROR") {
-            return "/pwdError.png";
         } else if (ps == "Blank") {
             return "/pwdWarning.png";
         } else if (ps == "BigBrotherNotCreated") {
+            return "/pwdWarning.png";
+        } else if (ps == "ERROR") {
+            return "/pwdError.png";
+        } else {
             return "/pwdWarning.png";
         }
     };
@@ -303,9 +322,12 @@ export function MenuItemOfPasswdAuth({ userProp }: { userProp: UserProperty }) {
         if (pgMax != undefined && pgMax > 0) {
             progressMax.current = pgMax;
         }
-        set0ProgressValue(
-            r > progressMax.current ? 100 : (r / progressMax.current) * 100
-        );
+        const pv =
+            r > progressMax.current ? 100 : (r / progressMax.current) * 100;
+        set0ProgressValue(pv);
+        if (pv == 100) {
+            updatePasswdState("Locked");
+        }
     };
 
     const [popMsg, setPopMsg] = useState("");

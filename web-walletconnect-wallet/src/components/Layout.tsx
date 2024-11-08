@@ -67,8 +67,8 @@ export default function Layout({ children, initialized }: Props) {
               css={{
                 // w3ea ,set to none
                 // display: 'none',
-                height: '85px',
-                minHeight: '85px',
+                height: '1px',
+                minHeight: '1px',
                 position: 'sticky',
                 justifyContent: 'flex-end',
                 alignItems: 'flex-end',
@@ -79,7 +79,7 @@ export default function Layout({ children, initialized }: Props) {
                 left: 0
               }}
             >
-              <Navigation />
+              {/* <Navigation /> */}
             </Card.Footer>
           </Fragment>
         ) : (

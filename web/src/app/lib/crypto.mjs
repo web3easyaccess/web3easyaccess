@@ -8,9 +8,13 @@ export function aesEncrypt(msg, passwd) {
 }
 
 export function aesDecrypt(ciphertext, passwd) {
-    var bytes = CryptoJS.AES.decrypt(ciphertext, passwd);
-    var originalText = bytes.toString(CryptoJS.enc.Utf8);
-    return originalText;
+    try {
+        var bytes = CryptoJS.AES.decrypt(ciphertext, passwd);
+        var originalText = bytes.toString(CryptoJS.enc.Utf8);
+        return originalText;
+    } catch (e) {
+        return "";
+    }
 }
 
 function test1() {
