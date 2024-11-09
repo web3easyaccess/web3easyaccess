@@ -181,9 +181,9 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
         )}
       </div>
       <ChannelInWc
-        mainHostUrl={mainHostUrlRef.current}
-        walletConnectHostUrl={walletConnectHostUrlRef.current}
-        channelId={channelIdRef.current}
+        mainHostUrl={mainHostUrlRef.current as string}
+        walletConnectHostUrl={walletConnectHostUrlRef.current as string}
+        channelId={channelIdRef.current as string}
       ></ChannelInWc>
     </>
   )
