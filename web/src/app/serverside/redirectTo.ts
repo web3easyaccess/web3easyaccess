@@ -32,6 +32,7 @@ function urlError() {
     redirect("/error");
 }
 
+
 function urlLoggedInCheck() {
     const email = myCookies.getEmail(); // || "abc@def.com";
 

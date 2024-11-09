@@ -1,8 +1,7 @@
 import { cookies } from "next/headers";
 import { keccak256, toHex } from "viem";
-import popularAddr from "../dashboard/privateinfo/lib/popularAddr";
 
-import { ChainCode } from "../lib/myTypes";
+import { ChainCode, exampleEmail } from "../lib/myTypes";
 import { getChainObj } from "../lib/myChain";
 
 export type CookieData = {
@@ -36,6 +35,9 @@ function cookieIsValid() {
 
 function getEmail() {
     let md: CookieData = _parseData(cookies().get(COOKIE_KEY));
+    if (md == null || md == undefined || md.email == null || md.email == undefined || md.email == "") {
+        return exampleEmail;
+    }
     return md.email;
 }
 

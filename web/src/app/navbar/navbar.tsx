@@ -88,7 +88,7 @@ export default function NavBar({
                     updateUserProp={updateUserProp}
                 />
                 <NavbarItem className="hidden lg:flex">
-                    <Logout></Logout>
+                    <Logout userProp={userProp}></Logout>
                 </NavbarItem>
             </NavbarContent>
         </Navbar>

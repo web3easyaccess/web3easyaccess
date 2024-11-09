@@ -30,7 +30,11 @@ export default function IframeWallet({
                             "&channelId=" +
                             channelId
                         }
-                        style={{ width: "800px", height: height + "px" }}
+                        style={{
+                            width: "800px",
+                            height: height + "px",
+                            overflow: "scroll",
+                        }}
                     />
                 </div>
             </>

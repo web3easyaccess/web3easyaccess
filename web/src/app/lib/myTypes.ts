@@ -1,3 +1,5 @@
+export const exampleEmail = "Vitalik.example@ethereum.org";
+
 export enum Menu {
     OOOO,
     PasswdAuth,

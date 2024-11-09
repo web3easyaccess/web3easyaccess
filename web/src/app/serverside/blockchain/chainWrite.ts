@@ -19,10 +19,18 @@ import { queryAccount } from "../../lib/chainQuery";
 import abis from "./abi/abis";
 
 import * as libsolana from "@/app/lib/client/solana/libsolana";
-import { ChainCode } from "@/app/lib/myTypes";
+import { ChainCode, exampleEmail } from "@/app/lib/myTypes";
+import myCookies from "../myCookies";
+
 
 function sleep(time) {
     return new Promise((resolve) => setTimeout(resolve, time));
+}
+
+function checkExample() {
+    if (exampleEmail == myCookies.getEmail()) {
+        throw new Error("You are not logged in yet, please click the button in the upper right corner to log in");
+    }
 }
 
 export async function getW3eapAddr(chainCode: string) {
@@ -53,6 +61,7 @@ export async function newAccount(
     passwdAddr: `0x${string}`,
     questionNos: `0x${string}`
 ) {
+    checkExample();
     console.log(
         `newAccount called ... ownerId= ${ownerId}, passwdAddr=${passwdAddr}`
     );
@@ -143,6 +152,7 @@ export async function newAccountAndTransferETH(
     preparedGasPrice: bigint,
     bridgeDirection: string
 ) {
+    checkExample();
     if (chainCode.indexOf("SOL") >= 0) {
         console.log(
             "solana called on client side, this time. here can't be reach!"
@@ -359,6 +369,7 @@ export async function createTransaction(
     bridgeDirection: string,
     upgradeImpl: boolean, // 发送交易的同时升级“合约实现”
 ) {
+    checkExample();
     detectEstimatedFee = BigInt(detectEstimatedFee);
     l1DataFee = BigInt(l1DataFee);
     if (preparedMaxFeePerGas != undefined) {
@@ -563,6 +574,7 @@ export async function changePasswdAddr(
     preparedMaxFeePerGas: bigint,
     preparedGasPrice: bigint
 ) {
+    checkExample();
     detectEstimatedFee = BigInt(detectEstimatedFee);
     if (preparedMaxFeePerGas != undefined) {
         preparedMaxFeePerGas = BigInt(preparedMaxFeePerGas);
@@ -688,6 +700,7 @@ export async function transferETHXXXXX(
     nonce: bigint,
     signature: `0x${string}`
 ) {
+    checkExample();
     console.log(`transferETH called ... ownerId= ${ownerId}, amount=${amount}`);
     var callAccountData;
 
@@ -717,6 +730,7 @@ export async function chgPasswdAddrXXXX(
     nonce: bigint,
     signature: `0x${string}`
 ) {
+    checkExample();
     console.log(
         `chgPasswdAddr called ... ownerId= ${ownerId}, newPasswdAddr=${newPasswdAddr}`
     );
@@ -745,6 +759,7 @@ async function _execute(
     ownerId: `0x${string}`,
     callAccountData: `0x${string}`
 ) {
+    checkExample();
     console.log(
         `_execute ownerId=${ownerId}, callAccountData= ${callAccountData}`
     );

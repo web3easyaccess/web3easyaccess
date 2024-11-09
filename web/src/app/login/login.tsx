@@ -12,6 +12,7 @@ import {
     Image,
     Textarea,
     ScrollShadow,
+    Link,
 } from "@nextui-org/react";
 
 import Passwd from "./passwd";
@@ -149,6 +150,9 @@ export default function Login() {
                                     : { display: "none" }
                             }
                         ></VerifyCode>
+                        <p>&nbsp;</p>
+
+                        <Link href="/">Just looking without logging in</Link>
                     </div>
                 </div>
             </Card>

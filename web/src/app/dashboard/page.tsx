@@ -7,7 +7,7 @@ import redirectTo from "../serverside/redirectTo";
 import PageClient from "./pageClient";
 
 export default async function Page() {
-    redirectTo.urlLoggedInCheck();
+    // redirectTo.urlLoggedInCheck();
 
     const email = myCookies.getEmail();
 
