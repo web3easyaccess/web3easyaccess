@@ -67,7 +67,7 @@ export default function IframeWallet({
                 ) : (
                     <p>
                         this account has not created! You can create it by send
-                        first transaction.For example, send yourself a
+                        first transaction.For example, send to yourself a
                         transaction with a value of 0
                     </p>
                 )}

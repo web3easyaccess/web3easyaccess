@@ -1,4 +1,4 @@
-export const exampleEmail = "Vitalik.example@ethereum.org";
+export const exampleEmail = "Vitalik@example";
 
 export enum Menu {
     OOOO,

@@ -56,7 +56,13 @@ import { signAuth } from "../../lib/client/signAuthTypedData";
 import popularAddr from "../../lib/client/popularAddr";
 import { useRef, useState, useEffect, MutableRefObject } from "react";
 
-import { Menu, UserInfo, uiToString, Transaction } from "../../lib/myTypes";
+import {
+    Menu,
+    UserInfo,
+    uiToString,
+    Transaction,
+    exampleEmail,
+} from "../../lib/myTypes";
 import { getChainObj } from "../../lib/myChain";
 import {
     bigBrotherAccountCreated,
@@ -924,7 +930,11 @@ function PasswdAuthDetail({
                     </PopoverContent>
                 </Popover>
             </div>
-
+            {userProp.email == exampleEmail ? (
+                <p style={{ color: "red", fontWeight: "bold" }}>
+                    This form is invalid because you are not logged in
+                </p>
+            ) : null}
             <Card
                 className="max-w-[800px]"
                 style={

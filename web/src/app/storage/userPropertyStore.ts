@@ -1,6 +1,6 @@
 import { getOwnerIdBigBrother as getBigBrotherOwnerId, getOwnerIdLittleBrother } from "../lib/client/keyTools";
 
-import { ChainCode, Menu, chainCodeFromString } from "../lib/myTypes";
+import { ChainCode, Menu, chainCodeFromString, exampleEmail } from "../lib/myTypes";
 
 const KEY_PREFIX = "W3EA_PROFILE_V6:";
 
@@ -302,6 +302,9 @@ export function saveUserProperty(
 
 
 function transToEmailDisplay(email: string) {
+    if (email == exampleEmail) {
+        return email;
+    }
     let idx = email.indexOf("@");
     let emailDisplay = "";
     for (let k = 0; k < email.length; k++) {

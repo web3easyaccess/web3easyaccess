@@ -382,98 +382,110 @@ export default function SendChgPrivateInfo({
 
     return (
         <>
-            <div id="var_tmp" style={{ display: "none" }}>
-                <input id="id_estimateTransFeeTriggerText" />
-                <input id="id_estimateTransFeeTriggerTime" />
-                <input id="id_qCount" />
-                <input id="id_lastError" />
-            </div>
-
-            <div>
-                <PrivateInfo4Chg
-                    userProp={userProp}
-                    forTransaction={false}
-                    currentPriInfoRef={currentPriInfoRef}
-                    oldPriInfoRef={oldPriInfoRef}
-                    updateFillInOk={updateFillInOk}
-                    privateinfoHidden={privateinfoHidden}
-                    updatePrivateinfoHidden={updatePrivateinfoHidden}
-                ></PrivateInfo4Chg>
-            </div>
-            <div
-                style={
-                    transactionFee.indexOf("ERROR") >= 0
-                        ? {
-                              marginTop: "10px",
-                              width: "800px",
-                              fontWeight: "bold",
-                          }
-                        : {
-                              marginTop: "10px",
-                              width: "300px",
-                              fontWeight: "bold",
-                          }
-                }
-            >
-                <Input
-                    readOnly
-                    color="secondary"
-                    type="text"
-                    label="Transaction Fee:"
-                    placeholder=""
-                    defaultValue={transactionFee}
-                    value={transactionFee}
-                    radius="sm"
-                    style={{ fontWeight: "bold", fontSize: "18px" }}
-                />
-            </div>
-            <div
-                style={
-                    currentTx != ""
-                        ? { display: "block", marginTop: "10px" }
-                        : { display: "none" }
-                }
-            >
-                <p>Transaction:</p>
-                <Link
-                    isExternal
-                    href={`${explorerTxUrl(currentTx)}`}
-                    showAnchorIcon
-                >
-                    {currentTx}
-                </Link>
-            </div>
-            <div
-                style={
-                    currentTx == undefined || currentTx == ""
-                        ? { display: "block" }
-                        : { display: "none" }
-                }
-            >
-                <div
-                    style={
-                        privateFillInOk > 0 &&
-                        transactionFee.indexOf("ERROR") < 0
-                            ? { display: "block" }
-                            : { display: "none" }
-                    }
-                >
-                    <CreateTransaction
-                        myOwnerId={readOwnerId(userProp)}
-                        verifyingContract={readAccountAddr(userProp)}
-                        email={userProp.email}
-                        chainObj={chainObj}
-                        buttonText={buttonText}
-                        myAccountCreated={myAccountCreated}
-                        oldPriInfoRef={oldPriInfoRef}
-                        currentPriInfoRef={currentPriInfoRef}
-                        preparedPriceRef={preparedPriceRef}
-                        updateCurrentTx={updateCurrentTx}
-                        currentTabTag={currentTabTag}
-                        nativeCoinSymbol={nativeCoinSymbol}
-                    />
+            {!bigBrotherAccountCreated(userProp) ? (
+                <div>
+                    <p>
+                        {
+                            "No account has been created under your email, You can create a account by send first transaction.For example, send to yourself a transaction with a value of 0"
+                        }
+                    </p>
                 </div>
-            </div>
+            ) : (
+                <div>
+                    <div id="var_tmp" style={{ display: "none" }}>
+                        <input id="id_estimateTransFeeTriggerText" />
+                        <input id="id_estimateTransFeeTriggerTime" />
+                        <input id="id_qCount" />
+                        <input id="id_lastError" />
+                    </div>
+
+                    <div>
+                        <PrivateInfo4Chg
+                            userProp={userProp}
+                            forTransaction={false}
+                            currentPriInfoRef={currentPriInfoRef}
+                            oldPriInfoRef={oldPriInfoRef}
+                            updateFillInOk={updateFillInOk}
+                            privateinfoHidden={privateinfoHidden}
+                            updatePrivateinfoHidden={updatePrivateinfoHidden}
+                        ></PrivateInfo4Chg>
+                    </div>
+                    <div
+                        style={
+                            transactionFee.indexOf("ERROR") >= 0
+                                ? {
+                                      marginTop: "10px",
+                                      width: "800px",
+                                      fontWeight: "bold",
+                                  }
+                                : {
+                                      marginTop: "10px",
+                                      width: "300px",
+                                      fontWeight: "bold",
+                                  }
+                        }
+                    >
+                        <Input
+                            readOnly
+                            color="secondary"
+                            type="text"
+                            label="Transaction Fee:"
+                            placeholder=""
+                            defaultValue={transactionFee}
+                            value={transactionFee}
+                            radius="sm"
+                            style={{ fontWeight: "bold", fontSize: "18px" }}
+                        />
+                    </div>
+                    <div
+                        style={
+                            currentTx != ""
+                                ? { display: "block", marginTop: "10px" }
+                                : { display: "none" }
+                        }
+                    >
+                        <p>Transaction:</p>
+                        <Link
+                            isExternal
+                            href={`${explorerTxUrl(currentTx)}`}
+                            showAnchorIcon
+                        >
+                            {currentTx}
+                        </Link>
+                    </div>
+                    <div
+                        style={
+                            currentTx == undefined || currentTx == ""
+                                ? { display: "block" }
+                                : { display: "none" }
+                        }
+                    >
+                        <div
+                            style={
+                                privateFillInOk > 0 &&
+                                transactionFee.indexOf("ERROR") < 0
+                                    ? { display: "block" }
+                                    : { display: "none" }
+                            }
+                        >
+                            <CreateTransaction
+                                myOwnerId={readOwnerId(userProp)}
+                                verifyingContract={readAccountAddr(userProp)}
+                                email={userProp.email}
+                                chainObj={chainObj}
+                                buttonText={buttonText}
+                                myAccountCreated={myAccountCreated}
+                                oldPriInfoRef={oldPriInfoRef}
+                                currentPriInfoRef={currentPriInfoRef}
+                                preparedPriceRef={preparedPriceRef}
+                                updateCurrentTx={updateCurrentTx}
+                                currentTabTag={currentTabTag}
+                                nativeCoinSymbol={nativeCoinSymbol}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
