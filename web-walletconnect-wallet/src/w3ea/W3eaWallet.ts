@@ -201,6 +201,7 @@ export class W3eaWallet implements EIP155Wallet {
     async connectAsync(provider: providers.JsonRpcProvider) {
         const connectedWallet = {
             sendTransaction: async (tx: TransactionRequest) => {
+                console.log("w3ea wallet, tx data:", tx);
                 const hash = chat_sendTransaction(tx);
                 return hash;
             }

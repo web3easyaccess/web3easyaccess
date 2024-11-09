@@ -195,23 +195,14 @@ export default function Connect2Dapps({
     return (
         <div>
             <ChannelInMain></ChannelInMain>
-            {accountAddrCreated(userProp) ? (
-                <>
-                    <IframeWallet
-                        channelId={getChannelId()}
-                        mainHostUrl={getMainHost()}
-                        walletConnectHostUrl={getWalletConnectHost()}
-                        passwdState={passwdState}
-                    ></IframeWallet>
-                    <></>
-                </>
-            ) : (
-                <p>
-                    this account[ {readAccountAddr(userProp)} ] has not created!
-                    You can create it by send first transaction.For example,
-                    send yourself a transaction with a value of 0
-                </p>
-            )}
+
+            <IframeWallet
+                channelId={getChannelId()}
+                mainHostUrl={getMainHost()}
+                walletConnectHostUrl={getWalletConnectHost()}
+                passwdState={passwdState}
+                acctCreated={accountAddrCreated(userProp)}
+            ></IframeWallet>
         </div>
     );
 }
@@ -385,6 +376,7 @@ export const sendTransaction = async (msg: Message) => {
     } else {
         txVal = Number(hexToBigInt(txReq.value));
     }
+    console.log("main,connect2dapps,sendTransaction,msg:", msg);
     const tx = await executeTransaction(
         getOwnerId(),
         getAccountAddr(),

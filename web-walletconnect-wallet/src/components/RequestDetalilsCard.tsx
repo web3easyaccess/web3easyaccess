@@ -27,6 +27,10 @@ export default function RequestDetailsCard({ chains, address, protocol }: IProps
     <Fragment>
       <Row>
         <Col>
+          <Text color="red" h6>
+            If the chain or address in the top nav doesn't match the one here, you need to switch
+            them before approving
+          </Text>
           <Text h5>Blockchain(s)</Text>
           <Text color="$gray400" data-testid="request-details-chain">
             {chains

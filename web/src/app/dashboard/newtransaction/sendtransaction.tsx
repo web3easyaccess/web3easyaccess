@@ -1899,7 +1899,7 @@ export async function executeTransaction(
     );
     console.log("executeTransaction,user realtime fee, when executeing:", eFee);
     if (eFee.feeWei == undefined || eFee.feeWei == 0) {
-        throw Error("estimateTransFee realtime fee ERROR.");
+        throw Error("estimateTransFee realtime fee ERROR.1:" + eFee.feeDisplay);
     }
     const receiverAmt = parseEther(receiverAmountETH);
 

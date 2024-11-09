@@ -241,21 +241,21 @@ const sendMsgAndWaitResponse = async (msg: Message) => {
 
 ////
 
-export const chat_checkMainPasswd = () => {
-  const msg2Parent: Message = {
-    channelId: getChannelId(),
-    msgType: 'checkPasswd',
-    chainKey: '',
-    address: '',
-    msgIdx: new Date().getTime(),
-    msg: {
-      chatId: '',
-      content: {}
-    }
-  }
-  console.log('child reset...')
-  sendMsgOnce(msg2Parent)
-}
+// export const chat_checkMainPasswd = () => {
+//   const msg2Parent: Message = {
+//     channelId: getChannelId(),
+//     msgType: 'checkPasswd',
+//     chainKey: '',
+//     address: '',
+//     msgIdx: new Date().getTime(),
+//     msg: {
+//       chatId: '',
+//       content: {}
+//     }
+//   }
+//   console.log('child reset...')
+//   sendMsgOnce(msg2Parent)
+// }
 
 ////
 

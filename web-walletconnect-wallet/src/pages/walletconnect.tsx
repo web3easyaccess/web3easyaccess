@@ -110,6 +110,7 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
   return (
     <>
       <MyNavigation updatePageId={updatePageId}></MyNavigation>
+
       <div style={{ marginTop: '5px' }}>
         {pageId != 'walletconnect' ? (
           MyOtherPage()

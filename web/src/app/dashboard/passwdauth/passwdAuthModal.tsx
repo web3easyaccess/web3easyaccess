@@ -109,7 +109,7 @@ let setAuthPasswdAccountTmp: (passwdAccount: any) => void = (
     throw Error("setAuthPasswdAccountTmp uninitialized");
 };
 
-const LOCK_TIME = 600 * 1000; //
+const LOCK_TIME = 1200 * 1000; //
 let getLocked: () => boolean = () => {
     throw Error("getLocked uninitialized");
 };
@@ -295,6 +295,8 @@ export function MenuItemOfPasswdAuth({
             return "To initiate a transaction, you need to fill in the password information first";
         } else if (ps == "BigBrotherNotCreated") {
             return "You have not yet created your first account . To initiate a transaction,you need to enter the same password information again.";
+        } else {
+            return ":) +" + ps;
         }
     };
 
@@ -326,7 +328,13 @@ export function MenuItemOfPasswdAuth({
             r > progressMax.current ? 100 : (r / progressMax.current) * 100;
         set0ProgressValue(pv);
         if (pv == 100) {
-            updatePasswdState("Locked");
+            if (passwdState == "OK") {
+                updatePasswdState("Locked");
+            }
+        } else if (pv == 0) {
+            if (passwdState == "Locked") {
+                updatePasswdState("OK");
+            }
         }
     };
 
@@ -813,7 +821,11 @@ function PasswdAuthDetail({
 
     const [isShowWarning, setIsShowWarning] = useState(false);
     useEffect(() => {
-        setIsShowWarning(true);
+        if (accountAddrCreated(userProp)) {
+            setIsShowWarning(false);
+        } else {
+            setIsShowWarning(true);
+        }
 
         //
         setPinCodeValue(currentPriInfoRef.current.pin);

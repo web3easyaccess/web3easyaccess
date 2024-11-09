@@ -19,12 +19,14 @@ export default function useInitialization() {
     const prevRelayerURLValue = useRef<string>('')
 
     const { relayerRegionURL } = useSnapshot(SettingsStore.state)
-    const { initializeSmartAccounts } = useSmartAccounts()
+    // const { initializeSmartAccounts } = useSmartAccounts()  // w3ea.  
 
     const onInitialize = useCallback(async () => {
         try {
             const { w3eaAddress, w3eaWallet } = loadW3eaWallet()
-            const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
+
+            // w3ea comments:
+            // const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
             // w3ea comments:
             //   const { cosmosAddresses } = await createOrRestoreCosmosWallet()
             //   const { solanaAddresses } = await createOrRestoreSolanaWallet()

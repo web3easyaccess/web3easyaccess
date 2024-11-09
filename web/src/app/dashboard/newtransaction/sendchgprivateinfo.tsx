@@ -1166,7 +1166,7 @@ async function executeTransaction_del(
     );
     console.log("user realtime fee, when executeing:", eFee);
     if (eFee.feeWei == undefined || eFee.feeWei == 0) {
-        throw Error("estimateTransFee realtime fee ERROR.");
+        throw Error("estimateTransFee realtime fee ERROR.2:" + eFee.feeDisplay);
     }
     const receiverAmt = parseEther(receiverAmountETH);
 

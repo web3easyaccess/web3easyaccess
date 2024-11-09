@@ -62,7 +62,7 @@ export default function Dashboard({
         setSelectedMenu(oldMenu);
     }, []);
 
-    const [passwdState, setPasswdState] = useState("");
+    const [passwdState, setPasswdState] = useState("Blank");
     const updatePasswdState = (ps: string) => {
         setPasswdState(ps);
     };

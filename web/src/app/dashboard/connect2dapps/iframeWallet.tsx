@@ -7,11 +7,13 @@ export default function IframeWallet({
     mainHostUrl,
     walletConnectHostUrl,
     passwdState,
+    acctCreated,
 }: {
     channelId: string;
     mainHostUrl: string;
     walletConnectHostUrl: string;
     passwdState: string;
+    acctCreated: boolean;
 }) {
     const Wc = ({ height }: { height: number }) => {
         return (
@@ -35,23 +37,37 @@ export default function IframeWallet({
         );
     };
 
-    const [wcHeight, setWcHeight] = useState(500);
+    const [wcHeight, setWcHeight] = useState(0);
     useEffect(() => {
-        if (passwdState == "OK") {
+        if (passwdState == "OK" && acctCreated) {
             setWcHeight(500);
         } else {
             setWcHeight(1);
         }
-    }, [passwdState]);
+    }, [passwdState, acctCreated]);
 
     return (
-        <>
-            <div style={{ height: 500 - wcHeight + "px" }}>
-                <p>please check your password on [Passwd Auth]</p>
-            </div>
+        <div>
             <div>
                 <Wc height={wcHeight}></Wc>
             </div>
-        </>
+            <div
+                style={
+                    wcHeight <= 1 ? { display: "block" } : { display: "none" }
+                }
+            >
+                {wcHeight == 0 ? (
+                    <p>hold...</p>
+                ) : acctCreated ? (
+                    <p>please check your password on [Passwd Auth]</p>
+                ) : (
+                    <p>
+                        this account has not created! You can create it by send
+                        first transaction.For example, send yourself a
+                        transaction with a value of 0
+                    </p>
+                )}
+            </div>
+        </div>
     );
 }

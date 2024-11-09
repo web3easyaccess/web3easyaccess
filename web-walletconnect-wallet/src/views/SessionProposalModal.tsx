@@ -65,6 +65,9 @@ export default function SessionProposalModal() {
   const supportedNamespaces = useMemo(() => {
     // eip155
     const eip155Chains = Object.keys(EIP155_CHAINS)
+    console.log('supportedNamespaces eip 155 raw1:', eip155Chains)
+    const eipW3eaChains = [getChain().chainKey]
+    console.log('supportedNamespaces eip 155 raw2:', eipW3eaChains)
     const eip155Methods = Object.values(EIP155_SIGNING_METHODS)
 
     //eip5792
@@ -110,10 +113,10 @@ export default function SessionProposalModal() {
     const myAddresses = [getW3eaAddress()] // eip155Addresses.concat(getW3eaAddress())
     return {
       eip155: {
-        chains: eip155Chains,
+        chains: eipW3eaChains, // eip155Chains,
         methods: eip155Methods.concat(eip5792Methods).concat(eip7715Methods),
         events: ['accountsChanged', 'chainChanged'],
-        accounts: eip155Chains
+        accounts: eipW3eaChains // eip155Chains
           .map(
             chain =>
               myAddresses // eip155Addresses
