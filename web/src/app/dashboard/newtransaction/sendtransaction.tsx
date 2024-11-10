@@ -110,6 +110,7 @@ import {
     getAuthPasswdAccount,
     getPrivateInfosQuestionNosEnc,
 } from "@/app/dashboard/passwdauth/passwdAuthModal";
+import { HistoricalGasTracker } from "./gasTracker";
 
 export default function SendTransaction({
     userProp,
@@ -1351,8 +1352,14 @@ export default function SendTransaction({
 
             <div
                 className="flex flex-wrap gap-4 items-center"
-                style={{ marginLeft: "290px" }}
+                style={{ marginLeft: "120px", marginTop: "10px" }}
             >
+                <Link
+                    href="https://etherscan.io/gastracker#chart_gasprice"
+                    isExternal
+                >
+                    &nbsp;&nbsp;Ethereum Mainnet Gastracker
+                </Link>
                 <Button color="secondary" onPress={estimateFee}>
                     Estimated Cost
                 </Button>
