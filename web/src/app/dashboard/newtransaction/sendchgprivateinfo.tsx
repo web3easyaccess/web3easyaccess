@@ -40,6 +40,7 @@ import {
     TableRow,
     TableCell,
     Textarea,
+    Progress,
 } from "@nextui-org/react";
 
 import { Button } from "@nextui-org/button";
@@ -531,139 +532,153 @@ function CreateTransaction({
     currentTabTag: string;
     nativeCoinSymbol: string;
 }) {
-    const { pending } = useFormStatus();
+    // const { pending } = useFormStatus();
+
+    const [btnDisable, setBtnDisable] = useState(false);
 
     const handleClick = async (event) => {
-        if (pending) {
-            event.preventDefault();
-            return;
-        }
-
-        if (
-            currentPriInfoRef.current.pin == "" ||
-            currentPriInfoRef.current.question1answer == "" ||
-            currentPriInfoRef.current.question2answer == ""
-        ) {
-            console.log("private info invalid:", currentPriInfoRef.current);
-            alert("please input private info first!");
-            return;
-        }
-
-        if (currentTabTag == "chgPrivate") {
+        // if (pending) {
+        //     event.preventDefault();
+        //     return;
+        // }
+        setBtnDisable(true);
+        try {
             if (
-                oldPriInfoRef.current.pin == "" ||
-                oldPriInfoRef.current.question1answer == "" ||
-                oldPriInfoRef.current.question2answer == ""
+                currentPriInfoRef.current.pin == "" ||
+                currentPriInfoRef.current.question1answer == "" ||
+                currentPriInfoRef.current.question2answer == ""
             ) {
-                console.log("old private info invalid:", oldPriInfoRef.current);
-                alert("please input old private info first!");
+                console.log("private info invalid:", currentPriInfoRef.current);
+                alert("please input private info first!");
+                setBtnDisable(false);
                 return;
             }
 
-            const oldPasswdAccount = getPasswdAccount(
-                oldPriInfoRef.current,
-                chainObj.chainCode
-            );
-            const newPasswdAccount = getPasswdAccount(
-                currentPriInfoRef.current,
-                chainObj.chainCode
-            );
+            if (currentTabTag == "chgPrivate") {
+                if (
+                    oldPriInfoRef.current.pin == "" ||
+                    oldPriInfoRef.current.question1answer == "" ||
+                    oldPriInfoRef.current.question2answer == ""
+                ) {
+                    console.log(
+                        "old private info invalid:",
+                        oldPriInfoRef.current
+                    );
+                    alert("please input old private info first!");
+                    setBtnDisable(false);
+                    return;
+                }
 
-            let myDetectEstimatedFee = BigInt(0);
+                const oldPasswdAccount = getPasswdAccount(
+                    oldPriInfoRef.current,
+                    chainObj.chainCode
+                );
+                const newPasswdAccount = getPasswdAccount(
+                    currentPriInfoRef.current,
+                    chainObj.chainCode
+                );
 
-            const newQuestionNosEnc = questionNosEncode(
-                currentPriInfoRef.current.firstQuestionNo,
-                currentPriInfoRef.current.secondQuestionNo,
-                currentPriInfoRef.current.pin
-            );
+                let myDetectEstimatedFee = BigInt(0);
 
-            const tx = await executeChgPasswd(
-                myOwnerId, // bigBrotherOwnerId,
-                verifyingContract, // bigBrotherAccountAddr,
-                oldPasswdAccount,
-                newPasswdAccount.address,
-                chainObj,
-                myAccountCreated,
-                newQuestionNosEnc,
-                preparedPriceRef,
-                nativeCoinSymbol,
-                oldPriInfoRef.current,
-                currentPriInfoRef.current
-            );
+                const newQuestionNosEnc = questionNosEncode(
+                    currentPriInfoRef.current.firstQuestionNo,
+                    currentPriInfoRef.current.secondQuestionNo,
+                    currentPriInfoRef.current.pin
+                );
 
-            updateCurrentTx(tx);
-        } else {
-            let receiverAddr = getInputValueById(
-                "id_newtrans_receiver_addr_ui"
-            );
-            setInputValueById("id_newtrans_receiver_addr", receiverAddr);
+                const tx = await executeChgPasswd(
+                    myOwnerId, // bigBrotherOwnerId,
+                    verifyingContract, // bigBrotherAccountAddr,
+                    oldPasswdAccount,
+                    newPasswdAccount.address,
+                    chainObj,
+                    myAccountCreated,
+                    newQuestionNosEnc,
+                    preparedPriceRef,
+                    nativeCoinSymbol,
+                    oldPriInfoRef.current,
+                    currentPriInfoRef.current
+                );
 
-            let amountETH = getInputValueById("id_newtrans_amount_ui");
+                updateCurrentTx(tx);
+            } else {
+                let receiverAddr = getInputValueById(
+                    "id_newtrans_receiver_addr_ui"
+                );
+                setInputValueById("id_newtrans_receiver_addr", receiverAddr);
 
-            if (
-                receiverAddr == null ||
-                receiverAddr == undefined ||
-                receiverAddr.trim().length != 42 ||
-                receiverAddr.trim().startsWith("0x") == false
-            ) {
-                alert("Receiver Address invalid!");
-                return;
+                let amountETH = getInputValueById("id_newtrans_amount_ui");
+
+                if (
+                    receiverAddr == null ||
+                    receiverAddr == undefined ||
+                    receiverAddr.trim().length != 42 ||
+                    receiverAddr.trim().startsWith("0x") == false
+                ) {
+                    alert("Receiver Address invalid!");
+                    setBtnDisable(false);
+                    return;
+                }
+                if (isNaN(parseFloat(amountETH))) {
+                    alert("Amount invalid!");
+                    setBtnDisable(false);
+                    return;
+                }
+
+                // let pin1 = getInputValueById("id_private_pin_1");
+                // let question1_answer_1 = getInputValueById(
+                //     "id_private_question1_answer_1"
+                // );
+                // let question2_answer_1 = getInputValueById(
+                //     "id_private_question2_answer_1"
+                // );
+
+                // myOwnerId
+                const passwdAccount = getPasswdAccount(
+                    currentPriInfoRef.current,
+                    chainObj.chainCode
+                );
+
+                // keccak256(abi.encode(...));
+                console.log(
+                    "encodeAbiParameters1111zzzz:",
+                    receiverAddr,
+                    amountETH
+                );
+                let myDetectEstimatedFee = BigInt(0);
+
+                const questionNosEnc = questionNosEncode(
+                    currentPriInfoRef.current.firstQuestionNo,
+                    currentPriInfoRef.current.secondQuestionNo,
+                    currentPriInfoRef.current.pin
+                );
+
+                const tx = await executeTransaction(
+                    myOwnerId,
+                    verifyingContract,
+                    passwdAccount,
+                    receiverAddr,
+                    amountETH,
+                    "",
+                    chainObj,
+                    myAccountCreated,
+                    questionNosEnc,
+                    preparedPriceRef,
+                    nativeCoinSymbol
+                );
+
+                updateCurrentTx(tx);
             }
-            if (isNaN(parseFloat(amountETH))) {
-                alert("Amount invalid!");
-                return;
-            }
 
-            // let pin1 = getInputValueById("id_private_pin_1");
-            // let question1_answer_1 = getInputValueById(
-            //     "id_private_question1_answer_1"
-            // );
-            // let question2_answer_1 = getInputValueById(
-            //     "id_private_question2_answer_1"
-            // );
-
-            // myOwnerId
-            const passwdAccount = getPasswdAccount(
-                currentPriInfoRef.current,
-                chainObj.chainCode
-            );
-
-            // keccak256(abi.encode(...));
-            console.log(
-                "encodeAbiParameters1111zzzz:",
-                receiverAddr,
-                amountETH
-            );
-            let myDetectEstimatedFee = BigInt(0);
-
-            const questionNosEnc = questionNosEncode(
-                currentPriInfoRef.current.firstQuestionNo,
-                currentPriInfoRef.current.secondQuestionNo,
-                currentPriInfoRef.current.pin
-            );
-
-            const tx = await executeTransaction(
-                myOwnerId,
-                verifyingContract,
-                passwdAccount,
-                receiverAddr,
-                amountETH,
-                "",
-                chainObj,
-                myAccountCreated,
-                questionNosEnc,
-                preparedPriceRef,
-                nativeCoinSymbol
-            );
-
-            updateCurrentTx(tx);
+            // signature: signature, eoa: eoa, nonce: nonce.toString()
+            // document.getElementById("id_newtrans_owner_id").value = ownerId;
+            // document.getElementById("id_newtrans_signature").value = sign.signature;
+            // document.getElementById("id_newtrans_passwd_addr").value = sign.eoa;
+            // document.getElementById("id_newtrans_nonce").value = sign.nonce;
+        } catch (e) {
+            console.log("chg pwd222, error:", e);
         }
-
-        // signature: signature, eoa: eoa, nonce: nonce.toString()
-        // document.getElementById("id_newtrans_owner_id").value = ownerId;
-        // document.getElementById("id_newtrans_signature").value = sign.signature;
-        // document.getElementById("id_newtrans_passwd_addr").value = sign.eoa;
-        // document.getElementById("id_newtrans_nonce").value = sign.nonce;
+        setBtnDisable(false);
     };
 
     return (
@@ -683,7 +698,8 @@ function CreateTransaction({
                 </Checkbox> */}
             </div>
             <Button
-                disabled={pending}
+                // disabled={pending}
+                isDisabled={btnDisable}
                 type="button"
                 onPress={handleClick}
                 color="primary"
@@ -691,6 +707,17 @@ function CreateTransaction({
             >
                 {buttonText}
             </Button>
+            {btnDisable ? (
+                <Progress
+                    size="sm"
+                    isIndeterminate
+                    aria-label="Loading..."
+                    className="max-w-md"
+                    style={{
+                        marginTop: "6px",
+                    }}
+                />
+            ) : null}
         </div>
     );
 }

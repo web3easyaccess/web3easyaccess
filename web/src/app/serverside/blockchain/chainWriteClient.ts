@@ -48,6 +48,10 @@ export async function getFactoryAddr(chainCode: string) {
         res = process.env.CHAIN_FACTORY_ADDRESS_OPTIMISM_MAIN;
     } else if (chainCode == ChainCode.OPTIMISM_TEST_CHAIN.toString()) {
         res = process.env.CHAIN_FACTORY_ADDRESS_OPTIMISM_TEST;
+    } else if (chainCode == ChainCode.UNICHAIN_MAIN_CHAIN.toString()) {
+        res = process.env.CHAIN_FACTORY_ADDRESS_UNICHAIN_MAIN;
+    } else if (chainCode == ChainCode.UNICHAIN_TEST_CHAIN.toString()) {
+        res = process.env.CHAIN_FACTORY_ADDRESS_UNICHAIN_TEST;
     } else if (chainCode == ChainCode.AIACHAIN_MAIN_CHAIN.toString()) {
         res = process.env.CHAIN_FACTORY_ADDRESS_AIACHAIN_MAIN;
     } else if (chainCode == ChainCode.AIACHAIN_TEST_CHAIN.toString()) {
@@ -146,6 +150,20 @@ export async function chainClient(_chainCode: string) {
             process.env.INIT_FREE_FEE_AMOUNT_OPTIMISM_TEST
         );
         _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_OPTIMISM_TEST;
+        _l1GasPriceOracleContract = "0x0";
+        _l1DataFeeFunc = "";
+    } else if (chainCode == ChainCode.UNICHAIN_MAIN_CHAIN.toString()) {
+        _freeFeeAmountWhenCreated = Number(
+            process.env.INIT_FREE_FEE_AMOUNT_UNICHAIN_MAIN
+        );
+        _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_UNICHAIN_MAIN;
+        _l1GasPriceOracleContract = "0x0";
+        _l1DataFeeFunc = "";
+    } else if (chainCode == ChainCode.UNICHAIN_TEST_CHAIN.toString()) {
+        _freeFeeAmountWhenCreated = Number(
+            process.env.INIT_FREE_FEE_AMOUNT_UNICHAIN_TEST
+        );
+        _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_UNICHAIN_TEST;
         _l1GasPriceOracleContract = "0x0";
         _l1DataFeeFunc = "";
     } else if (chainCode == ChainCode.AIACHAIN_MAIN_CHAIN.toString()) {

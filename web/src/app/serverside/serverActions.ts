@@ -158,6 +158,8 @@ const THEGRAPH_URLS: { [key: string]: string } = {
     ARBITRUM_TEST_CHAIN: ``,
     AIACHAIN_MAIN_CHAIN: ``,
     AIACHAIN_TEST_CHAIN: ``,
+    UNICHAIN_TEST_CHAIN: ``,
+    UNICHAIN_MAIN_CHAIN: ``,
 };
 export async function thegraphQueryOpLog(accountAddr, chainCode) {
     const result: {

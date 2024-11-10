@@ -34,7 +34,10 @@ export function chainPublicClient(chainCode, factoryAddr) {
         transport: http(),
     });
 
-    if (chainCode == ChainCode.OPTIMISM_MAIN_CHAIN || chainCode == ChainCode.OPTIMISM_TEST_CHAIN) {
+    if (chainCode == ChainCode.OPTIMISM_MAIN_CHAIN ||
+        chainCode == ChainCode.OPTIMISM_TEST_CHAIN ||
+        chainCode == ChainCode.UNICHAIN_MAIN_CHAIN ||
+        chainCode == ChainCode.UNICHAIN_TEST_CHAIN) {
         pClient = pClient.extend(publicActionsL2());
         wClient = wClient.extend(publicActionsL2());
     }

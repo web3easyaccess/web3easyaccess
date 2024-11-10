@@ -18,6 +18,8 @@ export enum ChainCode {
     ETHEREUM_MAIN_NET = "ETHEREUM_MAIN_NET",
     OPTIMISM_MAIN_CHAIN = "OPTIMISM_MAIN_CHAIN",
     OPTIMISM_TEST_CHAIN = "OPTIMISM_TEST_CHAIN",
+    UNICHAIN_MAIN_CHAIN = "UNICHAIN_MAIN_CHAIN",
+    UNICHAIN_TEST_CHAIN = "UNICHAIN_TEST_CHAIN",
     DEFAULT_ANVIL_CHAIN = "DEFAULT_ANVIL_CHAIN",
     MORPH_TEST_CHAIN = "MORPH_TEST_CHAIN",
     SCROLL_TEST_CHAIN = "SCROLL_TEST_CHAIN",
@@ -39,6 +41,10 @@ export function chainCodeFromString(chainCode: string) {
         return ChainCode.OPTIMISM_MAIN_CHAIN;
     } else if (chainCode == "OPTIMISM_TEST_CHAIN") {
         return ChainCode.OPTIMISM_TEST_CHAIN;
+    } else if (chainCode == "UNICHAIN_MAIN_CHAIN") {
+        return ChainCode.UNICHAIN_MAIN_CHAIN;
+    } else if (chainCode == "UNICHAIN_TEST_CHAIN") {
+        return ChainCode.UNICHAIN_TEST_CHAIN;
     } else if (chainCode == "DEFAULT_ANVIL_CHAIN") {
         return ChainCode.DEFAULT_ANVIL_CHAIN;
     } else if (chainCode == "MORPH_TEST_CHAIN") {

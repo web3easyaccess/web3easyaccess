@@ -489,13 +489,11 @@ export function PrivateInfo({
             <WarnMsgForNewBigBrother
                 bigBrotherCreated={bigBrotherAccountCreated(userProp)}
             />
-
             <WarnMsgForSender
                 forTransaction={forTransaction}
                 userProp={userProp}
                 bigBrotherAccountCreated={bigBrotherAccountCreated(userProp)}
             />
-
             <Card
                 className="max-w-[800px]"
                 style={

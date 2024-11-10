@@ -1007,7 +1007,9 @@ export async function queryTransactions(
         chainCode == "AIACHAIN_TEST_CHAIN" ||
         chainCode == "ARBITRUM_TEST_CHAIN" ||
         chainCode == ChainCode.OPTIMISM_TEST_CHAIN ||
-        chainCode == ChainCode.OPTIMISM_MAIN_CHAIN
+        chainCode == ChainCode.OPTIMISM_MAIN_CHAIN ||
+        chainCode == ChainCode.UNICHAIN_MAIN_CHAIN ||
+        chainCode == ChainCode.UNICHAIN_TEST_CHAIN
     ) {
         const res = await _queryTransactions(chainCode, addr);
         return res;
@@ -1090,6 +1092,14 @@ const CHAIN_PROPS = {
     OPTIMISM_MAIN_CHAIN: {
         scanApiKey: "XH8CU3I81U378WUTG5AGG17V8UCNZP6CRU",
         startBlock: 127633028,
+    },
+    UNICHAIN_TEST_CHAIN: {
+        scanApiKey: "",
+        startBlock: 4345600,
+    },
+    UNICHAIN_MAIN_CHAIN: {
+        scanApiKey: "",
+        startBlock: 0,
     }
 };
 

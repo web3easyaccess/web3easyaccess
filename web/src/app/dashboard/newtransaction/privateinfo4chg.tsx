@@ -2,11 +2,10 @@
 
 import { createAccount, chgPrivateInfo } from "../../serverside/serverActions";
 import { useFormState, useFormStatus } from "react-dom";
-import { Input } from "@nextui-org/input";
-import { Button } from "@nextui-org/button";
 import {
     Autocomplete,
     AutocompleteItem,
+    Progress,
     Switch,
     Textarea,
 } from "@nextui-org/react";
@@ -17,6 +16,7 @@ import {
     Divider,
     Checkbox,
     Tooltip,
+    Button,
 } from "@nextui-org/react";
 
 import { getInputValueById, setInputValueById } from "../../lib/elementById";
@@ -532,11 +532,11 @@ export function PrivateInfo({
             </div>
             <WarnMsgForNewBigBrother />
 
-            <WarnMsgForSender
+            {/* <WarnMsgForSender
                 forTransaction={forTransaction}
                 userProp={userProp}
                 bigBrotherAccountCreated={bigBrotherAccountCreated(userProp)}
-            />
+            /> */}
 
             <Card
                 className="max-w-[800px]"
@@ -607,14 +607,14 @@ export function PrivateInfo({
                                     <Passwd
                                         id="id_private_pin_1"
                                         label="pin code"
-                                        hint="input private pin code"
+                                        hint="input private new pin code"
                                         onMyBlur={handlePin1Blur}
                                     ></Passwd>
                                     {forModification() ? (
                                         <Passwd
                                             id="id_private_pin_2"
                                             label="pin code"
-                                            hint="input private pin code again"
+                                            hint="input private new pin code again"
                                             onMyBlur={handlePin2Blur}
                                         ></Passwd>
                                     ) : null}
@@ -671,7 +671,7 @@ export function PrivateInfo({
                                     </div>
                                 ) : null}
                                 <Autocomplete
-                                    label="Choose the first question"
+                                    label="Choose the new first question"
                                     className="max-w-3xl"
                                     onSelectionChange={onSelectionChange1}
                                     selectedKey={myFirstQuestionNo}
@@ -690,14 +690,14 @@ export function PrivateInfo({
                                     <Passwd
                                         id="id_private_question1_answer_1"
                                         label="first question's answer"
-                                        hint="input first question's answer"
+                                        hint="input new first question's answer"
                                         onMyBlur={handleQuestion1AnswerBlur}
                                     ></Passwd>
                                     {forModification() ? (
                                         <Passwd
                                             id="id_private_question1_answer_2"
                                             label="first question's answer"
-                                            hint="input first question's answer again"
+                                            hint="input new first question's answer again"
                                             onMyBlur={handleQuestion1AnswerBlur}
                                         ></Passwd>
                                     ) : null}
@@ -753,7 +753,7 @@ export function PrivateInfo({
                                     </div>
                                 ) : null}
                                 <Autocomplete
-                                    label="Choose the second question"
+                                    label="Choose the new second question"
                                     className="max-w-3xl"
                                     onSelectionChange={onSelectionChange2}
                                     selectedKey={mySecondQuestionNo}
@@ -772,14 +772,14 @@ export function PrivateInfo({
                                     <Passwd
                                         id="id_private_question2_answer_1"
                                         label="second question's answer"
-                                        hint="input second question's answer"
+                                        hint="input new second question's answer"
                                         onMyBlur={handleQuestion2AnswerBlur}
                                     ></Passwd>
                                     {forModification() ? (
                                         <Passwd
                                             id="id_private_question2_answer_2"
                                             label="second question's answer"
-                                            hint="input second question's answer again"
+                                            hint="input new second question's answer again"
                                             onMyBlur={handleQuestion2AnswerBlur}
                                         ></Passwd>
                                     ) : null}
@@ -808,6 +808,7 @@ export function PrivateInfo({
                                         bigBrotherPasswdAddr={readBigBrotherPasswdAddr(
                                             userProp
                                         )}
+                                        privateinfoHidden={privateinfoHidden}
                                     />
                                 </>
                             </div>
@@ -834,18 +835,16 @@ function WarnMsgForNewBigBrother() {
         <div className="max-w-[800px]" style={{ marginTop: "0px" }}>
             <Card>
                 <CardBody>
-                    <p>
-                        Warning: The server does not store your personal
-                        information.
-                    </p>
-                    <p>
-                        1. Once the personal information is forgotten, you will
-                        never be able to recover your accounts and assets
-                    </p>
-                    <p>
-                        2. Once personal information is leaked, your account or
-                        assets may be stolen
-                    </p>
+                    <Textarea
+                        isReadOnly
+                        type="text"
+                        defaultValue={
+                            "Notice:  We have not yet implemented password synchronization between different chains. Passwords for different chains are currently independent of each other, so please be careful to maintain them."
+                        }
+                        // value={myMsg().msg}
+                        color={"danger"}
+                        style={{ fontSize: "16px", fontWeight: "bold" }}
+                    />
                 </CardBody>
             </Card>
         </div>
@@ -995,6 +994,7 @@ function SubmitMessage({
     submitOpType,
     updateSubmitOpType,
     bigBrotherPasswdAddr,
+    privateinfoHidden,
 }: {
     email: string;
     verifyingContract: string;
@@ -1008,16 +1008,17 @@ function SubmitMessage({
     submitOpType: string;
     updateSubmitOpType: any;
     bigBrotherPasswdAddr: string;
+    privateinfoHidden: boolean;
 }) {
     console.log(
-        "SubmitMessage....in,,,,:",
+        "SubmitMessage....in,,,,1110:",
         bigBrotherAccountCreated,
         submitOpType,
         bigBrotherPasswdAddr
     );
 
-    const { pending } = useFormStatus();
-    const router = useRouter();
+    const [btnDisable, setBtnDisable] = useState(false);
+
     let buttonType = "button";
     let buttonShowMsg = "Confirm First";
     let marginLeft = "0px";
@@ -1040,151 +1041,170 @@ function SubmitMessage({
     }
 
     const handleClick = async (event: any) => {
-        if (pending) {
-            event.preventDefault();
-        }
+        // if (pending) {
+        //     event.preventDefault();
+        // }
 
-        let pin1 = getInputValueById("id_private_pin_1");
-        let question1_answer_1 = getInputValueById(
-            "id_private_question1_answer_1"
-        );
-        let question2_answer_1 = getInputValueById(
-            "id_private_question2_answer_1"
-        );
-
-        let pin2 = getInputValueById("id_private_pin_2");
-
-        let question1_answer_2 = getInputValueById(
-            "id_private_question1_answer_2"
-        );
-
-        let question2_answer_2 = getInputValueById(
-            "id_private_question2_answer_2"
-        );
-
-        if (
-            currentPriInfoRef.current.firstQuestionNo == "" ||
-            currentPriInfoRef.current.secondQuestionNo == ""
-        ) {
-            alert("please select question!");
-            return;
-        }
-
-        checkInfo(
-            forModification || !bigBrotherAccountCreated,
-            pin1,
-            pin2,
-            question1_answer_1,
-            question1_answer_2,
-            question2_answer_1,
-            question2_answer_2
-        );
-
-        if (forModification) {
-            let oldPasswdAccount = getPasswdAccount(
-                oldPriInfoRef.current,
-                chainObj.chainCode
+        setBtnDisable(true);
+        console.log("xyz123:set btn1");
+        try {
+            let pin1 = getInputValueById("id_private_pin_1");
+            let question1_answer_1 = getInputValueById(
+                "id_private_question1_answer_1"
             );
-            console.log(
-                "for modification.... old passwdAddr 1,2:",
-                oldPasswdAccount.address,
-                bigBrotherPasswdAddr
+            let question2_answer_1 = getInputValueById(
+                "id_private_question2_answer_1"
             );
-            if (oldPasswdAccount.address != bigBrotherPasswdAddr) {
-                if (bigBrotherPasswdAddr == "") {
-                    alert("old bigBrotherPasswdAddr unknow!");
-                } else {
-                    alert("old private info error!");
-                }
+
+            let pin2 = getInputValueById("id_private_pin_2");
+
+            let question1_answer_2 = getInputValueById(
+                "id_private_question1_answer_2"
+            );
+
+            let question2_answer_2 = getInputValueById(
+                "id_private_question2_answer_2"
+            );
+
+            if (
+                currentPriInfoRef.current.firstQuestionNo == "" ||
+                currentPriInfoRef.current.secondQuestionNo == ""
+            ) {
+                alert("please select question!");
+                setBtnDisable(false);
                 return;
             }
-        }
 
-        let passwdAccount = getPasswdAccount(
-            currentPriInfoRef.current,
-            chainObj.chainCode
-        );
-
-        // // //
-        if (
-            submitOpType == OP_TYPE.OP_newInfoFirstTime ||
-            submitOpType == OP_TYPE.OP_newInfoSecondTime
-        ) {
-            // keccak256(abi.encode(...));
-            // generate local temporary signature
-            let argumentsHash = keccak256("0x1234567890abcdef");
-            console.log(
-                "local temporary signature, argumentsHash:",
-                argumentsHash
+            checkInfo(
+                forModification || !bigBrotherAccountCreated,
+                pin1,
+                pin2,
+                question1_answer_1,
+                question1_answer_2,
+                question2_answer_1,
+                question2_answer_2
             );
 
-            let chainId = chainObj.id;
-            let withZeroNonce = true;
-            const sign = await signAuth(
-                passwdAccount,
-                chainId,
-                verifyingContract,
-                chainObj,
-                argumentsHash, // "0xE249dfD432B37872C40c0511cC5A3aE13906F77A0511cC5A3aE13906F77AAA11" // argumentsHash
-                withZeroNonce
-            );
-
-            if (submitOpType == OP_TYPE.OP_newInfoFirstTime) {
-                setInputValueById(
-                    "id_private_new_first_time_sign",
-                    sign.signature
+            if (forModification) {
+                let oldPasswdAccount = getPasswdAccount(
+                    oldPriInfoRef.current,
+                    chainObj.chainCode
                 );
-            } else if (submitOpType == OP_TYPE.OP_newInfoSecondTime) {
-                setInputValueById(
-                    "id_private_new_second_time_sign",
-                    sign.signature
+                console.log(
+                    "for modification.... old passwdAddr 1,2:",
+                    oldPasswdAccount.address,
+                    bigBrotherPasswdAddr
                 );
+                if (oldPasswdAccount.address != bigBrotherPasswdAddr) {
+                    if (bigBrotherPasswdAddr == "") {
+                        alert("old bigBrotherPasswdAddr unknow!");
+                    } else {
+                        alert("old private info error!");
+                    }
+                    setBtnDisable(false);
+                    return;
+                }
             }
 
-            if (submitOpType == OP_TYPE.OP_newInfoFirstTime) {
-                // alert("the first input is complete. Enter it again now...");
-                resetAfterFirstConfirmed();
-                updateSubmitOpType(OP_TYPE.OP_newInfoSecondTime);
-            } else if (submitOpType == OP_TYPE.OP_newInfoSecondTime) {
-                if (
-                    getInputValueById("id_private_new_first_time_sign") !=
-                    getInputValueById("id_private_new_second_time_sign")
-                ) {
-                    alert("The first input does not match the second input!");
-                    updateSubmitOpType(OP_TYPE.OP_newInfoFirstTime);
-                    resetAfterFirstConfirmed();
-                    return;
-                } else {
-                    // alert("well done! the second input is complete. ");
+            let passwdAccount = getPasswdAccount(
+                currentPriInfoRef.current,
+                chainObj.chainCode
+            );
 
-                    currentPriInfoRef.current = {
-                        ...currentPriInfoRef.current,
-                        pin: pin1,
-                    };
+            // // //
+            if (
+                submitOpType == OP_TYPE.OP_newInfoFirstTime ||
+                submitOpType == OP_TYPE.OP_newInfoSecondTime
+            ) {
+                // keccak256(abi.encode(...));
+                // generate local temporary signature
+                let argumentsHash = keccak256("0x1234567890abcdef");
+                console.log(
+                    "local temporary signature, argumentsHash:",
+                    argumentsHash
+                );
 
-                    currentPriInfoRef.current.confirmedSecondary = true;
-                    updateFillInOk();
-                    console.log(
-                        "read after hidden:",
-                        getInputValueById("id_private_pin_1")
+                let chainId = chainObj.id;
+                let withZeroNonce = true;
+                const sign = await signAuth(
+                    passwdAccount,
+                    chainId,
+                    verifyingContract,
+                    chainObj,
+                    argumentsHash, // "0xE249dfD432B37872C40c0511cC5A3aE13906F77A0511cC5A3aE13906F77AAA11" // argumentsHash
+                    withZeroNonce
+                );
+
+                if (submitOpType == OP_TYPE.OP_newInfoFirstTime) {
+                    setInputValueById(
+                        "id_private_new_first_time_sign",
+                        sign.signature
+                    );
+                } else if (submitOpType == OP_TYPE.OP_newInfoSecondTime) {
+                    setInputValueById(
+                        "id_private_new_second_time_sign",
+                        sign.signature
                     );
                 }
+
+                if (submitOpType == OP_TYPE.OP_newInfoFirstTime) {
+                    // alert("the first input is complete. Enter it again now...");
+                    resetAfterFirstConfirmed();
+                    updateSubmitOpType(OP_TYPE.OP_newInfoSecondTime);
+                } else if (submitOpType == OP_TYPE.OP_newInfoSecondTime) {
+                    if (
+                        getInputValueById("id_private_new_first_time_sign") !=
+                        getInputValueById("id_private_new_second_time_sign")
+                    ) {
+                        alert(
+                            "The first input does not match the second input!"
+                        );
+                        updateSubmitOpType(OP_TYPE.OP_newInfoFirstTime);
+                        resetAfterFirstConfirmed();
+                        setBtnDisable(false);
+                        return;
+                    } else {
+                        // alert("well done! the second input is complete. ");
+
+                        currentPriInfoRef.current = {
+                            ...currentPriInfoRef.current,
+                            pin: pin1,
+                        };
+
+                        currentPriInfoRef.current.confirmedSecondary = true;
+                        updateFillInOk();
+                        console.log(
+                            "read after hidden:",
+                            getInputValueById("id_private_pin_1")
+                        );
+                    }
+                } else {
+                }
             } else {
+                console.log("private ok clicked.");
+                currentPriInfoRef.current.confirmedSecondary = true;
+                updateFillInOk();
             }
-        } else {
-            console.log("private ok clicked.");
-            currentPriInfoRef.current.confirmedSecondary = true;
-            updateFillInOk();
+        } catch (e) {
+            console.log("chg passwd, estimate error:", e);
         }
+        console.log("xyz123:set btn2");
     };
 
     console.log("button's submit type:", buttonType);
 
+    useEffect(() => {
+        if (btnDisable) {
+            setBtnDisable(!privateinfoHidden);
+        }
+    }, [privateinfoHidden]);
+
     return (
         <div>
             <Button
-                disabled={pending}
-                type={buttonType}
+                // disabled={pending}
+                isDisabled={btnDisable}
+                type={"button"}
                 onPress={handleClick}
                 color="primary"
                 style={{
@@ -1195,6 +1215,19 @@ function SubmitMessage({
             >
                 {buttonShowMsg}
             </Button>
+            {btnDisable ? (
+                <Progress
+                    size="sm"
+                    isIndeterminate
+                    aria-label="Loading..."
+                    className="max-w-md"
+                    style={{
+                        marginTop: "6px",
+                        width: "300px",
+                        marginLeft: marginLeft,
+                    }}
+                />
+            ) : null}
         </div>
     );
 }
