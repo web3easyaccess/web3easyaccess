@@ -6,6 +6,7 @@ import { publicActionsL2 } from 'viem/op-stack'
 
 import { getChainObj } from "./myChain";
 import { ChainCode } from "./myTypes";
+import { isOpStackChain } from "../chainsconf/chains";
 
 // DEFAULT_ANVIL_CHAIN, MORPH_TEST_CHAIN
 export function chainPublicClient(chainCode, factoryAddr) {
@@ -34,10 +35,7 @@ export function chainPublicClient(chainCode, factoryAddr) {
         transport: http(),
     });
 
-    if (chainCode == ChainCode.OPTIMISM_MAIN_CHAIN ||
-        chainCode == ChainCode.OPTIMISM_TEST_CHAIN ||
-        chainCode == ChainCode.UNICHAIN_MAIN_CHAIN ||
-        chainCode == ChainCode.UNICHAIN_TEST_CHAIN) {
+    if (isOpStackChain(chainCode)) {
         pClient = pClient.extend(publicActionsL2());
         wClient = wClient.extend(publicActionsL2());
     }

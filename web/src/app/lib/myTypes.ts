@@ -1,3 +1,4 @@
+
 export const exampleEmail = "Vitalik@example";
 
 export enum Menu {
@@ -12,9 +13,13 @@ export enum Menu {
     UpgradeImpl
 }
 
+
+
 export enum ChainCode {
     UNKNOW = "UNKNOW",
     LINEA_CHAIN = "LINEA_CHAIN",
+    MORPH_CHAIN = "MORPH_CHAIN",
+    SCROLL_CHAIN = "SCROLL_CHAIN",
     ETHEREUM_MAIN_NET = "ETHEREUM_MAIN_NET",
     OPTIMISM_MAIN_CHAIN = "OPTIMISM_MAIN_CHAIN",
     OPTIMISM_TEST_CHAIN = "OPTIMISM_TEST_CHAIN",
@@ -32,11 +37,16 @@ export enum ChainCode {
     ARBITRUM_TEST_CHAIN = "ARBITRUM_TEST_CHAIN",
 }
 
+
 export function chainCodeFromString(chainCode: string) {
     if (chainCode == "ETHEREUM_MAIN_NET") {
         return ChainCode.ETHEREUM_MAIN_NET;
     } else if (chainCode == "LINEA_CHAIN") {
         return ChainCode.LINEA_CHAIN;
+    } else if (chainCode == "MORPH_CHAIN") {
+        return ChainCode.MORPH_CHAIN;
+    } else if (chainCode == "SCROLL_CHAIN") {
+        return ChainCode.SCROLL_CHAIN;
     } else if (chainCode == "OPTIMISM_MAIN_CHAIN") {
         return ChainCode.OPTIMISM_MAIN_CHAIN;
     } else if (chainCode == "OPTIMISM_TEST_CHAIN") {
@@ -71,6 +81,7 @@ export function chainCodeFromString(chainCode: string) {
         return ChainCode.UNKNOW;
     }
 }
+
 
 export const commonTokens = { MORPH_TEST_CHAIN: [{ addr: "", name: "USDT" }] };
 export const commonNfts = {};

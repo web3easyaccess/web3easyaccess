@@ -1137,6 +1137,18 @@ function WarnMessage() {
                 2. Once personal information is leaked, your account or assets
                 may be stolen
             </p>
+            <p
+                style={{
+                    color: "red",
+                    fontSize: "15px",
+                    fontWeight: "bold",
+                }}
+            >
+                3. We have not yet implemented password synchronization between
+                different chains. Passwords for different chains are currently
+                independent of each other, so please be careful to maintain
+                them.
+            </p>
         </div>
     );
 }

@@ -17,7 +17,7 @@ import { saveChainCode } from "../serverside/serverActions";
 import { ChainCode, chainCodeFromString } from "../lib/myTypes";
 import { UpdateUserProperty, UserProperty } from "../storage/userPropertyStore";
 import * as userPropertyStore from "../storage/userPropertyStore";
-import { allChains, showingChains } from "./allchains";
+import { allChains, showingChains } from "../chainsconf/allchains";
 
 export const ChainIcons = ({
     userProp,

@@ -3,7 +3,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import axios from "axios";
 import { Axios, AxiosResponse, AxiosError } from "axios";
 
-import { isMorphNet, isScrollNet, isLineaNet } from "./myChain";
+import { isMorphNet, isScrollNet } from "./myChain";
 import { ChainCode, chainCodeFromString, Transaction } from "./myTypes";
 import { getChainObj } from "./myChain";
 import {
@@ -23,6 +23,7 @@ import { getOwnerIdLittleBrother } from "../lib/client/keyTools";
 import abis from "../serverside/blockchain/abi/abis";
 import * as userPropertyStore from "../storage/userPropertyStore";
 import { erc20tokens } from "./supportedTokens";
+import { chainQuerysApiKeyStartBlock } from "../chainsconf/chains";
 
 const accountOnlyForRead = privateKeyToAccount(
     "0x1000000000000000000000000000000000000000000000000000000000000000"
@@ -999,21 +1000,21 @@ export async function queryTransactions(
     chainCode: string,
     addr: string
 ): Promise<Transaction[]> {
-    if (
-        chainCode == "SEPOLIA_CHAIN" ||
-        chainCode == "LINEA_TEST_CHAIN" ||
-        chainCode == "NEOX_TEST_CHAIN" ||
-        chainCode == "AIACHAIN_MAIN_CHAIN" ||
-        chainCode == "AIACHAIN_TEST_CHAIN" ||
-        chainCode == "ARBITRUM_TEST_CHAIN" ||
-        chainCode == ChainCode.OPTIMISM_TEST_CHAIN ||
-        chainCode == ChainCode.OPTIMISM_MAIN_CHAIN ||
-        chainCode == ChainCode.UNICHAIN_MAIN_CHAIN ||
-        chainCode == ChainCode.UNICHAIN_TEST_CHAIN
-    ) {
-        const res = await _queryTransactions(chainCode, addr);
-        return res;
-    }
+    // if (
+    //     chainCode == "SEPOLIA_CHAIN" ||
+    //     chainCode == "LINEA_TEST_CHAIN" ||
+    //     chainCode == "NEOX_TEST_CHAIN" ||
+    //     chainCode == "AIACHAIN_MAIN_CHAIN" ||
+    //     chainCode == "AIACHAIN_TEST_CHAIN" ||
+    //     chainCode == "ARBITRUM_TEST_CHAIN" ||
+    //     chainCode == ChainCode.OPTIMISM_TEST_CHAIN ||
+    //     chainCode == ChainCode.OPTIMISM_MAIN_CHAIN ||
+    //     chainCode == ChainCode.UNICHAIN_MAIN_CHAIN ||
+    //     chainCode == ChainCode.UNICHAIN_TEST_CHAIN
+    // ) {
+    //     const res = await _queryTransactions(chainCode, addr);
+    //     return res;
+    // }
     // //
     console.log("queryTransactions-queryTransactions:", chainCode);
     if (chainCode.indexOf("SOLANA") >= 0) {
@@ -1027,12 +1028,9 @@ export async function queryTransactions(
     } else if (isScrollNet(chainCode)) {
         const res = await _queryScrollTransactions(chainCode, addr);
         return res;
-    } else if (isLineaNet(chainCode)) {
-        // const res = await _queryLineaTransactions(chainCode, addr);
-        // return res;
-    } else {
-        return [];
     }
+    const res = await _queryTransactions(chainCode, addr);
+    return res;
 }
 
 export const formatTimestamp = (tm: number) => {
@@ -1060,48 +1058,6 @@ export const formatTimestamp = (tm: number) => {
     return year + "-" + month + "-" + day + " " + h + ":" + m + ":" + s;
 };
 
-const CHAIN_PROPS = {
-    SEPOLIA_CHAIN: {
-        scanApiKey: "4U7TMXB289TBXHT2WRT6MZN4QCGZA1E5R5",
-        startBlock: 6633000,
-    },
-    LINEA_TEST_CHAIN: {
-        scanApiKey: "Y3EURWY2JI96686J7G6G4I614IF48ZM6JF",
-        startBlock: 3735000,
-    },
-    NEOX_TEST_CHAIN: {
-        scanApiKey: "123apiKey",
-        startBlock: 526100,
-    },
-    AIACHAIN_MAIN_CHAIN: {
-        scanApiKey: "123apiKey",
-        startBlock: 1,
-    },
-    AIACHAIN_TEST_CHAIN: {
-        scanApiKey: "123apiKey",
-        startBlock: 35759035,
-    },
-    ARBITRUM_TEST_CHAIN: {
-        scanApiKey: "M8YBQ2W5RCFR9A71Y17XBY6AF8XCBGJPYN",
-        startBlock: 90137319,
-    },
-    OPTIMISM_TEST_CHAIN: {
-        scanApiKey: "XH8CU3I81U378WUTG5AGG17V8UCNZP6CRU",
-        startBlock: 19500650,
-    },
-    OPTIMISM_MAIN_CHAIN: {
-        scanApiKey: "XH8CU3I81U378WUTG5AGG17V8UCNZP6CRU",
-        startBlock: 127633028,
-    },
-    UNICHAIN_TEST_CHAIN: {
-        scanApiKey: "",
-        startBlock: 4345600,
-    },
-    UNICHAIN_MAIN_CHAIN: {
-        scanApiKey: "",
-        startBlock: 0,
-    }
-};
 
 async function _queryTransactions(
     chainCode: string,
@@ -1109,8 +1065,9 @@ async function _queryTransactions(
 ): Promise<Transaction[]> {
     // have error here. client can't read env.
     //
-    const LINEASCAN_APIKEY = CHAIN_PROPS[chainCode].scanApiKey;
-    const startBlock = CHAIN_PROPS[chainCode].startBlock;
+    const { scanApiKey, startBlock } = chainQuerysApiKeyStartBlock(chainCode);
+    const LINEASCAN_APIKEY = scanApiKey;
+    // const startBlock = CHAIN_PROPS[chainCode].startBlock;
 
     const apiUrl = getChainObj(chainCode).blockExplorers.default.apiUrl;
     const normalTransactionsUrl = `${apiUrl}?module=account&action=txlist&address=${addr}&startblock=${startBlock}&endblock=9999999999999999&page=1&offset=200&sort=asc&apikey=${LINEASCAN_APIKEY}`;

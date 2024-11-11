@@ -110,8 +110,8 @@ import {
     getAuthPasswdAccount,
     getPrivateInfosQuestionNosEnc,
 } from "@/app/dashboard/passwdauth/passwdAuthModal";
-import { HistoricalGasTracker } from "./gasTracker";
-import GastrackerLink from "./gastrackerLink";
+
+import GastrackerLink from "../../chainsconf/gastrackerLink";
 
 export default function SendTransaction({
     userProp,

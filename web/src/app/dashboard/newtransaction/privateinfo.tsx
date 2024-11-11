@@ -793,6 +793,18 @@ function WarnMsgForNewBigBrother() {
                         2. Once personal information is leaked, your account or
                         assets may be stolen
                     </p>
+                    <p
+                        style={{
+                            color: "red",
+                            fontSize: "16px",
+                            fontWeight: "bold",
+                        }}
+                    >
+                        3. Notice: We have not yet implemented password
+                        synchronization between different chains. Passwords for
+                        different chains are currently independent of each
+                        other, so please be careful to maintain them.
+                    </p>
                 </CardBody>
             </Card>
         </div>
