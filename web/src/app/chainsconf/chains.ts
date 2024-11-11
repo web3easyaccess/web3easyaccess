@@ -11,6 +11,15 @@ export const isOpStackChain = (chainCode: ChainCode) => {
     }
 }
 
+export function getAssetsScanUrl(chainCode: ChainCode, addr: string) {
+    if (chainCode == ChainCode.ETHEREUM_MAIN_NET) {
+        return "https://etherscan.io/tokenholdings?a=${addr}";
+    } else if (chainCode == ChainCode.OPTIMISM_MAIN_CHAIN) {
+        return `https://optimistic.etherscan.io/tokenholdings?a=${addr}`
+    } else {
+        return ""
+    }
+}
 
 export function chainQuerysApiKeyStartBlock(chainCode: string) {
 

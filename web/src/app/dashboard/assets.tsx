@@ -28,6 +28,7 @@ import {
     UpdateUserProperty,
     UserProperty,
 } from "../storage/userPropertyStore";
+import { getAssetsScanUrl } from "../chainsconf/chains";
 
 export default function Assets({ userProp }: { userProp: UserProperty }) {
     const [assets, setAssets] = useState([]);
@@ -98,8 +99,18 @@ export default function Assets({ userProp }: { userProp: UserProperty }) {
         );
     };
 
+    const scanUrl = getAssetsScanUrl(
+        userProp.selectedChainCode,
+        readAccountAddr(userProp)
+    );
+
     return (
         <div className="flex w-full flex-col">
+            {scanUrl == "" ? null : (
+                <Link style={{ marginLeft: "10px" }} isExternal href={scanUrl}>
+                    Query all Assets in Etherscan
+                </Link>
+            )}
             <Tabs aria-label="Options">
                 <Tab key="tokens" title="Tokens">
                     <Table
