@@ -14,6 +14,18 @@ export default function ThirdDapps({ chainCode }: { chainCode: ChainCode }) {
                 </Link>
             </div>
         );
+    } else if (chainCode == ChainCode.ETHEREUM_MAIN_NET) {
+        return (
+            <div>
+                <Link
+                    isExternal
+                    href="https://ethereum.org/en/dapps/#beginner"
+                    showAnchorIcon
+                >
+                    {"explore Ethereum Mainnet's Dapps"}
+                </Link>
+            </div>
+        );
     } else {
         return <div></div>;
     }
