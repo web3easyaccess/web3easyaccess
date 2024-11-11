@@ -111,6 +111,7 @@ import {
     getPrivateInfosQuestionNosEnc,
 } from "@/app/dashboard/passwdauth/passwdAuthModal";
 import { HistoricalGasTracker } from "./gasTracker";
+import GastrackerLink from "./gastrackerLink";
 
 export default function SendTransaction({
     userProp,
@@ -721,6 +722,7 @@ export default function SendTransaction({
                     }
 
                     let feePrice = "...";
+                    let balanceMsg = "";
                     try {
                         const price_in_gwei =
                             Number(
@@ -730,6 +732,7 @@ export default function SendTransaction({
                                           .preparedMaxFeePerGas
                                     : preparedPriceRef.current.preparedGasPrice
                             ) / 1e9;
+                        //
                         if (
                             chainObj.chainCode.toString().indexOf("SOLANA") >= 0
                         ) {
@@ -739,16 +742,28 @@ export default function SendTransaction({
                                 " SOL)";
                         } else {
                             feePrice = "(gasPrice=" + price_in_gwei + " Gwei)";
+                            const bal =
+                                ((myAccountCreated ? 120000 : 450000) *
+                                    price_in_gwei) /
+                                1e9;
+                            balanceMsg = ` Notice:In addition to the specified transfer amount, you should have an extra ${bal} ${nativeCoinSymbol} in your account balance`;
                         }
                     } catch (e) {
                         console.log("eee1:", e);
                     }
-                    setTransactionFee(eFee.feeDisplay + feePrice);
+                    if (eFee.feeDisplay.toLowerCase().indexOf("err") >= 0) {
+                        setTransactionFee(
+                            eFee.feeDisplay + feePrice + balanceMsg
+                        );
+                    } else {
+                        setTransactionFee(eFee.feeDisplay + feePrice);
+                    }
                 } else {
                     setTransactionFee(`? ${nativeCoinSymbol}.`);
                 }
             } catch (e) {
                 let feePrice = "...";
+                let balanceMsg = "";
                 try {
                     const price_in_gwei =
                         Number(
@@ -756,6 +771,7 @@ export default function SendTransaction({
                                 ? preparedPriceRef.current.preparedMaxFeePerGas
                                 : preparedPriceRef.current.preparedGasPrice
                         ) / 1e9;
+                    //
                     if (chainObj.chainCode.toString().indexOf("SOLANA") >= 0) {
                         feePrice =
                             "(computeUnitPrice=" +
@@ -763,6 +779,11 @@ export default function SendTransaction({
                             " SOL)";
                     } else {
                         feePrice = "(gasPrice=" + price_in_gwei + " Gwei)";
+                        const bal =
+                            ((myAccountCreated ? 120000 : 450000) *
+                                price_in_gwei) /
+                            1e9;
+                        balanceMsg = ` Notice:In addition to the specified transfer amount, you should have an extra ${bal} ${nativeCoinSymbol} in your account balance`;
                     }
                 } catch (e) {
                     console.log("eee:", e);
@@ -770,7 +791,9 @@ export default function SendTransaction({
 
                 console.log("seek error:", e);
                 let kk = e.toString().indexOf(" ");
-                setTransactionFee(e.toString().substring(0, kk) + feePrice);
+                setTransactionFee(
+                    e.toString().substring(0, kk) + feePrice + balanceMsg
+                );
             }
         };
 
@@ -1354,12 +1377,9 @@ export default function SendTransaction({
                 className="flex flex-wrap gap-4 items-center"
                 style={{ marginLeft: "120px", marginTop: "10px" }}
             >
-                <Link
-                    href="https://etherscan.io/gastracker#chart_gasprice"
-                    isExternal
-                >
-                    &nbsp;&nbsp;Ethereum Mainnet Gastracker
-                </Link>
+                <GastrackerLink
+                    chainCode={userProp.selectedChainCode}
+                ></GastrackerLink>
                 <Button color="secondary" onPress={estimateFee}>
                     Estimated Cost
                 </Button>
@@ -1369,7 +1389,7 @@ export default function SendTransaction({
                     transactionFee.indexOf("ERROR") >= 0
                         ? {
                               marginTop: "10px",
-                              width: "800px",
+                              width: "600px",
                               fontWeight: "bold",
                           }
                         : {
@@ -1379,7 +1399,7 @@ export default function SendTransaction({
                           }
                 }
             >
-                <Input
+                <Textarea
                     readOnly
                     color="secondary"
                     type="text"

@@ -118,7 +118,7 @@ export const allChains: {
             bordered: false,
         },
         {
-            closed: true,
+            closed: false,
             chainCode: ChainCode.ETHEREUM_MAIN_NET,
             img: "/chain/ethereum.png",
             title: "Ether eum",

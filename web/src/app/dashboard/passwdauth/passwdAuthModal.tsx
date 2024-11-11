@@ -354,6 +354,10 @@ export function MenuItemOfPasswdAuth({
         }, 5000);
     };
 
+    useEffect(() => {
+        updatePasswdState("ERROR");
+    }, [userProp.selectedChainCode]);
+
     return (
         <div>
             <div style={{ height: "0px" }}>
@@ -850,6 +854,15 @@ function PasswdAuthDetail({
     };
 
     useEffect(() => {
+        if (
+            currentPriInfoRef == undefined ||
+            currentPriInfoRef.current == undefined ||
+            currentPriInfoRef.current.pin == undefined ||
+            currentPriInfoRef.current.pin.length <= 4
+        ) {
+            updateLocked(false);
+        }
+
         const watch = async () => {
             while (true) {
                 await sleep(100);
