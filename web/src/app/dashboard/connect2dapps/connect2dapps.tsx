@@ -132,6 +132,8 @@ export default function Connect2Dapps({
     useEffect(() => {
         walletconnectHost.current = userProp.walletconnectHost;
         mainHost.current = userProp.myselfHost;
+        console.log("mainHost ==> ", mainHost.current);
+        console.log("walletconnectHost ==> ", walletconnectHost.current);
     }, [userProp]);
 
     getWalletConnectHost = () => {
