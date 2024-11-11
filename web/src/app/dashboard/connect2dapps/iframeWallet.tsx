@@ -25,7 +25,7 @@ export default function IframeWallet({
                 <div
                     id="div_w3eaWalletconnect"
                     style={{
-                        height: height + 20 + "px",
+                        height: height + 80 + "px",
                     }}
                 >
                     {height > 100 ? (
