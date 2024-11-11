@@ -17,7 +17,7 @@ import {
 import { queryEthBalance } from "../serverside/blockchain/queryAccountInfo";
 
 import { parseEther } from "viem";
-import { ChainCode } from "../lib/myTypes";
+import { ChainCode, exampleEmail } from "../lib/myTypes";
 import { THEGRAPH_URLS } from "../chainsconf/thegraph";
 
 export async function userLogout(
@@ -77,7 +77,7 @@ export async function checkEmail(
                 msg: "please select a chain at the top-right corner!",
             });
         }
-        if (myCookies.getEmail() == email) {
+        if (myCookies.getEmail() == email && exampleEmail != myCookies.getEmail()) {
             return JSON.stringify({ success: true, msg: "[existing]" });
         }
         //
