@@ -202,6 +202,7 @@ export default function Connect2Dapps({
                 walletConnectHostUrl={getWalletConnectHost()}
                 passwdState={passwdState}
                 acctCreated={accountAddrCreated(userProp)}
+                chainCode={userProp.selectedChainCode}
             ></IframeWallet>
         </div>
     );

@@ -1,6 +1,8 @@
 import { Modal, ModalContent, useDisclosure } from "@nextui-org/react";
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { getPasswdState } from "../passwdauth/passwdAuthModal";
+import ThirdDapps from "@/app/chainsconf/thirddapps";
+import { ChainCode } from "@/app/lib/myTypes";
 
 export default function IframeWallet({
     channelId,
@@ -8,17 +10,28 @@ export default function IframeWallet({
     walletConnectHostUrl,
     passwdState,
     acctCreated,
+    chainCode,
 }: {
     channelId: string;
     mainHostUrl: string;
     walletConnectHostUrl: string;
     passwdState: string;
     acctCreated: boolean;
+    chainCode: ChainCode;
 }) {
     const Wc = ({ height }: { height: number }) => {
         return (
             <>
-                <div id="div_w3eaWalletconnect">
+                <div
+                    id="div_w3eaWalletconnect"
+                    style={{
+                        height: height + 20 + "px",
+                    }}
+                >
+                    {height > 100 ? (
+                        <ThirdDapps chainCode={chainCode}></ThirdDapps>
+                    ) : null}
+
                     <iframe
                         id="w3eaWalletconnect"
                         src={
