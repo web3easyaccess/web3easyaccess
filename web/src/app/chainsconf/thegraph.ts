@@ -10,7 +10,7 @@ export const THEGRAPH_URLS: { [key: string]: string } = {
     NEOX_TEST_CHAIN: `https://gateway-arbitrum.network.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/o2FaoPpD1KeP8Dk5KnUyGuw7b7tZvvcrTUu3xYuGkez`,
     OPTIMISM_MAIN_CHAIN: `https://gateway.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/E8PFtYBEXZ4DsDRhCPKfK5KFPi21Wxoq5ATkuHvsR7NQ`,
     ETHEREUM_MAIN_NET: `https://gateway.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/D42rsmGQLW6ysm7mRXH4iWvsBvt34PXthg6Z4UmeMT2r`,
-    LINEA_CHAIN: ``,
+    LINEA_CHAIN: `https://gateway.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/8BxnVRHPkkjWe6b46yVnigRzTgcXrEz49kZVVWQUe99V`,
     MORPH_CHAIN: ``,
     BSC_MAIN_NET: `https://gateway.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/6m9CcBs8qkKR83RcxwKijUGjwKM7iuj8WJvtvUm7yiwq`,
     OPBNB_MAIN_NET: ``,
