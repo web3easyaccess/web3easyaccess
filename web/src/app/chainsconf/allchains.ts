@@ -112,6 +112,14 @@ const mainChains = [
     },
     {
         closed: false,
+        chainCode: ChainCode.LINEA_CHAIN,
+        img: "/chain/linea.png",
+        title: "Linea Mainnet",
+        size: "sm",
+        bordered: false,
+    },
+    {
+        closed: false,
         chainCode: ChainCode.ETHEREUM_MAIN_NET,
         img: "/chain/ethereum.png",
         title: "Ether eum",
@@ -134,14 +142,7 @@ const mainChains = [
         size: "sm",
         bordered: false,
     },
-    {
-        closed: true,
-        chainCode: ChainCode.LINEA_CHAIN,
-        img: "/chain/linea.png",
-        title: "Linea Mainnet",
-        size: "sm",
-        bordered: false,
-    },
+
 
     {
         closed: true,
