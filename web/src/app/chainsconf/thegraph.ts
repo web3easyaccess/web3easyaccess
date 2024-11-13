@@ -12,7 +12,7 @@ export const THEGRAPH_URLS: { [key: string]: string } = {
     ETHEREUM_MAIN_NET: `https://gateway.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/D42rsmGQLW6ysm7mRXH4iWvsBvt34PXthg6Z4UmeMT2r`,
     LINEA_CHAIN: ``,
     MORPH_CHAIN: ``,
-    BSC_MAIN_NET: ``,
+    BSC_MAIN_NET: `https://gateway.thegraph.com/api/${THEGRAPH_API_KEY}/subgraphs/id/6m9CcBs8qkKR83RcxwKijUGjwKM7iuj8WJvtvUm7yiwq`,
     OPBNB_MAIN_NET: ``,
     ARBITRUM_TEST_CHAIN: ``,
     AIACHAIN_MAIN_CHAIN: ``,
