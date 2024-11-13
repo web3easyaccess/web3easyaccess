@@ -108,7 +108,7 @@ export default function Assets({ userProp }: { userProp: UserProperty }) {
         <div className="flex w-full flex-col">
             {scanUrl == "" ? null : (
                 <Link style={{ marginLeft: "10px" }} isExternal href={scanUrl}>
-                    Query all Assets in Etherscan
+                    Query all Assets in Chain Explorer
                 </Link>
             )}
             <Tabs aria-label="Options">
@@ -143,7 +143,11 @@ export default function Assets({ userProp }: { userProp: UserProperty }) {
                         </TableBody>
                     </Table>
                 </Tab>
-                <Tab key="nfts" title="NFTs">
+                <Tab
+                    key="nfts"
+                    title="NFTs"
+                    style={{ fontWeight: "bold", display: "none" }}
+                >
                     <Card>
                         <CardBody>Coming soon!</CardBody>
                     </Card>

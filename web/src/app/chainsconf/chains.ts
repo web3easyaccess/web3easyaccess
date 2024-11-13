@@ -4,7 +4,8 @@ export const isOpStackChain = (chainCode: ChainCode) => {
     if (chainCode == ChainCode.OPTIMISM_MAIN_CHAIN ||
         chainCode == ChainCode.OPTIMISM_TEST_CHAIN ||
         chainCode == ChainCode.UNICHAIN_MAIN_CHAIN ||
-        chainCode == ChainCode.UNICHAIN_TEST_CHAIN) {
+        chainCode == ChainCode.UNICHAIN_TEST_CHAIN ||
+        chainCode == ChainCode.OPBNB_MAIN_NET) {
         return true;
     } else {
         return false;
@@ -16,6 +17,8 @@ export function getAssetsScanUrl(chainCode: ChainCode, addr: string) {
         return "https://etherscan.io/tokenholdings?a=${addr}";
     } else if (chainCode == ChainCode.OPTIMISM_MAIN_CHAIN) {
         return `https://optimistic.etherscan.io/tokenholdings?a=${addr}`
+    } else if (chainCode == ChainCode.BSC_MAIN_NET) {
+        return `https://bscscan.com/tokenholdings?a=${addr}`
     } else {
         return ""
     }
@@ -59,6 +62,14 @@ export function chainQuerysApiKeyStartBlock(chainCode: string) {
         OPTIMISM_MAIN_CHAIN: {
             scanApiKey: "XH8CU3I81U378WUTG5AGG17V8UCNZP6CRU",
             startBlock: 127633028,
+        },
+        BSC_MAIN_NET: {
+            scanApiKey: "5NIAXSP2GCRTVABUX4R2KM2PD6GKF3Q7Q4",
+            startBlock: 43941613,
+        },
+        OPBNB_MAIN_NET: {
+            scanApiKey: "5NIAXSP2GCRTVABUX4R2KM2PD6GKF3Q7Q4",
+            startBlock: 39651888,
         },
         UNICHAIN_TEST_CHAIN: {
             scanApiKey: "",

@@ -237,7 +237,10 @@ export default function SessionProposalModal() {
   if (supportedChains.length == 0) {
     noMatchedChainMsg.current = `your chain [${getChain().name}|${
       getChain().chainId
-    }]  may be not supported by the dapp`
+    }]  may be not supported by the dapp[1st=${requestedChains[0]}, count=${
+      requestedChains.length
+    }]`
+    console.log('may be not supported by the dapp, it requestedChains:', requestedChains)
   }
 
   // get required chains that are not supported by the wallet

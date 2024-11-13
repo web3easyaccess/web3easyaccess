@@ -162,6 +162,24 @@ export const EIP155_W3EA_CHAINS: Record<string, EIP155Chain> = {
         namespace: 'eip155',
         smartAccountEnabled: true
     },
+    'eip155:56': {
+        chainId: 56,
+        name: 'BNB Smart Chain',
+        logo: '/chain-logos/eip155-56.png',
+        rgb: '99, 125, 234',
+        rpc: 'https://rpc.ankr.com/bsc',
+        namespace: 'eip155',
+        smartAccountEnabled: true
+    },
+    'eip155:204': {
+        chainId: 204,
+        name: 'opBNB',
+        logo: '/chain-logos/eip155-204.png',
+        rgb: '99, 125, 234',
+        rpc: 'https://opbnb-mainnet-rpc.bnbchain.org',
+        namespace: 'eip155',
+        smartAccountEnabled: true
+    },
     'eip155:1320': {
         chainId: 1320,
         name: 'AIA Testnet',

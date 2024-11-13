@@ -15,6 +15,10 @@ const gasPrice = (cc: ChainCode) => {
             return "https://explorer.morphl2.io/gas-tracker";
         case ChainCode.SCROLL_CHAIN:
             return "https://scrollscan.com/gastracker";
+        case ChainCode.BSC_MAIN_NET:
+            return "https://bscscan.com/gastracker";
+        case ChainCode.OPBNB_MAIN_NET:
+            return "0.000000010 Gwei";
         default:
             return "";
     }

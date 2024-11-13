@@ -18,7 +18,7 @@ export default function ThirdDapps({ chainCode }: { chainCode: ChainCode }) {
                     href="https://www.superchain.eco/projects"
                     showAnchorIcon
                 >
-                    {"explore OP Mainnet's DApps"}
+                    {"explore DApps on OP Mainnet"}
                 </Link>
                 <Tips></Tips>
             </div>
@@ -31,7 +31,42 @@ export default function ThirdDapps({ chainCode }: { chainCode: ChainCode }) {
                     href="https://ethereum.org/en/dapps/#beginner"
                     showAnchorIcon
                 >
-                    {"explore Ethereum Mainnet's DApps"}
+                    {"explore  DApps on Ethereum Mainnet"}
+                </Link>
+                <Tips></Tips>
+            </div>
+        );
+    } else if (chainCode == ChainCode.LINEA_CHAIN) {
+        return (
+            <div>
+                <Link isExternal href="https://linea.build/apps" showAnchorIcon>
+                    {"explore  DApps on Linea Mainnet"}
+                </Link>
+                <Tips></Tips>
+            </div>
+        );
+    } else if (chainCode == ChainCode.MORPH_CHAIN) {
+        return (
+            <div>
+                <Link
+                    isExternal
+                    href="https://www.morphl2.io/apps"
+                    showAnchorIcon
+                >
+                    {"explore  DApps on Morph Mainnet"}
+                </Link>
+                <Tips></Tips>
+            </div>
+        );
+    } else if (chainCode == ChainCode.BSC_MAIN_NET) {
+        return (
+            <div>
+                <Link
+                    isExternal
+                    href="https://dappbay.bnbchain.org/"
+                    showAnchorIcon
+                >
+                    {"explore  DApps on BSC Mainnet"}
                 </Link>
                 <Tips></Tips>
             </div>

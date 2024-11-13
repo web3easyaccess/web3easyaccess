@@ -18,6 +18,8 @@ export enum Menu {
 export enum ChainCode {
     UNKNOW = "UNKNOW",
     LINEA_CHAIN = "LINEA_CHAIN",
+    BSC_MAIN_NET = "BSC_MAIN_NET",
+    OPBNB_MAIN_NET = "OPBNB_MAIN_NET",
     MORPH_CHAIN = "MORPH_CHAIN",
     SCROLL_CHAIN = "SCROLL_CHAIN",
     ETHEREUM_MAIN_NET = "ETHEREUM_MAIN_NET",
@@ -43,6 +45,10 @@ export function chainCodeFromString(chainCode: string) {
         return ChainCode.ETHEREUM_MAIN_NET;
     } else if (chainCode == "LINEA_CHAIN") {
         return ChainCode.LINEA_CHAIN;
+    } else if (chainCode == "BSC_MAIN_NET") {
+        return ChainCode.BSC_MAIN_NET;
+    } else if (chainCode == "OPBNB_MAIN_NET") {
+        return ChainCode.OPBNB_MAIN_NET;
     } else if (chainCode == "MORPH_CHAIN") {
         return ChainCode.MORPH_CHAIN;
     } else if (chainCode == "SCROLL_CHAIN") {

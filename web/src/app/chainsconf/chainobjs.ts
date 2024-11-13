@@ -2,7 +2,7 @@ import { defineChain } from "viem";
 import { chainConfig as opStackChainConfig } from 'viem/op-stack'
 import {
     scrollSepolia, lineaSepolia, sepolia, arbitrumSepolia, linea,
-    mainnet, optimism, optimismSepolia
+    mainnet, optimism, optimismSepolia, opBNB, bsc
 } from "viem/chains";
 
 import { publicActionsL2 } from 'viem/op-stack'
@@ -38,6 +38,32 @@ const defaultAnvil = defineChain({
     },
     testnet: true,
 });
+
+export const morphMainnet = /*#__PURE__*/ defineChain({
+    id: 2818,
+    name: 'Morph Mainnet',
+    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+    rpcUrls: {
+        default: {
+            http: ['https://rpc-quicknode.morphl2.io'],
+        },
+    },
+    blockExplorers: {
+        default: {
+            name: 'morph explore',
+            url: 'https://explorer.morphl2.io',
+            apiUrl: 'https://explorer-api.morphl2.io/api/v2',
+        },
+    },
+    contracts: {
+        multicall3: {
+            address: '0xca11bde05977b3631167028862be2a173976ca11',
+            blockCreated: 9473,
+        },
+    },
+    testnet: false,
+})
+
 
 const morphHoleskyTestnet = defineChain({
     id: 2810,
@@ -370,6 +396,8 @@ export const getChainObj = (
         rtn = defaultAnvil;
     } else if (chainCode == ChainCode.MORPH_TEST_CHAIN) {
         rtn = morphHoleskyTestnet;
+    } else if (chainCode == ChainCode.MORPH_CHAIN) {
+        rtn = morphMainnet;
     } else if (chainCode == ChainCode.SCROLL_TEST_CHAIN) {
         rtn = scrollSepolia;
         rtn.l1ChainCode = ChainCode.SEPOLIA_CHAIN;
@@ -417,6 +445,10 @@ export const getChainObj = (
         // };
     } else if (chainCode == ChainCode.AIACHAIN_MAIN_CHAIN) {
         rtn = aiachainMainnet;
+    } else if (chainCode == ChainCode.BSC_MAIN_NET) {
+        rtn = bsc;
+    } else if (chainCode == ChainCode.OPBNB_MAIN_NET) {
+        rtn = opBNB;
     } else if (chainCode == ChainCode.AIACHAIN_TEST_CHAIN) {
         rtn = aiachainTestnet;
     } else if (chainCode == ChainCode.UNICHAIN_TEST_CHAIN) {

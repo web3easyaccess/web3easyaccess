@@ -40,6 +40,7 @@ export let getReceiverData: () => { address: string; chainKey: string } = () => 
 import SettingsStore from '@/store/SettingsStore'
 import { TransactionRequest, W3eaWallet } from './W3eaWallet'
 import { japanese } from 'viem/accounts'
+import ReqNotify from './reqnotify'
 
 let getW3eaMainHost = () => {
   return ''
@@ -139,7 +140,11 @@ export default function ChannelInWc({
 
   /////////////////////////////////////////
 
-  return <div></div>
+  return (
+    <div>
+      <ReqNotify></ReqNotify>
+    </div>
+  )
 }
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))

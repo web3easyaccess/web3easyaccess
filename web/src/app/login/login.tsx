@@ -231,7 +231,7 @@ function SubmitEmail<
                 onPress={handleClick}
                 color="primary"
             >
-                Submit Email
+                Get verification code
             </Button>
         </>
     );

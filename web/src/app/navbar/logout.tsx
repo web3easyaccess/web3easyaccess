@@ -8,6 +8,16 @@ import { useRouter } from "next/navigation";
 import { UserProperty } from "../storage/userPropertyStore";
 import { exampleEmail } from "../lib/myTypes";
 
+import {
+    Modal,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    ModalFooter,
+    useDisclosure,
+} from "@nextui-org/react";
+import { useEffect } from "react";
+
 export function Logout({ userProp }: { userProp: UserProperty }) {
     const [resultMsg, dispatch] = useFormState(userLogout, undefined);
     console.log("userProp in logout:", userProp);
@@ -47,7 +57,51 @@ export function Logout({ userProp }: { userProp: UserProperty }) {
                         ? "Login"
                         : "Logout"}
                 </Button>
+                <ModalMsg email={userProp.email}></ModalMsg>
             </form>
         </div>
+    );
+}
+
+function ModalMsg({ email }: { email: string }) {
+    const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
+    useEffect(() => {
+        if (email == exampleEmail) {
+            onOpen();
+        }
+    }, [email]);
+    return (
+        <>
+            {/* <Button onPress={onOpen}>Open Modal</Button> */}
+            <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1">
+                                Please Login.
+                            </ModalHeader>
+                            <ModalBody>
+                                <p>
+                                    You are currently viewing a guest sample
+                                    page. To access all features, please log in
+                                    by clicking the "Login" button in the upper
+                                    right corner.
+                                </p>
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button
+                                    color="danger"
+                                    variant="light"
+                                    onPress={onClose}
+                                >
+                                    Close
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+        </>
     );
 }
