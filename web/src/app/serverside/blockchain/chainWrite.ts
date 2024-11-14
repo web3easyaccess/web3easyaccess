@@ -177,7 +177,8 @@ export async function newAccountAndTransferETH(
         "newAccountAndTransferETH called, costFee:",
         costFee,
         ", data:",
-        data
+        data,
+        "bridgeDirection=", bridgeDirection, "chainCode=", chainCode
     );
 
     let myClient;
@@ -226,16 +227,17 @@ export async function newAccountAndTransferETH(
             "data:"
             // newAccountData
         );
-        console.log("xxxxxxx---1,");
+        console.log("xxxxxxx---1aa,");
         // estimate transaction fee.
         if (onlyQueryFee) {
-            console.log("xxxxxxx---2,");
+            console.log("xxxxxxx---2aa,");
             request = await myClient.walletClient.prepareTransactionRequest({
                 account: myClient.account,
                 to: myClient.factoryAddr,
                 value: BigInt(0), // parseEther("0.0"),
                 data: newAccountData,
             });
+            console.log("xxxxxxx---2aaBB,");
             // console.log("xxxxxxx---3:", request);
             let realEstimatedFee = BigInt(0);
             if (request.maxFeePerGas != undefined) {
@@ -431,7 +433,7 @@ export async function createTransaction(
 
         if (onlyQueryFee) {
             console.log(
-                `createTransaction detected2. detectEstimatedFee=,realEstimatedFee, maxFeePerGas,gasPrice=`
+                `createTransaction detected2. detectEstimatedFee=,realEstimatedFee, maxFeePerGas,gasPrice 222`
             );
             request = await myClient.walletClient.prepareTransactionRequest({
                 account: myClient.account,
@@ -440,7 +442,7 @@ export async function createTransaction(
                 data: dataSendToAccount,
             });
 
-            // console.log("xxxxxxx---3:", request);
+            console.log("createTransaction detected2.3:", request);
             let realEstimatedFee = BigInt(0);
             if (request.maxFeePerGas != undefined) {
                 //eip-1559
@@ -545,23 +547,22 @@ export async function createTransaction(
                 "create transaction, after prepareTransactionRequest,request!:",
                 request
             );
-            // hash = await myClient.walletClient.sendTransaction({
-            //     account: myClient.account,
-            //     to: accountAddr,
-            //     value: BigInt(0), // parseEther("0.0"),
-            //     data: dataSendToAccount,
-            //     maxFeePerGas: preparedMaxFeePerGas, //eip-1559
-            //     gasPrice: preparedGasPrice, // Legacy
-            //     maxPriorityFeePerGas:
-            // });
-
-            const serializedTransaction =
-                await myClient.walletClient.signTransaction(request);
-            hash = await myClient.walletClient.sendRawTransaction({
-                serializedTransaction,
+            hash = await myClient.walletClient.sendTransaction({
+                account: myClient.account,
+                to: accountAddr,
+                value: BigInt(0), // parseEther("0.0"),
+                data: dataSendToAccount,
+                maxFeePerGas: BigInt(100000099), // preparedMaxFeePerGas, //eip-1559
+                gasPrice: preparedGasPrice, // Legacy
             });
 
-            console.log("createTransaction success:", hash);
+            // const serializedTransaction =
+            //     await myClient.walletClient.signTransaction(request);
+            // hash = await myClient.walletClient.sendRawTransaction({
+            //     serializedTransaction,
+            // });
+
+            console.log("createTransaction success a:", hash);
             return { success: true, tx: hash, msg: "" };
         }
     } catch (e) {

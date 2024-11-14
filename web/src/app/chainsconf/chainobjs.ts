@@ -403,10 +403,10 @@ export const getChainObj = (
         rtn.l1ChainCode = ChainCode.SEPOLIA_CHAIN;
     } else if (chainCode == ChainCode.LINEA_TEST_CHAIN) {
         rtn = lineaSepolia;
-        rtn.l1ChainCode = ChainCode.SEPOLIA_CHAIN;
+        // rtn.l1ChainCode = ChainCode.SEPOLIA_CHAIN;
     } else if (chainCode == ChainCode.LINEA_CHAIN) {
         rtn = linea;
-        rtn.l1ChainCode = ChainCode.ETHEREUM_MAIN_NET;
+        // rtn.l1ChainCode = ChainCode.ETHEREUM_MAIN_NET;
         rtn.rpcUrls.default.http.unshift(
             "https://linea-mainnet.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW"
         );
