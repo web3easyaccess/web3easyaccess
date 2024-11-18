@@ -39,6 +39,7 @@ import * as userPropertyStore from "../storage/userPropertyStore";
 
 import { PrivateInfoType } from "../lib/client/keyTools";
 import { MenuItemOfPasswdAuth } from "./passwdauth/passwdAuthModal";
+import BottomBar from "../bottom/bottombar";
 
 export default function Dashboard({
     userProp,
@@ -118,6 +119,7 @@ export default function Dashboard({
                     </CardBody>
                 </Card>
             </div>
+            <BottomBar marginTop={120}></BottomBar>
         </>
     );
 }

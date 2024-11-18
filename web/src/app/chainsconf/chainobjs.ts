@@ -2,13 +2,149 @@ import { defineChain } from "viem";
 import { chainConfig as opStackChainConfig } from 'viem/op-stack'
 import {
     scrollSepolia, lineaSepolia, sepolia, arbitrumSepolia, linea,
-    mainnet, optimism, optimismSepolia, opBNB, bsc
+    mainnet, optimism, optimismSepolia, opBNB, bsc, blastSepolia, blast
 } from "viem/chains";
 
-import { publicActionsL2 } from 'viem/op-stack'
 
 import { clusterApiUrl as solanaClusterApiUrl } from "@solana/web3.js";
 import { ChainCode } from "../lib/myTypes";
+
+
+export const getChainObj = (
+    chainCode: ChainCode
+): {
+    id: number;
+    name: string;
+    nativeCurrency: {};
+    rpcUrls: {};
+    blockExplorers: {};
+    contracts: {};
+    testnet: boolean;
+    chainCode: ChainCode;
+    l1ChainCode: ChainCode;
+} => {
+    var rtn = {
+        id: 0,
+        name: "",
+        nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+        rpcUrls: {
+            default: {
+                http: [""],
+            },
+        },
+        blockExplorers: {
+            default: {
+                name: "",
+                url: "",
+                apiUrl: "",
+            },
+        },
+        contracts: {
+            multicall3: {
+                address: "0xca11bde05977b3631167028862be2a173976ca11",
+                blockCreated: 9473,
+            },
+        },
+        testnet: true,
+        chainCode: ChainCode.UNKNOW,
+        l1ChainCode: ChainCode.UNKNOW, // when I am L2 chain, here store my corresponding L1 CHAIN
+    };
+
+    if (chainCode == ChainCode.DEFAULT_ANVIL_CHAIN) {
+        rtn = defaultAnvil;
+    } else if (chainCode == ChainCode.MORPH_TEST_CHAIN) {
+        rtn = morphHoleskyTestnet;
+    } else if (chainCode == ChainCode.MORPH_CHAIN) {
+        rtn = morphMainnet;
+    } else if (chainCode == ChainCode.SCROLL_TEST_CHAIN) {
+        rtn = scrollSepolia;
+        rtn.l1ChainCode = ChainCode.SEPOLIA_CHAIN;
+    } else if (chainCode == ChainCode.LINEA_TEST_CHAIN) {
+        rtn = lineaSepolia;
+        // rtn.l1ChainCode = ChainCode.SEPOLIA_CHAIN;
+        rtn.rpcUrls.default.http.unshift(
+            "https://linea-sepolia.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW"
+        );
+        console.log("test,linea test chain:", rtn);
+    } else if (chainCode == ChainCode.LINEA_CHAIN) {
+        rtn = linea;
+        // rtn.l1ChainCode = ChainCode.ETHEREUM_MAIN_NET;
+        rtn.rpcUrls.default.http.unshift(
+            "https://linea-mainnet.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW"
+        );
+    } else if (chainCode == ChainCode.SEPOLIA_CHAIN) {
+        // rtn = sepolia;
+        rtn = { ...sepolia };
+        rtn.rpcUrls.default.http.unshift(
+            "https://eth-sepolia.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW"
+        );
+    } else if (chainCode == ChainCode.NEOX_TEST_CHAIN) {
+        rtn = neoxTestnet;
+    } else if (chainCode == ChainCode.ARBITRUM_TEST_CHAIN) {
+        rtn = { ...arbitrumSepolia };
+        rtn.rpcUrls.default.http.unshift(
+            "https://arb-sepolia.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
+        );
+    } else if (chainCode == ChainCode.ETHEREUM_MAIN_NET) {
+        rtn = { ...mainnet };
+        rtn.rpcUrls.default.http.unshift(
+            "https://eth-mainnet.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
+        );
+    } else if (chainCode == ChainCode.OPTIMISM_MAIN_CHAIN) {
+        rtn = { ...optimism };
+        rtn.rpcUrls.default.http.unshift(
+            "https://opt-mainnet.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
+        );
+    } else if (chainCode == ChainCode.OPTIMISM_TEST_CHAIN) {
+        rtn = { ...optimismSepolia };
+        rtn.rpcUrls.default.http.unshift(
+            "https://opt-sepolia.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
+        );
+        // rtn.blockExplorers.default = {
+        //     name: 'Sepolia Optimism Explorer',
+        //     url: 'https://sepolia-optimism.etherscan.io',
+        //     apiUrl: 'https://api-sepolia-optimistic.etherscan.io/api',
+        // };
+    } else if (chainCode == ChainCode.AIACHAIN_MAIN_CHAIN) {
+        rtn = aiachainMainnet;
+    } else if (chainCode == ChainCode.BSC_MAIN_NET) {
+        rtn = bsc;
+    } else if (chainCode == ChainCode.OPBNB_MAIN_NET) {
+        rtn = opBNB;
+    } else if (chainCode == ChainCode.BLAST_MAIN_CHAIN) {
+        rtn = blast;
+    } else if (chainCode == ChainCode.BLAST_TEST_CHAIN) {
+        rtn = blastSepolia;
+    } else if (chainCode == ChainCode.AIACHAIN_TEST_CHAIN) {
+        rtn = aiachainTestnet;
+    } else if (chainCode == ChainCode.UNICHAIN_TEST_CHAIN) {
+        rtn = unichainTestnet;
+    } else if (chainCode == ChainCode.SOLANA_TEST_CHAIN) {
+        rtn = solanaDevnet; // solanaLocalnet;
+    } else {
+        console.warn("not supprted:" + chainCode);
+    }
+    rtn.chainCode = chainCode;
+    // console.log(`getChainObj ok. name=${rtn.name}, chainCode=${rtn.chainCode}`);
+    return rtn;
+}; // morphHoleskyTestnet;
+
+export function isMorphNet(chainCode) {
+    console.log("chaincode in isMorphNet:", chainCode);
+    return chainCode == "MORPH_TEST_CHAIN";
+}
+
+export function isScrollNet(chainCode) {
+    console.log("chaincode in isScrollNet:", chainCode);
+    return chainCode == "SCROLL_TEST_CHAIN" || chainCode == "SCROLL_CHAIN";
+}
+
+
+// 
+
+//
+
+//
 
 
 // node_modules\viem\chains\definitions\scrollSepolia.ts
@@ -352,125 +488,6 @@ const solanaDevnet = defineChain({
     testnet: true,
 });
 
-export const getChainObj = (
-    chainCode: ChainCode
-): {
-    id: number;
-    name: string;
-    nativeCurrency: {};
-    rpcUrls: {};
-    blockExplorers: {};
-    contracts: {};
-    testnet: boolean;
-    chainCode: ChainCode;
-    l1ChainCode: ChainCode;
-} => {
-    var rtn = {
-        id: 0,
-        name: "",
-        nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-        rpcUrls: {
-            default: {
-                http: [""],
-            },
-        },
-        blockExplorers: {
-            default: {
-                name: "",
-                url: "",
-                apiUrl: "",
-            },
-        },
-        contracts: {
-            multicall3: {
-                address: "0xca11bde05977b3631167028862be2a173976ca11",
-                blockCreated: 9473,
-            },
-        },
-        testnet: true,
-        chainCode: ChainCode.UNKNOW,
-        l1ChainCode: ChainCode.UNKNOW, // when I am L2 chain, here store my corresponding L1 CHAIN
-    };
 
-    if (chainCode == ChainCode.DEFAULT_ANVIL_CHAIN) {
-        rtn = defaultAnvil;
-    } else if (chainCode == ChainCode.MORPH_TEST_CHAIN) {
-        rtn = morphHoleskyTestnet;
-    } else if (chainCode == ChainCode.MORPH_CHAIN) {
-        rtn = morphMainnet;
-    } else if (chainCode == ChainCode.SCROLL_TEST_CHAIN) {
-        rtn = scrollSepolia;
-        rtn.l1ChainCode = ChainCode.SEPOLIA_CHAIN;
-    } else if (chainCode == ChainCode.LINEA_TEST_CHAIN) {
-        rtn = lineaSepolia;
-        // rtn.l1ChainCode = ChainCode.SEPOLIA_CHAIN;
-    } else if (chainCode == ChainCode.LINEA_CHAIN) {
-        rtn = linea;
-        // rtn.l1ChainCode = ChainCode.ETHEREUM_MAIN_NET;
-        rtn.rpcUrls.default.http.unshift(
-            "https://linea-mainnet.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW"
-        );
-    } else if (chainCode == ChainCode.SEPOLIA_CHAIN) {
-        // rtn = sepolia;
-        rtn = { ...sepolia };
-        rtn.rpcUrls.default.http.unshift(
-            "https://eth-sepolia.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW"
-        );
-    } else if (chainCode == ChainCode.NEOX_TEST_CHAIN) {
-        rtn = neoxTestnet;
-    } else if (chainCode == ChainCode.ARBITRUM_TEST_CHAIN) {
-        rtn = { ...arbitrumSepolia };
-        rtn.rpcUrls.default.http.unshift(
-            "https://arb-sepolia.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
-        );
-    } else if (chainCode == ChainCode.ETHEREUM_MAIN_NET) {
-        rtn = { ...mainnet };
-        rtn.rpcUrls.default.http.unshift(
-            "https://eth-mainnet.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
-        );
-    } else if (chainCode == ChainCode.OPTIMISM_MAIN_CHAIN) {
-        rtn = { ...optimism };
-        rtn.rpcUrls.default.http.unshift(
-            "https://opt-mainnet.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
-        );
-    } else if (chainCode == ChainCode.OPTIMISM_TEST_CHAIN) {
-        rtn = { ...optimismSepolia };
-        rtn.rpcUrls.default.http.unshift(
-            "https://opt-sepolia.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
-        );
-        // rtn.blockExplorers.default = {
-        //     name: 'Sepolia Optimism Explorer',
-        //     url: 'https://sepolia-optimism.etherscan.io',
-        //     apiUrl: 'https://api-sepolia-optimistic.etherscan.io/api',
-        // };
-    } else if (chainCode == ChainCode.AIACHAIN_MAIN_CHAIN) {
-        rtn = aiachainMainnet;
-    } else if (chainCode == ChainCode.BSC_MAIN_NET) {
-        rtn = bsc;
-    } else if (chainCode == ChainCode.OPBNB_MAIN_NET) {
-        rtn = opBNB;
-    } else if (chainCode == ChainCode.AIACHAIN_TEST_CHAIN) {
-        rtn = aiachainTestnet;
-    } else if (chainCode == ChainCode.UNICHAIN_TEST_CHAIN) {
-        rtn = unichainTestnet;
-    } else if (chainCode == ChainCode.SOLANA_TEST_CHAIN) {
-        rtn = solanaDevnet; // solanaLocalnet;
-    } else {
-        console.warn("not supprted:" + chainCode);
-    }
-    rtn.chainCode = chainCode;
-    // console.log(`getChainObj ok. name=${rtn.name}, chainCode=${rtn.chainCode}`);
-    return rtn;
-}; // morphHoleskyTestnet;
-
-export function isMorphNet(chainCode) {
-    console.log("chaincode in isMorphNet:", chainCode);
-    return chainCode == "MORPH_TEST_CHAIN";
-}
-
-export function isScrollNet(chainCode) {
-    console.log("chaincode in isScrollNet:", chainCode);
-    return chainCode == "SCROLL_TEST_CHAIN" || chainCode == "SCROLL_CHAIN";
-}
 
 

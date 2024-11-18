@@ -183,8 +183,10 @@ export async function newAccountAndTransferETH(
 
     let myClient;
     if (bridgeDirection == "L1ToL2") {
+        console.log("bbb--x-111,", getChainObj(chainCode).l1ChainCode);
         myClient = await chainClient(getChainObj(chainCode).l1ChainCode);
     } else {
+        console.log("bbb--x-222,", chainCode);
         myClient = await chainClient(chainCode);
     }
 

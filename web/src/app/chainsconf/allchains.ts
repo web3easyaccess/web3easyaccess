@@ -50,7 +50,7 @@ const testChains = [
         bordered: false,
     },
     {
-        closed: true,
+        closed: false,
         chainCode: ChainCode.LINEA_TEST_CHAIN,
         img: "/chain/lineatest.png",
         title: "Linea Sepolia",
@@ -90,10 +90,26 @@ const testChains = [
         size: "sm",
         bordered: false,
     },
+    {
+        closed: false,
+        chainCode: ChainCode.BLAST_TEST_CHAIN,
+        img: "/chain/blasttest.png",
+        title: "Blast Sepolia",
+        size: "sm",
+        bordered: false,
+    },
 
 ];
 
 const mainChains = [
+    {
+        closed: false,
+        chainCode: ChainCode.BLAST_MAIN_CHAIN,
+        img: "/chain/blast.png",
+        title: "Blast Mainnet",
+        size: "sm",
+        bordered: false,
+    },
     {
         closed: false,
         chainCode: ChainCode.OPTIMISM_MAIN_CHAIN,
@@ -111,7 +127,7 @@ const mainChains = [
         bordered: false,
     },
     {
-        closed: true,
+        closed: false,
         chainCode: ChainCode.LINEA_CHAIN,
         img: "/chain/linea.png",
         title: "Linea Mainnet",
