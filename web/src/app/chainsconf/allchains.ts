@@ -50,7 +50,7 @@ const testChains = [
         bordered: false,
     },
     {
-        closed: false,
+        closed: true,
         chainCode: ChainCode.LINEA_TEST_CHAIN,
         img: "/chain/lineatest.png",
         title: "Linea Sepolia",
@@ -127,7 +127,7 @@ const mainChains = [
         bordered: false,
     },
     {
-        closed: false,
+        closed: true,
         chainCode: ChainCode.LINEA_CHAIN,
         img: "/chain/linea.png",
         title: "Linea Mainnet",

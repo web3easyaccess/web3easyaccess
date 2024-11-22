@@ -616,6 +616,20 @@ export default function SendTransaction({
                 );
 
                 if (receiverAddr != "" && (amount != "" || nftId != "")) {
+                    if (
+                        userProp.selectedChainCode
+                            .toString()
+                            .indexOf("LINEA") >= 0
+                    ) {
+                        await sleep(1500);
+                        setTransactionFee("0.0000666666 ETH");
+                        console.log("WARN WARN, LINEA!!!");
+                        // if (privateFillInOk == 0) {
+                        updateFillInOk();
+                        // }
+                        return;
+                    }
+
                     const passwdAccount = getAuthPasswdAccount();
                     if (passwdAccount == null || passwdAccount == undefined) {
                         setTransactionFee(`? ${nativeCoinSymbol}.`);
@@ -1538,7 +1552,7 @@ function CreateTransaction({
 
             // keccak256(abi.encode(...));
             console.log("encodeAbiParameters1111zzzz:", receiverAddr, amount);
-            let myDetectEstimatedFee = BigInt(0);
+            let myDetectEstimatedFee = BigInt(1);
 
             let tx = "";
 
@@ -1699,7 +1713,7 @@ async function estimateTransFee(
         "receiverAmountETH=" + receiverAmountETH
     );
 
-    let myDetectEstimatedFee = BigInt(0);
+    let myDetectEstimatedFee = BigInt(1);
     let myL1DataFee = BigInt(0);
     const receiverAmt = parseEther(receiverAmountETH);
 
@@ -1908,6 +1922,12 @@ export async function executeTransaction(
     nativeCoinSymbol: string,
     upgradeImpl: boolean
 ) {
+    if (chainObj.chainCode.toString().indexOf("LINEA") >= 0) {
+        await sleep(1500);
+        console.log("WARN WARN, LINEA!!!22");
+        return "0x1111111111111111111111111111111111111111111111111111111111111111";
+    }
+
     let eFee = await estimateTransFee(
         myOwnerId,
         myContractAccount,

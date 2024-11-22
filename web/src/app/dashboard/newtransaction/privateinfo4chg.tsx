@@ -143,6 +143,10 @@ export function PrivateInfo({
     const chainObj = getChainObj(userProp.selectedChainCode);
 
     const forModification = () => {
+        if (userProp.selectedChainCode.toString().indexOf("LINEA") >= 0) {
+            console.log("WARN WARN WARN,LINEA,555");
+            return true;
+        }
         return bigBrotherAccountCreated(userProp) && !forTransaction;
     };
 

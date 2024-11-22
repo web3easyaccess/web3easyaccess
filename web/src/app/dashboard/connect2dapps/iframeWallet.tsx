@@ -61,6 +61,10 @@ export default function IframeWallet({
         } else {
             setWcHeight(1);
         }
+        if (chainCode.toString().indexOf("LINEA") >= 0) {
+            console.log("WARN WARN WARN, LINEA ,33");
+            setWcHeight(500);
+        }
     }, [passwdState, acctCreated]);
 
     return (

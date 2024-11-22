@@ -1599,7 +1599,7 @@ function CreateTransaction({
 
         // keccak256(abi.encode(...));
         console.log("encodeAbiParameters1111zzzz:", receiverAddr, amount);
-        let myDetectEstimatedFee = BigInt(0);
+        let myDetectEstimatedFee = BigInt(1);
 
         const questionNosEnc = questionNosEncode(
             currentPriInfoRef.current.firstQuestionNo,
@@ -1757,7 +1757,7 @@ async function estimateTransFee(
         "receiverAmountETH=" + receiverAmountETH
     );
 
-    let myDetectEstimatedFee = BigInt(0);
+    let myDetectEstimatedFee = BigInt(1);
     let myL1DataFee = BigInt(0);
     const receiverAmt = parseEther(receiverAmountETH);
 

@@ -234,6 +234,15 @@ export const EIP155_W3EA_CHAINS: Record<string, EIP155Chain> = {
         namespace: 'eip155',
         smartAccountEnabled: true
     },
+    'eip155:81457': {
+        chainId: 81457,
+        name: 'Blast Mainnet',
+        logo: '/chain-logos/eip155-81457.png',
+        rgb: '99, 125, 234',
+        rpc: 'https://rpc.blast.io',
+        namespace: 'eip155',
+        smartAccountEnabled: true
+    },
 }
 
 export const EIP155_CHAINS = {

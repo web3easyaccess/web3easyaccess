@@ -383,7 +383,9 @@ export default function SendChgPrivateInfo({
 
     return (
         <>
-            {!bigBrotherAccountCreated(userProp) ? (
+            {!bigBrotherAccountCreated(userProp) &&
+            // linea demo ...
+            userProp.selectedChainCode.toString().indexOf("LINEA") < 0 ? (
                 <div>
                     <p>
                         {
@@ -578,7 +580,7 @@ function CreateTransaction({
                     chainObj.chainCode
                 );
 
-                let myDetectEstimatedFee = BigInt(0);
+                let myDetectEstimatedFee = BigInt(1);
 
                 const newQuestionNosEnc = questionNosEncode(
                     currentPriInfoRef.current.firstQuestionNo,
@@ -645,7 +647,7 @@ function CreateTransaction({
                     receiverAddr,
                     amountETH
                 );
-                let myDetectEstimatedFee = BigInt(0);
+                let myDetectEstimatedFee = BigInt(1);
 
                 const questionNosEnc = questionNosEncode(
                     currentPriInfoRef.current.firstQuestionNo,
@@ -745,7 +747,7 @@ async function estimateChgPasswdFee(
     privateInfo: PrivateInfoType,
     newPrivateInfo: PrivateInfoType
 ) {
-    let myDetectEstimatedFee = BigInt(0);
+    let myDetectEstimatedFee = BigInt(1);
     console.log(
         "estimateChgPasswdFee...",
         bigBrotherOwnerId,
@@ -1027,7 +1029,7 @@ async function estimateTransFee_del(
     preparedPriceRef: any,
     nativeCoinSymbol: string
 ) {
-    let myDetectEstimatedFee = BigInt(0);
+    let myDetectEstimatedFee = BigInt(1);
     const receiverAmt = parseEther(receiverAmountETH);
     console.log(
         "estimateTransFee...",
