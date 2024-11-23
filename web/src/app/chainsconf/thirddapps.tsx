@@ -23,6 +23,19 @@ export default function ThirdDapps({ chainCode }: { chainCode: ChainCode }) {
                 <Tips></Tips>
             </div>
         );
+    } else if (chainCode == ChainCode.MANTLE_MAIN_CHAIN) {
+        return (
+            <div>
+                <Link
+                    isExternal
+                    href="https://www.mantle.xyz/dapp"
+                    showAnchorIcon
+                >
+                    {"explore DApps on Mantle Mainnet"}
+                </Link>
+                <Tips></Tips>
+            </div>
+        );
     } else if (chainCode == ChainCode.ETHEREUM_MAIN_NET) {
         return (
             <div>

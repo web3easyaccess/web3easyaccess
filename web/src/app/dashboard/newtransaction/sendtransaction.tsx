@@ -755,12 +755,23 @@ export default function SendTransaction({
                                 price_in_gwei / 1e9 +
                                 " SOL)";
                         } else {
-                            feePrice = "(gasPrice=" + price_in_gwei + " Gwei)";
-                            const bal =
-                                ((myAccountCreated ? 120000 : 450000) *
-                                    price_in_gwei) /
-                                1e9;
-                            balanceMsg = ` Notice:In addition to the specified transfer amount, you should have an extra ${bal} ${nativeCoinSymbol} in your account balance`;
+                            if ("" + price_in_gwei != "NaN") {
+                                feePrice =
+                                    "(gasPrice=" + price_in_gwei + " Gwei)";
+                                let bal =
+                                    ((myAccountCreated ? 120000 : 450000) *
+                                        price_in_gwei) /
+                                    1e9;
+                                if (
+                                    userProp.selectedChainCode
+                                        .toString()
+                                        .indexOf("MANTLE") >= 0
+                                ) {
+                                    bal = bal * 1000;
+                                }
+
+                                balanceMsg = ` Notice:In addition to the specified transfer amount, you should have an extra ${bal} ${nativeCoinSymbol} in your account balance`;
+                            }
                         }
                     } catch (e) {
                         console.log("eee1:", e);
@@ -792,12 +803,15 @@ export default function SendTransaction({
                             price_in_gwei / 1e9 +
                             " SOL)";
                     } else {
-                        feePrice = "(gasPrice=" + price_in_gwei + " Gwei)";
-                        const bal =
-                            ((myAccountCreated ? 120000 : 450000) *
-                                price_in_gwei) /
-                            1e9;
-                        balanceMsg = ` Notice:In addition to the specified transfer amount, you should have an extra ${bal} ${nativeCoinSymbol} in your account balance`;
+                        if ("" + price_in_gwei != "NaN") {
+                            feePrice = "(gasPrice=" + price_in_gwei + " Gwei)";
+                            const bal =
+                                ((myAccountCreated ? 120000 : 450000) *
+                                    price_in_gwei) /
+                                1e9;
+
+                            balanceMsg = ` Notice:In addition to the specified transfer amount, you should have an extra ${bal} ${nativeCoinSymbol} in your account balance`;
+                        }
                     }
                 } catch (e) {
                     console.log("eee:", e);
@@ -1835,7 +1849,7 @@ async function estimateTransFee(
         }
 
         if (!detectRes.success) {
-            return { feeDisplay: "ERROR: " + detectRes.msg };
+            return { feeDisplay: "ERROR^: " + detectRes.msg };
         }
         console.log(
             "myDetectEstimatedFee=" + myDetectEstimatedFee,
@@ -2075,7 +2089,7 @@ export async function executeTransaction(
 
     if (!detectRes.success) {
         console.log("ERROR,xyz:", detectRes);
-        return "ERROR: " + detectRes.msg;
+        return "ERROR.: " + detectRes.msg;
     }
 
     console.log("detectRes.tx=" + detectRes.tx);

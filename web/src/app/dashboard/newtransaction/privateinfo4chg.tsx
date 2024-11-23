@@ -98,6 +98,19 @@ export function PrivateInfo({
         opTypeInit = OP_TYPE.OP_newInfoFirstTime;
     }
 
+    const [currentAcctChgState, setCurrentAcctChgState] = useState(0);
+    useEffect(() => {
+        if (bigBrotherAccountCreated(userProp)) {
+            if (readAccountAddr(userProp) == readBigBrotherAcctAddr(userProp)) {
+                setCurrentAcctChgState(1);
+            } else {
+                setCurrentAcctChgState(-1);
+            }
+        } else {
+            setCurrentAcctChgState(0);
+        }
+    }, [userProp]);
+
     const [submitOpType, setSubmitOpType] = useState(opTypeInit);
     const updateSubmitOpType = (newType: any) => {
         setSubmitOpType(newType);
@@ -813,6 +826,9 @@ export function PrivateInfo({
                                             userProp
                                         )}
                                         privateinfoHidden={privateinfoHidden}
+                                        currentAcctChgState={
+                                            currentAcctChgState
+                                        }
                                     />
                                 </>
                             </div>
@@ -999,6 +1015,7 @@ function SubmitMessage({
     updateSubmitOpType,
     bigBrotherPasswdAddr,
     privateinfoHidden,
+    currentAcctChgState,
 }: {
     email: string;
     verifyingContract: string;
@@ -1013,6 +1030,7 @@ function SubmitMessage({
     updateSubmitOpType: any;
     bigBrotherPasswdAddr: string;
     privateinfoHidden: boolean;
+    currentAcctChgState: number;
 }) {
     console.log(
         "SubmitMessage....in,,,,1110:",
@@ -1020,6 +1038,25 @@ function SubmitMessage({
         submitOpType,
         bigBrotherPasswdAddr
     );
+
+    if (currentAcctChgState == 0) {
+        return (
+            <>
+                <p style={{ color: "red", fontWeight: "bold" }}>
+                    No account created yet, no password change needed.
+                </p>
+            </>
+        );
+    } else if (currentAcctChgState == -1) {
+        return (
+            <>
+                <p style={{ color: "red", fontWeight: "bold" }}>
+                    You need to switch to the first account before you can
+                    change the password.
+                </p>
+            </>
+        );
+    }
 
     const [btnDisable, setBtnDisable] = useState(false);
 

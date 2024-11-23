@@ -153,6 +153,24 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
 
 
 export const EIP155_W3EA_CHAINS: Record<string, EIP155Chain> = {
+    'eip155:5000': {
+        chainId: 5000,
+        name: 'Mantle Mainnet',
+        logo: '/chain-logos/eip155-5000.png',
+        rgb: '99, 125, 234',
+        rpc: 'https://rpc.mantle.xyz',
+        namespace: 'eip155',
+        smartAccountEnabled: true
+    },
+    'eip155:5003': {
+        chainId: 5003,
+        name: 'Mantle Sepolia Testnet',
+        logo: '/chain-logos/eip155-5003.png',
+        rgb: '99, 125, 234',
+        rpc: 'https://rpc.sepolia.mantle.xyz',
+        namespace: 'eip155',
+        smartAccountEnabled: true
+    },
     'eip155:2810': {
         chainId: 2810,
         name: 'Morph Holesky Testnet',

@@ -50,6 +50,10 @@ export async function readFactoryAddr(chainCode: string) {
         res = process.env.CHAIN_FACTORY_ADDRESS_BLAST_MAIN;
     } else if (chainCode == ChainCode.BLAST_TEST_CHAIN.toString()) {
         res = process.env.CHAIN_FACTORY_ADDRESS_BLAST_TEST;
+    } else if (chainCode == ChainCode.MANTLE_MAIN_CHAIN.toString()) {
+        res = process.env.CHAIN_FACTORY_ADDRESS_MANTLE_MAIN;
+    } else if (chainCode == ChainCode.MANTLE_TEST_CHAIN.toString()) {
+        res = process.env.CHAIN_FACTORY_ADDRESS_MANTLE_TEST;
     } else if (chainCode == "SOLANA_TEST_CHAIN") {
         res = process.env.CHAIN_FACTORY_ADDRESS_SOLANA_TEST;
     }
@@ -216,6 +220,20 @@ export async function readChainClient(_chainCode: string) {
             process.env.INIT_FREE_FEE_AMOUNT_BLAST_TEST
         );
         _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_BLAST_TEST;
+        _l1GasPriceOracleContract = "0x0";
+        _l1DataFeeFunc = "";
+    } else if (chainCode == ChainCode.MANTLE_MAIN_CHAIN.toString()) {
+        _freeFeeAmountWhenCreated = Number(
+            process.env.INIT_FREE_FEE_AMOUNT_MANTLE_MAIN
+        );
+        _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_MANTLE_MAIN;
+        _l1GasPriceOracleContract = "0x0";
+        _l1DataFeeFunc = "";
+    } else if (chainCode == ChainCode.MANTLE_TEST_CHAIN.toString()) {
+        _freeFeeAmountWhenCreated = Number(
+            process.env.INIT_FREE_FEE_AMOUNT_MANTLE_TEST
+        );
+        _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_MANTLE_TEST;
         _l1GasPriceOracleContract = "0x0";
         _l1DataFeeFunc = "";
     } else if (chainCode == "SOLANA_TEST_CHAIN") {

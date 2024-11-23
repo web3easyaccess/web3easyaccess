@@ -20,6 +20,8 @@ export enum ChainCode {
     LINEA_CHAIN = "LINEA_CHAIN",
     BLAST_MAIN_CHAIN = "BLAST_MAIN_CHAIN",
     BLAST_TEST_CHAIN = "BLAST_TEST_CHAIN",
+    MANTLE_MAIN_CHAIN = "MANTLE_MAIN_CHAIN",
+    MANTLE_TEST_CHAIN = "MANTLE_TEST_CHAIN",
     BSC_MAIN_NET = "BSC_MAIN_NET",
     OPBNB_MAIN_NET = "OPBNB_MAIN_NET",
     MORPH_CHAIN = "MORPH_CHAIN",
@@ -51,6 +53,10 @@ export function chainCodeFromString(chainCode: string) {
         return ChainCode.BLAST_MAIN_CHAIN;
     } else if (chainCode == "BLAST_TEST_CHAIN") {
         return ChainCode.BLAST_TEST_CHAIN;
+    } else if (chainCode == "MANTLE_MAIN_CHAIN") {
+        return ChainCode.MANTLE_MAIN_CHAIN;
+    } else if (chainCode == "MANTLE_TEST_CHAIN") {
+        return ChainCode.MANTLE_TEST_CHAIN;
     } else if (chainCode == "BSC_MAIN_NET") {
         return ChainCode.BSC_MAIN_NET;
     } else if (chainCode == "OPBNB_MAIN_NET") {

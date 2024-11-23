@@ -19,6 +19,14 @@ const testChains = [
     },
     {
         closed: false,
+        chainCode: ChainCode.MANTLE_TEST_CHAIN,
+        img: "/chain/mantletest.png",
+        title: "Mantle Sepolia",
+        size: "sm",
+        bordered: false,
+    },
+    {
+        closed: false,
         chainCode: ChainCode.AIACHAIN_TEST_CHAIN,
         img: "/chain/aiachaintest.png",
         title: "AIA Testnet",
@@ -103,10 +111,18 @@ const testChains = [
 
 const mainChains = [
     {
-        closed: false,
+        closed: true,
         chainCode: ChainCode.BLAST_MAIN_CHAIN,
         img: "/chain/blast.png",
         title: "Blast Mainnet",
+        size: "sm",
+        bordered: false,
+    },
+    {
+        closed: false,
+        chainCode: ChainCode.MANTLE_MAIN_CHAIN,
+        img: "/chain/mantle.png",
+        title: "Mantle Mainnet",
         size: "sm",
         bordered: false,
     },

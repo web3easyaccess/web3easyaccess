@@ -2,7 +2,8 @@ import { defineChain } from "viem";
 import { chainConfig as opStackChainConfig } from 'viem/op-stack'
 import {
     scrollSepolia, lineaSepolia, sepolia, arbitrumSepolia, linea,
-    mainnet, optimism, optimismSepolia, opBNB, bsc, blastSepolia, blast
+    mainnet, optimism, optimismSepolia, opBNB, bsc, blastSepolia, blast,
+    mantle, mantleSepoliaTestnet
 } from "viem/chains";
 
 
@@ -59,6 +60,21 @@ export const getChainObj = (
     } else if (chainCode == ChainCode.SCROLL_TEST_CHAIN) {
         rtn = scrollSepolia;
         rtn.l1ChainCode = ChainCode.SEPOLIA_CHAIN;
+    } else if (chainCode == ChainCode.MANTLE_TEST_CHAIN) {
+        rtn = mantleSepoliaTestnet;
+        // rtn.blockExplorers = {
+        //     default: {
+        //         name: 'Mantle Testnet Explorer',
+        //         url: 'https://explorer.sepolia.mantle.xyz/',
+        //         apiUrl: 'https://explorer.sepolia.mantle.xyz/api',
+        //     },
+        // },
+
+    } else if (chainCode == ChainCode.MANTLE_MAIN_CHAIN) {
+        rtn = mantle;
+        // rtn.rpcUrls.default.http.unshift(
+        //     "https://mantle-mainnet.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW"
+        // );
     } else if (chainCode == ChainCode.LINEA_TEST_CHAIN) {
         rtn = lineaSepolia;
         // rtn.l1ChainCode = ChainCode.SEPOLIA_CHAIN;

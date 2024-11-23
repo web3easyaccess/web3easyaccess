@@ -19,8 +19,9 @@ import { queryAccount } from "../../lib/chainQuery";
 import abis from "./abi/abis";
 
 import * as libsolana from "@/app/lib/client/solana/libsolana";
-import { ChainCode, exampleEmail } from "@/app/lib/myTypes";
+import { ChainCode, chainCodeFromString, exampleEmail } from "@/app/lib/myTypes";
 import myCookies from "../myCookies";
+import { isOpStackChain } from "@/app/chainsconf/chains";
 
 
 function sleep(time) {
@@ -238,6 +239,7 @@ export async function newAccountAndTransferETH(
                 to: myClient.factoryAddr,
                 value: BigInt(0), // parseEther("0.0"),
                 data: newAccountData,
+                // gas: chainCode.indexOf("MANTLE") >= 0 ? BigInt(2000000000) : undefined
             });
             console.log("xxxxxxx---2aaBB,");
             // console.log("xxxxxxx---3:", request);
@@ -270,11 +272,7 @@ export async function newAccountAndTransferETH(
             console.log("xxxxxxx---2a,chainCode:", chainCode);
             let _l1DataFee = BigInt(0);
             // test,临时跳过 ChainCode.UNICHAIN_TEST_CHAIN
-            if (
-                chainCode == ChainCode.OPTIMISM_MAIN_CHAIN ||
-                chainCode == ChainCode.OPTIMISM_TEST_CHAIN ||
-                chainCode == ChainCode.UNICHAIN_MAIN_CHAIN ||
-                chainCode == ChainCode.UNICHAIN_TEST_CHAIN) {
+            if (isOpStackChain(chainCodeFromString(chainCode))) {
                 console.log("L1 data fee of OPSTACK:1:", _l1DataFee);
                 _l1DataFee = await myClient.walletClient.estimateL1Fee({
                     account: myClient.account,

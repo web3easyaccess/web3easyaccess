@@ -17,6 +17,8 @@ export const THEGRAPH_URLS: { [key: string]: string } = {
     ARBITRUM_TEST_CHAIN: ``,
     BLAST_MAIN_CHAIN: ``,
     BLAST_TEST_CHAIN: ``,
+    MANTLE_MAIN_CHAIN: ``,
+    MANTLE_TEST_CHAIN: ``,
     AIACHAIN_MAIN_CHAIN: ``,
     AIACHAIN_TEST_CHAIN: ``,
     UNICHAIN_TEST_CHAIN: ``,
