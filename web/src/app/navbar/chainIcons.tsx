@@ -202,17 +202,17 @@ export const ChainIcons = ({
 
     useEffect(() => {
         setTimeout(() => {
-            const lc = latestChains();
-            let flag = 0;
-            lc.forEach((c) => {
-                if (c.chainCode == userProp.selectedChainCode) {
-                    flag += 1;
-                }
-            });
-            if (flag == 0 && lc.length > 0) {
-                console.log("force to change Chain:");
-                handleClick(lc[0].chainCode);
-            }
+            // const lc = latestChains();
+            // let flag = 0;
+            // lc.forEach((c) => {
+            //     if (c.chainCode == userProp.selectedChainCode) {
+            //         flag += 1;
+            //     }
+            // });
+            // if (flag == 0 && lc.length > 0) {
+            //     console.log("force to change Chain,xyz:");
+            //     handleClick(lc[0].chainCode);
+            // }
         }, 300);
     }, []);
 
