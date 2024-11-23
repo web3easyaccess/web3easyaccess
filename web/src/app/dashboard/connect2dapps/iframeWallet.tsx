@@ -65,7 +65,7 @@ export default function IframeWallet({
             console.log("WARN WARN WARN, LINEA ,33");
             setWcHeight(500);
         }
-    }, [passwdState, acctCreated]);
+    }, [passwdState, acctCreated, chainCode]);
 
     return (
         <div>

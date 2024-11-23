@@ -1039,25 +1039,6 @@ function SubmitMessage({
         bigBrotherPasswdAddr
     );
 
-    if (currentAcctChgState == 0) {
-        return (
-            <>
-                <p style={{ color: "red", fontWeight: "bold" }}>
-                    No account created yet, no password change needed.
-                </p>
-            </>
-        );
-    } else if (currentAcctChgState == -1) {
-        return (
-            <>
-                <p style={{ color: "red", fontWeight: "bold" }}>
-                    You need to switch to the first account before you can
-                    change the password.
-                </p>
-            </>
-        );
-    }
-
     const [btnDisable, setBtnDisable] = useState(false);
 
     let buttonType = "button";
@@ -1239,6 +1220,25 @@ function SubmitMessage({
             setBtnDisable(!privateinfoHidden);
         }
     }, [privateinfoHidden]);
+
+    if (currentAcctChgState == 0) {
+        return (
+            <>
+                <p style={{ color: "red", fontWeight: "bold" }}>
+                    No account created yet, no password change needed.
+                </p>
+            </>
+        );
+    } else if (currentAcctChgState == -1) {
+        return (
+            <>
+                <p style={{ color: "red", fontWeight: "bold" }}>
+                    You need to switch to the first account before you can
+                    change the password.
+                </p>
+            </>
+        );
+    }
 
     return (
         <div>
