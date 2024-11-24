@@ -18,7 +18,7 @@ const gasPrice = (cc: ChainCode) => {
         case ChainCode.BSC_MAIN_NET:
             return "https://bscscan.com/gastracker";
         case ChainCode.OPBNB_MAIN_NET:
-            return "0.000000010 Gwei";
+            return "0.000000011 Gwei";
         case ChainCode.BLAST_MAIN_CHAIN:
             return "0.002 Gwei";
         case ChainCode.MANTLE_MAIN_CHAIN:

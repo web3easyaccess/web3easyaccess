@@ -71,7 +71,10 @@ export default function ThirdDapps({ chainCode }: { chainCode: ChainCode }) {
                 <Tips></Tips>
             </div>
         );
-    } else if (chainCode == ChainCode.BSC_MAIN_NET) {
+    } else if (
+        chainCode == ChainCode.BSC_MAIN_NET ||
+        chainCode == ChainCode.OPBNB_MAIN_NET
+    ) {
         return (
             <div>
                 <Link
@@ -79,7 +82,7 @@ export default function ThirdDapps({ chainCode }: { chainCode: ChainCode }) {
                     href="https://dappbay.bnbchain.org/"
                     showAnchorIcon
                 >
-                    {"explore  DApps on BSC Mainnet"}
+                    {"explore  DApps on BSC Mainnet and OPBNB Mainnet"}
                 </Link>
                 <Tips></Tips>
             </div>

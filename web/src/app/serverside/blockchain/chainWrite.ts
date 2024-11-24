@@ -552,7 +552,7 @@ export async function createTransaction(
                 to: accountAddr,
                 value: BigInt(0), // parseEther("0.0"),
                 data: dataSendToAccount,
-                maxFeePerGas: BigInt(100000099), // preparedMaxFeePerGas, //eip-1559
+                maxFeePerGas: preparedMaxFeePerGas, //eip-1559
                 gasPrice: preparedGasPrice, // Legacy
             });
 

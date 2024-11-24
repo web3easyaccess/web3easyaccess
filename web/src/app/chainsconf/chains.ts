@@ -23,6 +23,8 @@ export function getAssetsScanUrl(chainCode: ChainCode, addr: string) {
         return `https://optimistic.etherscan.io/tokenholdings?a=${addr}`
     } else if (chainCode == ChainCode.BSC_MAIN_NET) {
         return `https://bscscan.com/tokenholdings?a=${addr}`
+    } else if (chainCode == ChainCode.OPBNB_MAIN_NET) {
+        return `https://opbnb.bscscan.com/tokenholdings?a=${addr}`
     } else if (chainCode == ChainCode.BLAST_MAIN_CHAIN) {
         return `https://blastscan.io/tokenholdings?a=${addr}`
     } else if (chainCode == ChainCode.MANTLE_MAIN_CHAIN) {
