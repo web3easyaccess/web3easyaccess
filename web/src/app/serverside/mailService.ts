@@ -42,3 +42,4 @@ export const asyncSendMail = async (to: string, verifyCode: string) => {
     console.log("send email-xxxx-----:", to, "::", verifyCode);
     const rtn = await transporter.sendMail(mailOptions);
 };
+
