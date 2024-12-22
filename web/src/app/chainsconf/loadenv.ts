@@ -270,3 +270,6 @@ export async function readChainClient(_chainCode: string) {
         l1DataFeeFunc: _l1DataFeeFunc,
     };
 }
+
+
+// test comment
