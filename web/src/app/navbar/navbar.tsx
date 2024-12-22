@@ -18,6 +18,8 @@ import {
     CardBody,
     Divider,
 } from "@nextui-org/react";
+
+
 import { useRef } from "react";
 import { useState } from "react";
 import { useEffect } from "react";
@@ -35,6 +37,9 @@ import UserProfile from "./userProfile";
 import { Menu, UserInfo, uiToString, ChainCode } from "../lib/myTypes";
 import { UpdateUserProperty, UserProperty } from "../storage/userPropertyStore";
 
+const noticeMsg = "I apologize for the long maintenance break. Something unhappy happened to me. Time heals all wounds, and I'm back now.";
+
+
 export default function NavBar({
     userProp,
     updateUserProp,
@@ -48,6 +53,7 @@ export default function NavBar({
 
     // max-w-[30ch]
     return (
+        <div>
         <Navbar isBordered isBlurred={false} maxWidth="full">
             <NavbarBrand>
                 <p
@@ -92,6 +98,10 @@ export default function NavBar({
                 </NavbarItem>
             </NavbarContent>
         </Navbar>
+        <Tooltip size="sm" content={noticeMsg}>
+            <Button size="sm">Apologize</Button>
+        </Tooltip>
+        </div>
     );
 }
 
@@ -105,6 +115,7 @@ export function Navbar4Login({
     console.log("navbar 4 login, userPropstate:", userProp);
     // max-w-[30ch]
     return (
+        <div>
         <Navbar isBordered isBlurred={false} maxWidth="full">
             <NavbarBrand>
                 <Divider
@@ -134,5 +145,9 @@ export function Navbar4Login({
                 <div style={{ width: "120px" }}></div>
             </NavbarContent>
         </Navbar>
+        <Tooltip size="sm" content={noticeMsg}>
+            <Button size="sm">Apologize</Button>
+        </Tooltip>
+        </div>
     );
 }

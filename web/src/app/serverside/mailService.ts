@@ -33,7 +33,7 @@ export const asyncSendMail = async (to: string, verifyCode: string) => {
         "</div>";
 
     const mailOptions = {
-        from: process.env.MAIL_USERNAME + "@gmail.com",
+        from: process.env.MAIL_USERNAME + "@"+ process.env.MAIL_SUFFIX,
         to: to,
         subject: "web3easyaccess verify code: " + verifyCode,
         html: html,

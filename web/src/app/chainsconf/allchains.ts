@@ -119,7 +119,7 @@ const mainChains = [
         bordered: false,
     },
     {
-        closed: false,
+        closed: true,
         chainCode: ChainCode.MANTLE_MAIN_CHAIN,
         img: "/chain/mantle.png",
         title: "Mantle Mainnet",
@@ -135,7 +135,7 @@ const mainChains = [
         bordered: false,
     },
     {
-        closed: false,
+        closed: true,
         chainCode: ChainCode.BSC_MAIN_NET,
         img: "/chain/bnbbsc.png",
         title: "BSC",
@@ -143,7 +143,7 @@ const mainChains = [
         bordered: false,
     },
     {
-        closed: false,
+        closed: true,
         chainCode: ChainCode.OPBNB_MAIN_NET,
         img: "/chain/bnbopbnb.png",
         title: "opBNB",
@@ -159,7 +159,7 @@ const mainChains = [
         bordered: false,
     },
     {
-        closed: false,
+        closed: true,
         chainCode: ChainCode.ETHEREUM_MAIN_NET,
         img: "/chain/ethereum.png",
         title: "Ether eum",
