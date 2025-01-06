@@ -3,7 +3,8 @@ import { chainConfig as opStackChainConfig } from 'viem/op-stack'
 import {
     scrollSepolia, lineaSepolia, sepolia, arbitrumSepolia, linea,
     mainnet, optimism, optimismSepolia, opBNB, bsc, blastSepolia, blast,
-    mantle, mantleSepoliaTestnet
+    mantle, mantleSepoliaTestnet,
+    base
 } from "viem/chains";
 
 
@@ -106,12 +107,18 @@ export const getChainObj = (
         rtn.rpcUrls.default.http.unshift(
             "https://eth-mainnet.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
         );
+    } else if (chainCode == ChainCode.BASE_MAIN_CHAIN) {
+        rtn = { ...base };
+        rtn.rpcUrls.default.http.unshift(
+            "https://base-mainnet.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
+        );
     } else if (chainCode == ChainCode.OPTIMISM_MAIN_CHAIN) {
         rtn = { ...optimism };
         rtn.rpcUrls.default.http.unshift(
             "https://opt-mainnet.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",
         );
-    } else if (chainCode == ChainCode.OPTIMISM_TEST_CHAIN) {
+    } 
+    else if (chainCode == ChainCode.OPTIMISM_TEST_CHAIN) {
         rtn = { ...optimismSepolia };
         rtn.rpcUrls.default.http.unshift(
             "https://opt-sepolia.g.alchemy.com/v2/UBel_pWBAqDuBkAHTtrnVvPPzAhPdfqW",

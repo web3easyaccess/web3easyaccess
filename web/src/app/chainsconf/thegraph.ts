@@ -23,4 +23,5 @@ export const THEGRAPH_URLS: { [key: string]: string } = {
     AIACHAIN_TEST_CHAIN: ``,
     UNICHAIN_TEST_CHAIN: ``,
     UNICHAIN_MAIN_CHAIN: ``,
+    BASE_MAIN_CHAIN: ``,
 };

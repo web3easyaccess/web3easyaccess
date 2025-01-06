@@ -23,6 +23,8 @@ const gasPrice = (cc: ChainCode) => {
             return "0.002 Gwei";
         case ChainCode.MANTLE_MAIN_CHAIN:
             return "0.0249 Gwei";
+        case ChainCode.BASE_MAIN_CHAIN:
+            return "0.04 Gwei";
         default:
             return "";
     }

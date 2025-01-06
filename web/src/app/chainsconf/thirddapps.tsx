@@ -23,6 +23,19 @@ export default function ThirdDapps({ chainCode }: { chainCode: ChainCode }) {
                 <Tips></Tips>
             </div>
         );
+    } else if (chainCode == ChainCode.BASE_MAIN_CHAIN) {
+        return (
+            <div>
+                <Link
+                    isExternal
+                    href="https://www.base.org/ecosystem?utm_source=dotorg&utm_medium=nav"
+                    showAnchorIcon
+                >
+                    {"explore DApps on Base Mainnet"}
+                </Link>
+                <Tips></Tips>
+            </div>
+        );
     } else if (chainCode == ChainCode.MANTLE_MAIN_CHAIN) {
         return (
             <div>

@@ -24,7 +24,7 @@ contract DeployFactoryProxy is Script {
 
         Factory(payable(address(mm))).init(
             // entryEOA:
-            0x55b3448D38724997747083323992C88dB4AccE55,
+            0xacCe55EcEB57aA59a783462Cb04796a3bD3e63E0,
             //
             // --entity
             0xf31f3B3520f93f187692E9C5dCC5a8c0f6558518,

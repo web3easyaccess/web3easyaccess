@@ -36,6 +36,8 @@ export async function readFactoryAddr(chainCode: string) {
         res = process.env.CHAIN_FACTORY_ADDRESS_ETH_MAIN;
     } else if (chainCode == ChainCode.OPTIMISM_MAIN_CHAIN.toString()) {
         res = process.env.CHAIN_FACTORY_ADDRESS_OPTIMISM_MAIN;
+    } else if (chainCode == ChainCode.BASE_MAIN_CHAIN.toString()) {
+        res = process.env.CHAIN_FACTORY_ADDRESS_BASE_MAIN;
     } else if (chainCode == ChainCode.OPTIMISM_TEST_CHAIN.toString()) {
         res = process.env.CHAIN_FACTORY_ADDRESS_OPTIMISM_TEST;
     } else if (chainCode == ChainCode.UNICHAIN_MAIN_CHAIN.toString()) {
@@ -171,6 +173,13 @@ export async function readChainClient(_chainCode: string) {
             process.env.INIT_FREE_FEE_AMOUNT_OPTIMISM_MAIN
         );
         _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_OPTIMISM_MAIN;
+        _l1GasPriceOracleContract = "0x0";
+        _l1DataFeeFunc = "";
+    } else if (chainCode == ChainCode.BASE_MAIN_CHAIN.toString()) {
+        _freeFeeAmountWhenCreated = Number(
+            process.env.INIT_FREE_FEE_AMOUNT_BASE_MAIN
+        );
+        _currentPrivateKey = process.env.CHAIN_PRIVATE_KEY_BASE_MAIN;
         _l1GasPriceOracleContract = "0x0";
         _l1DataFeeFunc = "";
     } else if (chainCode == ChainCode.OPTIMISM_TEST_CHAIN.toString()) {

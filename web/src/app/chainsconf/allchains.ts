@@ -111,6 +111,22 @@ const testChains = [
 
 const mainChains = [
     {
+        closed: false,
+        chainCode: ChainCode.OPTIMISM_MAIN_CHAIN,
+        img: "/chain/optimism.png",
+        title: "OP Mainnet",
+        size: "sm",
+        bordered: false,
+    },
+    {
+        closed: false,
+        chainCode: ChainCode.BASE_MAIN_CHAIN,
+        img: "/chain/base.png",
+        title: "Base Mainnet",
+        size: "sm",
+        bordered: false,
+    },
+    {
         closed: true,
         chainCode: ChainCode.BLAST_MAIN_CHAIN,
         img: "/chain/blast.png",
@@ -123,14 +139,6 @@ const mainChains = [
         chainCode: ChainCode.MANTLE_MAIN_CHAIN,
         img: "/chain/mantle.png",
         title: "Mantle Mainnet",
-        size: "sm",
-        bordered: false,
-    },
-    {
-        closed: false,
-        chainCode: ChainCode.OPTIMISM_MAIN_CHAIN,
-        img: "/chain/optimism.png",
-        title: "OP Mainnet",
         size: "sm",
         bordered: false,
     },
@@ -201,7 +209,9 @@ mainChains.forEach(c => {
     allChains.push(cc);
 });
 
-testChains.forEach(c => {
-    const cc = { ...c, isTestnet: true };
-    allChains.push(cc);
-})
+if(1==2) {
+    testChains.forEach(c => {
+        const cc = { ...c, isTestnet: true };
+        allChains.push(cc);
+    })
+}
