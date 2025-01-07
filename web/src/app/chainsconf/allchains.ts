@@ -112,6 +112,14 @@ const testChains = [
 const mainChains = [
     {
         closed: false,
+        chainCode: ChainCode.ETHEREUM_MAIN_NET,
+        img: "/chain/ethereum.png",
+        title: "Ether eum",
+        size: "sm",
+        bordered: false,
+    },
+    {
+        closed: false,
         chainCode: ChainCode.OPTIMISM_MAIN_CHAIN,
         img: "/chain/optimism.png",
         title: "OP Mainnet",
@@ -163,14 +171,6 @@ const mainChains = [
         chainCode: ChainCode.LINEA_CHAIN,
         img: "/chain/linea.png",
         title: "Linea Mainnet",
-        size: "sm",
-        bordered: false,
-    },
-    {
-        closed: true,
-        chainCode: ChainCode.ETHEREUM_MAIN_NET,
-        img: "/chain/ethereum.png",
-        title: "Ether eum",
         size: "sm",
         bordered: false,
     },
