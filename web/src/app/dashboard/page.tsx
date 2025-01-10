@@ -6,10 +6,13 @@ import redirectTo from "../serverside/redirectTo";
 
 import PageClient from "./pageClient";
 
+import {bootCron} from "@/app/cron/cronTask"
+
 // import  "@/app/lib/client/generatePrivate.ignore";
 
 export default async function Page() {
     // redirectTo.urlLoggedInCheck();
+    bootCron();
 
     const email = myCookies.getEmail();
 

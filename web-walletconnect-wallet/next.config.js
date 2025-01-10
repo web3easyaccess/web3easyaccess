@@ -24,6 +24,10 @@ module.exports = {
           {
             key: 'Access-Control-Allow-Headers',
             value: 'Content-Type, Authorization'
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'ALLOW-FROM https://web3easyaccess.link', // 允许来自 example.com 的页面嵌入
           }
         ]
       }
