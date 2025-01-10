@@ -16,5 +16,18 @@ module.exports = {
             },
         };
         return config;
-    }
+    },
+    async headers() {
+        return [
+          {
+            source: '/api/:path*',
+            headers: [
+              {
+                key: 'X-Frame-Options',
+                value: 'ALLOW-FROM https://walletconnect.web3easyaccess.link/', // 允许来自 example.com 的页面嵌入
+              }
+            ]
+          }
+        ]
+      }
 };

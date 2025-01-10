@@ -27,7 +27,7 @@ module.exports = {
           },
           {
             key: 'X-Frame-Options',
-            value: 'ALLOW-FROM https://web3easyaccess.link', // 允许来自 example.com 的页面嵌入
+            value: 'ALLOW-FROM https://www.web3easyaccess.link', // 允许来自 example.com 的页面嵌入
           }
         ]
       }
